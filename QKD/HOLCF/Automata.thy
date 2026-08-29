@@ -244,7 +244,6 @@ lemma trans_of_par:
          else snd t = snd s)}"
   by (simp add: par_def ioa_projections)
 
-
 subsection \<open>\<open>actions\<close> and \<open>par\<close>\<close>
 
 lemma actions_asig_comp: "actions (asig_comp a b) = actions a \<union> actions b"

@@ -239,4 +239,179 @@ lemma coordinator_step_inv [consumes 1, case_names
   by (cases "(pid, s, a)" rule: coordinator_step.cases)
      (auto split: if_splits msg.splits action.splits cstate.splits)
 
+datatype proc =
+    P0
+  | P1
+
+
+datatype transaction =
+    T0
+
+
+type_synonym concrete_msg =
+  "transaction msg"
+
+
+type_synonym concrete_action =
+  "(proc, concrete_msg) action"
+
+
+(* Der konkrete Zustand ist eine Liste statt einer Menge. *)
+type_synonym exec_state =
+  "(proc \<times> proc \<times> concrete_msg) list"
+
+
+(* ================================================================ *)
+(* 3. Ausführbarer einzelner Übergang                               *)
+(* ================================================================ *)
+
+fun exec_step ::
+  "exec_state \<Rightarrow> concrete_action \<Rightarrow> exec_state option"
+where
+  "exec_step M (Send s r m) =
+     Some (if (s,r,m) \<in> set M
+           then M
+           else (s,r,m) # M)"
+
+| "exec_step M (Receive s r m) =
+     (if (s,r,m) \<in> set M
+      then Some M
+      else None)"
+
+| "exec_step M _ =
+     None"
+
+
+(* ================================================================ *)
+(* 4. Ausführung einer Folge von Aktionen                           *)
+(* ================================================================ *)
+
+fun exec_run ::
+  "concrete_action list \<Rightarrow> exec_state \<Rightarrow> exec_state option"
+where
+  "exec_run [] M = Some M"
+
+| "exec_run (a # as) M =
+     (case exec_step M a of
+        None \<Rightarrow> None
+      | Some M' \<Rightarrow> exec_run as M')"
+
+(* ================================================================ *)
+(* 5. Kleine Tests                                                   *)
+(* ================================================================ *)
+
+value
+  "exec_step []
+    (Send P0 P1 (Prepare T0))"
+
+
+value
+  "exec_step
+     [(P0, P1, Prepare T0)]
+     (Receive P0 P1 (Prepare T0))"
+
+
+value
+  "exec_step []
+     (Receive P0 P1 (Prepare T0))"
+
+
+value
+  "exec_run
+     [Send P0 P1 (Prepare T0),
+      Receive P0 P1 (Prepare T0)]
+     []"
+
+(* ================================================================ *)
+(* 6. Abbildung des konkreten Zustands auf den abstrakten Zustand   *)
+(* ================================================================ *)
+
+type_synonym concrete_chan_state =
+  "(proc, transaction) chan_state"
+
+
+definition exec_to_set ::
+  "exec_state \<Rightarrow> concrete_chan_state"
+where
+  "exec_to_set M = set M"
+
+
+(* ================================================================ *)
+(* 7. Korrektheit der einzelnen Übergänge                           *)
+(* ================================================================ *)
+
+lemma exec_send_correct:
+  "exec_step M (Send s r m) = Some M'
+   \<Longrightarrow> (exec_to_set M, Send s r m, exec_to_set M') \<in> chan_trans"
+  unfolding exec_to_set_def chan_trans_def
+  by (auto split: if_splits)
+
+
+lemma exec_receive_correct:
+  "exec_step M (Receive s r m) = Some M'
+   \<Longrightarrow> (exec_to_set M, Receive s r m, exec_to_set M') \<in> chan_trans"
+  unfolding exec_to_set_def chan_trans_def
+  by (auto split: if_splits)
+
+
+lemma exec_step_correct:
+  assumes "exec_step M a = Some M'"
+  shows" (exec_to_set M, a, exec_to_set M') \<in> chan_trans"
+proof (cases a)
+  case (Start p)
+  then show ?thesis
+    unfolding exec_to_set_def
+    using assms by auto
+next
+  case (Send p q m)
+  then show ?thesis
+    using exec_send_correct
+    using assms by auto
+next
+  case (Receive p q m)
+  then show ?thesis
+    using exec_receive_correct
+    using assms by auto
+next
+  case (Timeout p)
+  then show ?thesis
+    using assms by auto
+next
+  case (Restart p)
+  then show ?thesis
+    using assms by auto
+qed
+
+
+(* ================================================================ *)
+(* 8. Korrektheit einer ganzen Ausführung                           *)
+(* ================================================================ *)
+
+(*lemma exec_run_correct:
+  "exec_run actions M = Some M'
+   \<Longrightarrow> (exec_to_set M, actions, exec_to_set M') \<in>
+       (rtrancl (\<lambda>x y. \<exists>a. (x,a,y) \<in> chan_trans))"
+  sorry*)
+
+
+(* ================================================================ *)
+(* 9. Haskell-Schnittstelle                                         *)
+(* ================================================================ *)
+
+definition test_automaton :: "integer \<Rightarrow> integer" where
+  "test_automaton n =
+     (case exec_run
+        [Send P0 P1 (Prepare T0),
+         Receive P0 P1 (Prepare T0),
+         Send P1 P0 Ack,
+Receive P1 P0 Ack]
+        []
+      of
+        None \<Rightarrow> -1
+      | Some M \<Rightarrow> integer_of_nat (length M))"
+
+export_code test_automaton in Haskell
+  module_name Automata
+  file "Automata"
+
 end
