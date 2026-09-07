@@ -1,0 +1,467 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{atat}{online}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{day}{13}
+      \field{month}{11}
+      \field{title}{How one line of code caused a \$60 million loss}
+      \field{urlday}{7}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2023}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://read.engineerscodex.com/p/how-one-line-of-code-caused-a-60
+      \endverb
+      \verb{url}
+      \verb https://read.engineerscodex.com/p/how-one-line-of-code-caused-a-60
+      \endverb
+    \endentry
+    \entry{atat2}{online}{}{}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labeltitlesource}{title}
+      \field{day}{26}
+      \field{month}{2}
+      \field{title}{The Crash of the AT\&T Network in 1990}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{1990}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://telephoneworld.org/landline-telephone-history/the-crash-of-the-att-network-in-1990/
+      \endverb
+      \verb{url}
+      \verb https://telephoneworld.org/landline-telephone-history/the-crash-of-the-att-network-in-1990/
+      \endverb
+    \endentry
+    \entry{kleppmannbook}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=34b8d5b1d29d175527a6642f3ec8a76d}{%
+           family={Kleppmann},
+           familyi={K\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{fullhash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{fullhashraw}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{bibnamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorbibnamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authornamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorfullhash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorfullhashraw}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \field{extraname}{1}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{11}
+      \field{month}{7}
+      \field{title}{Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems}
+      \field{urlday}{6}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2016}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://0-lucas.github.io/digital-garden/99.-Books/Martin-Kleppmann---Designing-Data-Intensive-Applications_-O%E2%80%99Reilly-Media-(2017).pdf
+      \endverb
+      \verb{url}
+      \verb https://0-lucas.github.io/digital-garden/99.-Books/Martin-Kleppmann---Designing-Data-Intensive-Applications_-O%E2%80%99Reilly-Media-(2017).pdf
+      \endverb
+    \endentry
+    \entry{tupacSpec}{report}{}{}
+      \name{author}{1}{}{%
+        {{hash=5416b655949076cccc9c8170a8d90419}{%
+           family={Lechtenbörger},
+           familyi={L\bibinitperiod},
+           given={Jens},
+           giveni={J\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Universität Münster}%
+      }
+      \strng{namehash}{5416b655949076cccc9c8170a8d90419}
+      \strng{fullhash}{5416b655949076cccc9c8170a8d90419}
+      \strng{fullhashraw}{5416b655949076cccc9c8170a8d90419}
+      \strng{bibnamehash}{5416b655949076cccc9c8170a8d90419}
+      \strng{authorbibnamehash}{5416b655949076cccc9c8170a8d90419}
+      \strng{authornamehash}{5416b655949076cccc9c8170a8d90419}
+      \strng{authorfullhash}{5416b655949076cccc9c8170a8d90419}
+      \strng{authorfullhashraw}{5416b655949076cccc9c8170a8d90419}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{2-Phase-Commit Protocol}
+      \field{type}{type}
+      \field{urlday}{4}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb http://wwwlgis.informatik.uni-kl.de/cms/fileadmin/courses/SS2008/Informationssysteme/Addons/2PC.pdf
+      \endverb
+      \verb{url}
+      \verb http://wwwlgis.informatik.uni-kl.de/cms/fileadmin/courses/SS2008/Informationssysteme/Addons/2PC.pdf
+      \endverb
+      \warn{\item report entry 'tupacSpec' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring}
+    \endentry
+    \entry{kleppmannblog}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=34b8d5b1d29d175527a6642f3ec8a76d}{%
+           family={Kleppmann},
+           familyi={K\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{fullhash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{fullhashraw}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{bibnamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorbibnamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authornamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorfullhash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorfullhashraw}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \field{extraname}{2}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{12}
+      \field{month}{10}
+      \field{title}{Verifying distributed systems with Isabelle/HOL}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2022}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://martin.kleppmann.com/2022/10/12/verifying-distributed-systems-isabelle.html
+      \endverb
+      \verb{url}
+      \verb https://martin.kleppmann.com/2022/10/12/verifying-distributed-systems-isabelle.html
+      \endverb
+    \endentry
+    \entry{lynchbook}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=4cb9c762bb867e8f092a2faa97489360}{%
+           family={Lynch},
+           familyi={L\bibinitperiod},
+           given={Nancy\bibnamedelima A.},
+           giveni={N\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{4cb9c762bb867e8f092a2faa97489360}
+      \strng{fullhash}{4cb9c762bb867e8f092a2faa97489360}
+      \strng{fullhashraw}{4cb9c762bb867e8f092a2faa97489360}
+      \strng{bibnamehash}{4cb9c762bb867e8f092a2faa97489360}
+      \strng{authorbibnamehash}{4cb9c762bb867e8f092a2faa97489360}
+      \strng{authornamehash}{4cb9c762bb867e8f092a2faa97489360}
+      \strng{authorfullhash}{4cb9c762bb867e8f092a2faa97489360}
+      \strng{authorfullhashraw}{4cb9c762bb867e8f092a2faa97489360}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{16}
+      \field{month}{4}
+      \field{title}{Distributed Algorithms}
+      \field{urlday}{6}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{1996}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://archive.org/details/distributedalgor0000lync/page/208/mode/2up
+      \endverb
+      \verb{url}
+      \verb https://archive.org/details/distributedalgor0000lync/page/208/mode/2up
+      \endverb
+    \endentry
+    \entry{acSpec}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=9cd821d3ffc29e88d8d80c3269f82567}{%
+           family={Canini},
+           familyi={C\bibinitperiod},
+           given={Marco},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{9cd821d3ffc29e88d8d80c3269f82567}
+      \strng{fullhash}{9cd821d3ffc29e88d8d80c3269f82567}
+      \strng{fullhashraw}{9cd821d3ffc29e88d8d80c3269f82567}
+      \strng{bibnamehash}{9cd821d3ffc29e88d8d80c3269f82567}
+      \strng{authorbibnamehash}{9cd821d3ffc29e88d8d80c3269f82567}
+      \strng{authornamehash}{9cd821d3ffc29e88d8d80c3269f82567}
+      \strng{authorfullhash}{9cd821d3ffc29e88d8d80c3269f82567}
+      \strng{authorfullhashraw}{9cd821d3ffc29e88d8d80c3269f82567}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{subtitle}{CS 240: Computing Systems and Concurrency Lecture 10}
+      \field{title}{Two-Phase Commit}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://sands.kaust.edu.sa/classes/CS240/F19/docs/L10-2pc.pdf
+      \endverb
+      \verb{url}
+      \verb https://sands.kaust.edu.sa/classes/CS240/F19/docs/L10-2pc.pdf
+      \endverb
+      \warn{\item online entry 'acSpec' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring}
+    \endentry
+    \entry{semantics}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=ff339313f0e93ebd99f17ae3309c33f8}{%
+           family={Tobias\bibnamedelima Nipkow},
+           familyi={T\bibinitperiod\bibinitdelim N\bibinitperiod},
+           given={Gerwin\bibnamedelima Klein},
+           giveni={G\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+      }
+      \strng{namehash}{ff339313f0e93ebd99f17ae3309c33f8}
+      \strng{fullhash}{ff339313f0e93ebd99f17ae3309c33f8}
+      \strng{fullhashraw}{ff339313f0e93ebd99f17ae3309c33f8}
+      \strng{bibnamehash}{ff339313f0e93ebd99f17ae3309c33f8}
+      \strng{authorbibnamehash}{ff339313f0e93ebd99f17ae3309c33f8}
+      \strng{authornamehash}{ff339313f0e93ebd99f17ae3309c33f8}
+      \strng{authorfullhash}{ff339313f0e93ebd99f17ae3309c33f8}
+      \strng{authorfullhashraw}{ff339313f0e93ebd99f17ae3309c33f8}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{21}
+      \field{month}{1}
+      \field{subtitle}{with Isabelle/HOL}
+      \field{title}{Concrete Semantics}
+      \field{urlday}{8}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2026}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb http://www.concrete-semantics.org/concrete-semantics.pdf
+      \endverb
+      \verb{url}
+      \verb http://www.concrete-semantics.org/concrete-semantics.pdf
+      \endverb
+    \endentry
+    \entry{ioaHolCF}{report}{}{}
+      \name{author}{1}{}{%
+        {{hash=a3878099f00d78f0ce7c6a8b525fc998}{%
+           family={Olaf\bibnamedelima Müller},
+           familyi={O\bibinitperiod\bibinitdelim M\bibinitperiod},
+           given={Tobias\bibnamedelima Nipkow},
+           giveni={T\bibinitperiod\bibinitdelim N\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Technischen Universität München}%
+      }
+      \strng{namehash}{a3878099f00d78f0ce7c6a8b525fc998}
+      \strng{fullhash}{a3878099f00d78f0ce7c6a8b525fc998}
+      \strng{fullhashraw}{a3878099f00d78f0ce7c6a8b525fc998}
+      \strng{bibnamehash}{a3878099f00d78f0ce7c6a8b525fc998}
+      \strng{authorbibnamehash}{a3878099f00d78f0ce7c6a8b525fc998}
+      \strng{authornamehash}{a3878099f00d78f0ce7c6a8b525fc998}
+      \strng{authorfullhash}{a3878099f00d78f0ce7c6a8b525fc998}
+      \strng{authorfullhashraw}{a3878099f00d78f0ce7c6a8b525fc998}
+      \field{extraname}{1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Traces of I/O Automata in Isabelle/HOLCF}
+      \field{type}{type}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \warn{\item report entry 'ioaHolCF' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring}
+    \endentry
+    \entry{kleppmanncode}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=34b8d5b1d29d175527a6642f3ec8a76d}{%
+           family={Kleppmann},
+           familyi={K\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{fullhash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{fullhashraw}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{bibnamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorbibnamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authornamehash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorfullhash}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \strng{authorfullhashraw}{34b8d5b1d29d175527a6642f3ec8a76d}
+      \field{extraname}{3}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Correctness proofs of distributed systems with Isabelle}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://gist.github.com/ept/b6872fc541a68a321a26198b53b3896b
+      \endverb
+      \verb{url}
+      \verb https://gist.github.com/ept/b6872fc541a68a321a26198b53b3896b
+      \endverb
+      \warn{\item online entry 'kleppmanncode' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring}
+    \endentry
+    \entry{ioaWiki}{online}{}{}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labeltitlesource}{title}
+      \field{title}{Input/output automaton}
+      \field{urlday}{4}
+      \field{urlmonth}{12}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://en.wikipedia.org/wiki/Input/output_automaton
+      \endverb
+      \verb{url}
+      \verb https://en.wikipedia.org/wiki/Input/output_automaton
+      \endverb
+      \warn{\item online entry 'ioaWiki' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring}
+    \endentry
+    \entry{ioaCode}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=27974adad1626d8c52ddda63c7ab4d84}{%
+           family={Olaf\bibnamedelima Müller},
+           familyi={O\bibinitperiod\bibinitdelim M\bibinitperiod},
+           given={Tobias\bibnamedelima Nipkow},
+           giveni={T\bibinitperiod\bibinitdelim N\bibinitperiod},
+           suffix={Konrad\bibnamedelima Slind},
+           suffixi={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \strng{namehash}{27974adad1626d8c52ddda63c7ab4d84}
+      \strng{fullhash}{27974adad1626d8c52ddda63c7ab4d84}
+      \strng{fullhashraw}{27974adad1626d8c52ddda63c7ab4d84}
+      \strng{bibnamehash}{27974adad1626d8c52ddda63c7ab4d84}
+      \strng{authorbibnamehash}{27974adad1626d8c52ddda63c7ab4d84}
+      \strng{authornamehash}{27974adad1626d8c52ddda63c7ab4d84}
+      \strng{authorfullhash}{27974adad1626d8c52ddda63c7ab4d84}
+      \strng{authorfullhashraw}{27974adad1626d8c52ddda63c7ab4d84}
+      \field{extraname}{2}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Theory Automata}
+      \field{urlday}{4}
+      \field{urlmonth}{12}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://isabelle.in.tum.de/library/HOL/IOA/Automata.html
+      \endverb
+      \verb{url}
+      \verb https://isabelle.in.tum.de/library/HOL/IOA/Automata.html
+      \endverb
+      \warn{\item online entry 'ioaCode' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring}
+    \endentry
+    \entry{efFr}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=9fa47212bd5619fc2d7bc118b5dadf55}{%
+           family={Beeler},
+           familyi={B\bibinitperiod},
+           given={Franziska},
+           giveni={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{9fa47212bd5619fc2d7bc118b5dadf55}
+      \strng{fullhash}{9fa47212bd5619fc2d7bc118b5dadf55}
+      \strng{fullhashraw}{9fa47212bd5619fc2d7bc118b5dadf55}
+      \strng{bibnamehash}{9fa47212bd5619fc2d7bc118b5dadf55}
+      \strng{authorbibnamehash}{9fa47212bd5619fc2d7bc118b5dadf55}
+      \strng{authornamehash}{9fa47212bd5619fc2d7bc118b5dadf55}
+      \strng{authorfullhash}{9fa47212bd5619fc2d7bc118b5dadf55}
+      \strng{authorfullhashraw}{9fa47212bd5619fc2d7bc118b5dadf55}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{29}
+      \field{month}{7}
+      \field{title}{What Makes an Effective Framework?}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \verb{urlraw}
+      \verb https://www.franziskabeeler.com/post/what-makes-an-effective-framework
+      \endverb
+      \verb{url}
+      \verb https://www.franziskabeeler.com/post/what-makes-an-effective-framework
+      \endverb
+    \endentry
+    \entry{ioaOldFramework}{report}{}{}
+      \name{author}{1}{}{%
+        {{hash=3b561433634af072ade46475356dbca3}{%
+           family={Tobias\bibnamedelima Nipkow},
+           familyi={T\bibinitperiod\bibinitdelim N\bibinitperiod},
+           given={Konrad\bibnamedelima Slind},
+           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Technischen Universität München}%
+      }
+      \strng{namehash}{3b561433634af072ade46475356dbca3}
+      \strng{fullhash}{3b561433634af072ade46475356dbca3}
+      \strng{fullhashraw}{3b561433634af072ade46475356dbca3}
+      \strng{bibnamehash}{3b561433634af072ade46475356dbca3}
+      \strng{authorbibnamehash}{3b561433634af072ade46475356dbca3}
+      \strng{authornamehash}{3b561433634af072ade46475356dbca3}
+      \strng{authorfullhash}{3b561433634af072ade46475356dbca3}
+      \strng{authorfullhashraw}{3b561433634af072ade46475356dbca3}
+      \field{extraname}{2}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{I/O Automata in Isabelle/HOL}
+      \field{type}{type}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \warn{\item report entry 'ioaOldFramework' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

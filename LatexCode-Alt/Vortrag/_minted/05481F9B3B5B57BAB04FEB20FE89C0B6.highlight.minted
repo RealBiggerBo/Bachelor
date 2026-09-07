@@ -1,0 +1,105 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{theory}\PYG{+w}{ }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}def}
+\PYG{+w}{  }\PYG{k+kp}{imports}\PYG{+w}{ }\PYG{n}{Kleppmann\PYGZus{}2PC}
+\PYG{k}{begin}
+
+\PYG{c}{(* Invariant 1: for any participant p, if p\PYGZsq{}s state is ``Committed\PYGZsq{}\PYGZsq{},}
+\PYG{c}{   then there exists a message ``Commit\PYGZsq{}\PYGZsq{}*)}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv1}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv1 msgs states ⟷}
+\PYG{l+s}{     ((∃proc a ack\PYGZsq{}. proc ≠ 0 ∧ states proc = Committed a ack\PYGZsq{}) ⟶}
+\PYG{l+s}{                 (∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv11}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv11 msgs states procs ⟷}
+\PYG{l+s}{    ((∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs) ∨ (∃all ack. states 0 = Committed all ack) ⟶}
+\PYG{l+s}{                 (∀p ∈ procs. p ≠ 0 ⟶ (∃rcpt. (p, Send rcpt Yes) ∈ msgs)))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv12}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv12 msgs states procs ⟷}
+\PYG{l+s}{    (∀p ∈ procs. p ≠ 0 ⟶ ((∃rcpt. (p, Send rcpt Yes) ∈ msgs) ⟶ (∀rcpt. (p, Send rcpt No) ∉ msgs)))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv13}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv13 msgs states procs ⟷}
+\PYG{l+s}{    (∀t all yes r. states 0 = Collecting t all yes r ⟶ }
+\PYG{l+s}{                (procs = all ∧ (∀p ∈ yes. p ≠ 0 ⟶ (∃rcpt. (p, Send rcpt Yes) ∈ msgs))))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv14}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv14 msgs states procs ⟷}
+\PYG{l+s}{    (∀t all r. states 0 = Initial t all r ⟶ procs = all)›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv15}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv15 msgs states ⟷}
+\PYG{l+s}{    ((∃t all yes r. states 0 = Initial t all r ∨ states 0 = Collecting t all yes r ∨ states 0 = Committed all yes) ⟶ }
+\PYG{l+s}{              (∀sender rcpt. (sender, Send rcpt Abort) ∉ msgs))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv16}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv16 msgs states ⟷}
+\PYG{l+s}{    (∀sender rcpt. (sender, Send rcpt Yes) ∈ msgs ⟶ (states sender = Prepared ∨ states sender = Aborted \PYGZob{}\PYGZcb{} \PYGZob{}\PYGZcb{} ∨ states sender = Committed \PYGZob{}\PYGZcb{} \PYGZob{}\PYGZcb{}))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv17}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv17 msgs states ⟷}
+\PYG{l+s}{    (∀p. p ≠ 0 ∧ (∃all ack. states p = Aborted all ack) ∧ (∀sender recpt. (sender, Send recpt Abort) ∉ msgs) ⟶ (∀rcpt. (p, Send rcpt Yes) ∉ msgs))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv18}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv18 msgs states ⟷}
+\PYG{l+s}{    (∀p t all r. p ≠ 0 ∧ states p = Initial t all r ⟶ (∀rcpt. (p, Send rcpt Yes) ∉ msgs))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv19}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv19 msgs states ⟷}
+\PYG{l+s}{    ((∃all ack. states 0 = Committed all ack) ⟶ (∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv110}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv110 msgs states ⟷}
+\PYG{l+s}{    ((∃t all yes r. states 0 = Initial t all r ∨ states 0 = Collecting t all yes r ∨ states 0 = Aborted all yes) ⟶ }
+\PYG{l+s}{              (∀sender rcpt. (sender, Send rcpt Commit) ∉ msgs))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv111}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv111 msgs states ⟷}
+\PYG{l+s}{    ((∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs) ⟶ (∃all ack. states 0 = Committed all ack ∨ states 0 = Forgotten))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv112}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv112 msgs states procs ⟷}
+\PYG{l+s}{    ((∃all ack. states 0 = Committed all ack) ⟶ (∀p ∈ procs. p ≠ 0 ⟶ (∃rcpt. (p, Send rcpt Yes) ∈ msgs)))›}
+
+\PYG{c}{(* Invariant 3: if a Commit msg has been sent then an abort or no msg cannot also have been sent*)}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv3}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv3 msgs states ⟷}
+\PYG{l+s}{    (∃sender recpt. (sender, Send recpt Commit) ∈ msgs) ⟶ (∀sender recpt. (sender, Send recpt Abort) ∉ msgs)›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv21}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv21 p old\PYGZus{}state new\PYGZus{}state ⟷ }
+\PYG{l+s}{    (∃all ack. old\PYGZus{}state = Committed all ack) ⟶ (∃all ack. new\PYGZus{}state = Committed all ack ∨ (p = 0 ∧ new\PYGZus{}state = Forgotten))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv22}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv22 p old\PYGZus{}state new\PYGZus{}state ⟷ }
+\PYG{l+s}{    (∃all ack. old\PYGZus{}state = Aborted all ack) ⟶ (∃all ack. new\PYGZus{}state = Aborted all ack ∨ (p = 0 ∧ new\PYGZus{}state = Forgotten))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv23}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv23 p old\PYGZus{}state new\PYGZus{}state ⟷}
+\PYG{l+s}{    (old\PYGZus{}state = Forgotten ⟶ (p = 0 ∧ new\PYGZus{}state = Forgotten))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv24}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv24 states ⟷}
+\PYG{l+s}{    (∀p ≠ 0.  states p ≠ Forgotten)›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv41}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv41 msgs states ⟷}
+\PYG{l+s}{    ((∃t a r. states 0 = Initial t a r) ⟶ msgs = \PYGZob{}\PYGZcb{})›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv42}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv42 msgs ⟷}
+\PYG{l+s}{    (∀proc rcpt t. (proc, Send rcpt (Prepare t)) ∈ msgs ⟶ proc = 0)›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv43}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv43 msgs init\PYGZus{}val⟷}
+\PYG{l+s}{    (∀rcpt t. (0, Send rcpt (Prepare t)) ∈ msgs ⟶ t = init\PYGZus{}val)›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv44}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv44 msgs states ⟷}
+\PYG{l+s}{    ((∃t a r. states 0 = Initial t a r) ⟶ (∀proc rcpt t. (proc, Send rcpt (Prepare t)) ∉ msgs))›}
+
+\PYG{k}{end}
+\end{MintedVerbatim}

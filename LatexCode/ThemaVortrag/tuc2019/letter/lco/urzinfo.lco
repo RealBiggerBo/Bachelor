@@ -1,0 +1,10 @@
+\ProvidesFile{urzinfo.lco}
+\LoadLetterOption{urz}
+
+\setkomavar{deploc}{}
+\setkomavar{deproom}{}
+\setkomavar{depphone}{13470}
+\setkomavar{depemail}{support@hrz.tu-chemnitz.de}
+\setkomavar{depurl}{https://www.tu-chemnitz.de/urz/}
+
+\endinput

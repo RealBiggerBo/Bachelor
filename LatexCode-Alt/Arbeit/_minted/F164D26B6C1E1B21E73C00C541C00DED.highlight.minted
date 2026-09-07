@@ -1,0 +1,4 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{	}\PYG{o+ow}{\PYGZob{}\PYGZcb{}}\PYG{+w}{ }\PYG{c}{(*Leere Menge*)}
+\PYG{+w}{	}\PYG{o+ow}{\PYGZob{}}\PYG{n}{t}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{n}{y.}\PYG{+w}{ }\PYG{n}{P}\PYG{o+ow}{\PYGZcb{}}
+\end{MintedVerbatim}

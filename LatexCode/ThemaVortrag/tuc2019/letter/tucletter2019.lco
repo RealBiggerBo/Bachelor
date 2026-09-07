@@ -1,0 +1,230 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%  Letter Class Option to define corporate identity letter layout of          %
+%  Chemnitz University of Technology                                          %
+%                                                                             %
+%  wolfgang.riedel@hrz.tu-chemnitz.de                                         %
+%  w.fleischer@mathematik.tu-chemnitz.de                                      %
+%  mario.haustein@hrz.tu-chemnitz.de                                          %
+%  v2.0 2010/02/26                                                            %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ProvidesFile{tucletter2019.lco}[2019/02/26 LaTeX2e unsupported letter-class-option]
+
+% TODO???
+\@ifclassloaded{tucletter2019}{}{%
+  \GenericWarning{%
+    (tucletter.lco)\@spaces\@spaces\@spaces\@spaces\@spaces\@spaces%
+  }{%
+    Letter-class-option tuc Warning:\space
+    This letter class option file was made
+    only to be used with KOMA-Script letter
+    class `tucletter2019'. Use with other
+    classes may result in a lot of errors\@gobble
+  }%
+}
+
+%
+% In dieser Datei keine Umlaute verwenden!
+%
+
+
+%
+% Trenner
+%
+\newkomavar{tucseparator}
+\setkomavar{tucseparator}{~\(\cdot\)~}
+
+
+%
+% Anschriften
+%
+\newkomavar{tucbackaddress}
+\newkomavar{visitaddress}
+\setkomavar{tucbackaddress}{Technische Universit\"at Chemnitz\\09107 Chemnitz}
+\setkomavar{visitaddress}{Technische Universit\"at Chemnitz\linebreak Stra\ss e der Nationen 62\\09111 Chemnitz}
+\setkomavar{fromaddress}{Technische Universit\"at Chemnitz\\09107 Chemnitz\\GERMANY}
+\iftucenglish
+\setkomavar*{visitaddress}{Office address}
+\setkomavar*{fromaddress}{Postal address}
+\else
+\setkomavar*{visitaddress}{Dienst- u. Paketanschrift}
+\setkomavar*{fromaddress}{Postanschrift}
+\fi
+
+
+%
+% Bankverbindung
+%
+\newkomavar{tucbankaccount}
+\newkomavar{tucbankaccountnr}
+\newkomavar{tucbankcode}
+\newkomavar{tuctaxid}
+\iftucenglish
+\setkomavar*{tucbankaccount}{Bank account}
+\else
+\setkomavar*{tucbankaccount}{Bankverbindung}
+\fi
+\setkomavar*{tucbankaccountnr}{IBAN}
+\setkomavar*{tucbankcode}{BIC}
+\setkomavar*{tuctaxid}{USt-IdNr.}
+\setkomavar{tucbankaccount}{Hauptkasse des Freistaates Sachsen \(\cdot\) Deutsche Bundesbank}
+\setkomavar{tucbankaccountnr}{DE22~8600~0000~0086~0015~22}
+\setkomavar{tucbankcode}{MARKDEF1860}
+\setkomavar{tuctaxid}{DE140857609}
+
+\setkomavar{frombank}{}		% Wird nicht genutzt
+
+
+%
+% Persönliche Angaben
+%
+\newkomavar{mysignature}
+\newkomavar{myfunction}
+\newkomavar{myname}
+\newkomavar{myloc}
+\newkomavar{myroom}
+\newkomavar{myphone}
+\newkomavar{myfax}
+\newkomavar{myemail}
+\setkomavar{mysignature}{}
+\setkomavar{myfunction}{}
+\setkomavar{myname}{}
+\setkomavar{myloc}{}
+\setkomavar{myroom}{}
+\setkomavar{myphone}{}
+\setkomavar{myfax}{}
+\setkomavar{myemail}{}
+\setkomavar{fromname}{}		% nicht genutzt
+\iftucenglish
+\setkomavar*{myname}{Editor}
+\setkomavar*{myloc}{Building}
+\setkomavar*{myroom}{Room}
+\setkomavar*{myphone}{Phone}
+\setkomavar*{myfax}{Fax}
+\setkomavar*{myemail}{E-Mail}
+\else
+\setkomavar*{myname}{Bearbeiter}
+\setkomavar*{myloc}{Geb\"aude}
+\setkomavar*{myroom}{Raum}
+\setkomavar*{myphone}{Telefon}
+\setkomavar*{myfax}{Fax}
+\setkomavar*{myemail}{E-Mail}
+\fi
+
+
+%
+% Kontaktdaten
+%
+\newkomavar{depname}
+\newkomavar{deploc}
+\newkomavar{deproom}
+\newkomavar{depphone}
+\newkomavar{depfax}
+\newkomavar{depemail}
+\newkomavar{depurl}
+\setkomavar{depname}{}
+\setkomavar{depphone}{0}
+\setkomavar{depfax}{}
+\setkomavar{depemail}{}
+\setkomavar{depurl}{https://www.tu-chemnitz.de/}
+\iftucenglish
+\setkomavar*{depname}{Editor}
+\setkomavar*{deploc}{Building}
+\setkomavar*{deproom}{Room}
+\setkomavar*{depphone}{Phone}
+\setkomavar*{depfax}{Fax}
+\setkomavar*{depemail}{E-Mail}
+\setkomavar*{depurl}{Internet}
+\else
+\setkomavar*{depname}{Bearbeiter}
+\setkomavar*{deploc}{Geb\"aude}
+\setkomavar*{deproom}{Raum}
+\setkomavar*{depphone}{Telefon}
+\setkomavar*{depfax}{Fax}
+\setkomavar*{depemail}{E-Mail}
+\setkomavar*{depurl}{Internet}
+\fi
+
+\newkomavar{tucphoneprefix}
+\newkomavar{tucfaxprefix}
+\setkomavar{tucphoneprefix}{+49~371~531}
+\setkomavar{tucfaxprefix}{\usekomavar{tucphoneprefix}}
+
+
+%
+% Kopfzeilen
+%
+\newkomavar{tucheadline1}
+\newkomavar{tucheadline2}
+\newkomavar{tucheadline3}
+\newkomavar{tucheadline4}
+\setkomavar{tucheadline1}{}
+\setkomavar{tucheadline2}{}
+\setkomavar{tucheadline3}{}
+\setkomavar{tucheadline4}{}
+
+
+%
+% Logos
+%
+\newkomavar{logo}
+\newkomavar{logo1}
+\newkomavar{logo2}
+\setkomavar{logo}{}
+\setkomavar{logo1}{}
+\setkomavar{logo2}{}
+
+
+%
+% Orts- und Datumsangabe (wird [derzeit] nicht genutzt)
+%
+\setkomavar{place}{Chemnitz}
+\setkomavar{placeseparator}{,~}
+\setkomavar{date}{}
+\iftucenglish
+\setkomavar*{place}{Place}
+\setkomavar*{date}{Date}
+\else
+\setkomavar*{place}{Ort}
+\setkomavar*{date}{Datum}
+\fi
+
+
+%
+% Betreff
+%
+\setkomavar{subject}{}
+
+
+%
+% Aktenzeichen
+%
+\iftucenglish
+\setkomavar*{myref}{Reference}
+\else
+\setkomavar*{myref}{Aktenzeichen}
+\fi
+
+
+%
+% Spezifische Unterschrift.
+%
+\setkomavar{signature}{}
+
+
+%
+% Variablen für die Anzeigen in der Fußzeile
+%
+\newkomavar{showvisitaddress}
+\newkomavar{showname}
+\newkomavar{showloc}
+\newkomavar{showroom}
+\newkomavar{showphone}
+\newkomavar{showfax}
+\newkomavar{showemail}
+\newkomavar{showurl}
+
+
+\endinput

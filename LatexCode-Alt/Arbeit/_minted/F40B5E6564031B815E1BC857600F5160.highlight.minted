@@ -1,0 +1,16 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{	}\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{sq1\PYGZus{}eq\PYGZus{}sq2}\PYG{o}{:}
+\PYG{+w}{	  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}sq1 n = s1\PYGZdq{}}
+\PYG{+w}{	    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}sq2 n = s2\PYGZdq{}}
+\PYG{+w}{	  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}s1 = s2\PYGZdq{}}
+\PYG{+w}{	  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}
+\PYG{+w}{	}\PYG{k}{proof}\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{n}\PYG{+w}{ }\PYG{n}{arbitrary}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{s1}\PYG{+w}{ }\PYG{n}{s2}\PYG{o}{)}
+\PYG{+w}{	  }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{0}
+\PYG{+w}{	  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{	    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{sq1\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{	}\PYG{k}{next}
+\PYG{+w}{	  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{Suc}\PYG{+w}{ }\PYG{n}{n}\PYG{o}{)}
+\PYG{+w}{	  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{	    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{sq1\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{	}\PYG{k}{qed}
+\end{MintedVerbatim}

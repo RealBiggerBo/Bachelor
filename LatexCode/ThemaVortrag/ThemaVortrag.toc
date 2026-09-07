@@ -1,0 +1,4 @@
+\beamer@sectionintoc {1}{Methoden zur Sicherstellung von Codequalität}{5}{0}{1}
+\beamer@sectionintoc {2}{Passende Ansätze}{6}{0}{2}
+\beamer@sectionintoc {3}{Mein Ansatz}{7}{0}{3}
+\beamer@sectionintoc {4}{Fazit}{9}{0}{4}

@@ -1,0 +1,3 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{	}\PYG{o}{(}\PYG{n}{λx.}\PYG{+w}{ }\PYG{n}{x}\PYG{o}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,23 @@
+[0] Config.pm:328> INFO - This is Biber 2.21
+[0] Config.pm:331> INFO - Logfile is 'Hauptseminar.blg'
+[262] biber-MSWIN64:342> INFO - === 
+[336] Biber.pm:421> INFO - Reading 'Hauptseminar.bcf'
+[533] Biber.pm:1002> INFO - Found 14 citekeys in bib section 0
+[557] Biber.pm:4487> INFO - Processing section 0
+[574] Biber.pm:4678> INFO - Looking for bibtex file 'Hauptseminar.bib' for section 0
+[689] bibtex.pm:1713> INFO - LaTeX decoding ...
+[735] bibtex.pm:1519> INFO - Found BibTeX data source 'Hauptseminar.bib'
+[852] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'variable = shifted' with 'variable = non-ignorable'
+[852] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[853] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'de-DE'
+[853] Biber.pm:4313> INFO - No sort tailoring available for locale 'de-DE'
+[875] bbl.pm:676> INFO - Writing 'Hauptseminar.bbl' with encoding 'UTF-8'
+[888] bbl.pm:779> INFO - Output to Hauptseminar.bbl
+[888] Biber.pm:132> WARN - report entry 'tupacSpec' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring
+[889] Biber.pm:132> WARN - online entry 'acSpec' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring
+[889] Biber.pm:132> WARN - report entry 'ioaHolCF' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring
+[889] Biber.pm:132> WARN - online entry 'kleppmanncode' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring
+[889] Biber.pm:132> WARN - online entry 'ioaWiki' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring
+[889] Biber.pm:132> WARN - online entry 'ioaCode' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring
+[889] Biber.pm:132> WARN - report entry 'ioaOldFramework' (Hauptseminar.bib): Invalid format 'date' of date field 'date' - ignoring
+[889] Biber.pm:134> INFO - WARNINGS: 7

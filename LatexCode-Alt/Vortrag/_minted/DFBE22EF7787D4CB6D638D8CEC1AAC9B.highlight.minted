@@ -1,0 +1,578 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c}{(*  Title:      HOL/HOLCF/IOA/Automata.thy}
+\PYG{c}{    Author:     Olaf Müller, Konrad Slind, Tobias Nipkow}
+\PYG{c}{*)}
+
+\PYG{g+gu}{section}\PYG{+w}{ }\PYG{l+s}{‹The I/O automata of Lynch and Tuttle in HOLCF›}
+
+\PYG{k}{theory}\PYG{+w}{ }\PYG{n}{Automata}
+\PYG{k+kp}{imports}\PYG{+w}{ }\PYG{n}{Asig}
+\PYG{k}{begin}
+
+\PYG{k}{default\PYGZus{}sort}\PYG{+w}{ }\PYG{n}{type}
+
+\PYG{k}{type\PYGZus{}synonym}\PYG{+w}{ }\PYG{o}{(}\PYG{n+nType}{\PYGZsq{}a}\PYG{o}{,}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}s}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{transition}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}s × \PYGZsq{}a × \PYGZsq{}s\PYGZdq{}}
+\PYG{k}{type\PYGZus{}synonym}\PYG{+w}{ }\PYG{o}{(}\PYG{n+nType}{\PYGZsq{}a}\PYG{o}{,}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}s}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{ioa}\PYG{+w}{ }\PYG{o}{=}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}\PYGZsq{}a signature × \PYGZsq{}s set × (\PYGZsq{}a, \PYGZsq{}s)transition set × \PYGZsq{}a set set × \PYGZsq{}a set set\PYGZdq{}}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹IO automata›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a signature\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}asig\PYGZus{}of = fst\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{starts\PYGZus{}of}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}s set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}starts\PYGZus{}of = fst ∘ snd\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ (\PYGZsq{}a, \PYGZsq{}s) transition set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}trans\PYGZus{}of = fst ∘ snd ∘ snd\PYGZdq{}}
+
+\PYG{k}{abbreviation}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}syn}\PYG{+w}{  }\PYG{o}{(}\PYG{l+s}{‹\PYGZus{} ─\PYGZus{}─\PYGZus{}→ \PYGZus{}›}\PYG{+w}{ }\PYG{o}{[}\PYG{n}{81}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{81}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{81}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{81}\PYG{o}{]}\PYG{+w}{ }\PYG{n}{100}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}s ─a─A→ t ≡ (s, a, t) ∈ trans\PYGZus{}of A\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{wfair\PYGZus{}of}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a set set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}wfair\PYGZus{}of = fst ∘ snd ∘ snd ∘ snd\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{sfair\PYGZus{}of}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a set set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}sfair\PYGZus{}of = snd ∘ snd ∘ snd ∘ snd\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}asig\PYGZus{}of A = is\PYGZus{}asig (asig\PYGZus{}of A)\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{is\PYGZus{}starts\PYGZus{}of}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}starts\PYGZus{}of A ⟷ starts\PYGZus{}of A ≠ \PYGZob{}\PYGZcb{}\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}trans\PYGZus{}of A ⟷}
+\PYG{l+s}{    (∀triple. triple ∈ trans\PYGZus{}of A ⟶ fst (snd triple) ∈ actions (asig\PYGZus{}of A))\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{input\PYGZus{}enabled}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}input\PYGZus{}enabled A ⟷}
+\PYG{l+s}{    (∀a. a ∈ inputs (asig\PYGZus{}of A) ⟶ (∀s1. ∃s2. (s1, a, s2) ∈ trans\PYGZus{}of A))\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{IOA}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}IOA A ⟷}
+\PYG{l+s}{    is\PYGZus{}asig\PYGZus{}of A ∧}
+\PYG{l+s}{    is\PYGZus{}starts\PYGZus{}of A ∧}
+\PYG{l+s}{    is\PYGZus{}trans\PYGZus{}of A ∧}
+\PYG{l+s}{    input\PYGZus{}enabled A\PYGZdq{}}
+
+\PYG{k}{abbreviation}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}act A ≡ actions (asig\PYGZus{}of A)\PYGZdq{}}
+\PYG{k}{abbreviation}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}ext A ≡ externals (asig\PYGZus{}of A)\PYGZdq{}}
+\PYG{k}{abbreviation}\PYG{+w}{ }\PYG{n}{int}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}int A ≡ internals (asig\PYGZus{}of A)\PYGZdq{}}
+\PYG{k}{abbreviation}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inp A ≡ inputs (asig\PYGZus{}of A)\PYGZdq{}}
+\PYG{k}{abbreviation}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}out A ≡ outputs (asig\PYGZus{}of A)\PYGZdq{}}
+\PYG{k}{abbreviation}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}local A ≡ locals (asig\PYGZus{}of A)\PYGZdq{}}
+
+
+\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹invariants›}
+
+\PYG{k}{inductive}\PYG{+w}{ }\PYG{n}{reachable}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}s ⇒ bool\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{for}\PYG{+w}{ }\PYG{n}{C}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa\PYGZdq{}}
+\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{n}{reachable\PYGZus{}0}\PYG{o}{:}\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}s ∈ starts\PYGZus{}of C ⟹ reachable C s\PYGZdq{}}
+\PYG{o}{|}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}n}\PYG{o}{:}\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}reachable C s ⟹ (s, a, t) ∈ trans\PYGZus{}of C ⟹ reachable C t\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{invariant}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}[(\PYGZsq{}a, \PYGZsq{}s) ioa, \PYGZsq{}s ⇒ bool] ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}invariant A P ⟷ (∀s. reachable A s ⟶ P s)\PYGZdq{}}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹Parallel composition›}
+
+\PYG{g+gu}{subsubsection}\PYG{+w}{ }\PYG{l+s}{‹Binary composition of action signatures and automata›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{compatible}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ (\PYGZsq{}a, \PYGZsq{}t) ioa ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A B ⟷}
+\PYG{l+s}{    out A ∩ out B = \PYGZob{}\PYGZcb{} ∧}
+\PYG{l+s}{    int A ∩ act B = \PYGZob{}\PYGZcb{} ∧}
+\PYG{l+s}{    int B ∩ act A = \PYGZob{}\PYGZcb{}\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}comp}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}a signature ⇒ \PYGZsq{}a signature ⇒ \PYGZsq{}a signature\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}asig\PYGZus{}comp a1 a2 =}
+\PYG{l+s}{     (((inputs a1 ∪ inputs a2) \PYGZhy{} (outputs a1 ∪ outputs a2),}
+\PYG{l+s}{       (outputs a1 ∪ outputs a2),}
+\PYG{l+s}{       (internals a1 ∪ internals a2)))\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{par}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ (\PYGZsq{}a, \PYGZsq{}t) ioa ⇒ (\PYGZsq{}a, \PYGZsq{}s * \PYGZsq{}t) ioa\PYGZdq{}}\PYG{+w}{  }\PYG{o}{(}\PYG{k+kp}{infixr}\PYG{+w}{ }\PYG{l+s}{‹∥›}\PYG{+w}{ }\PYG{n}{10}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(A ∥ B) =}
+\PYG{l+s}{    (asig\PYGZus{}comp (asig\PYGZus{}of A) (asig\PYGZus{}of B),}
+\PYG{l+s}{     \PYGZob{}pr. fst pr ∈ starts\PYGZus{}of A ∧ snd pr ∈ starts\PYGZus{}of B\PYGZcb{},}
+\PYG{l+s}{     \PYGZob{}tr.}
+\PYG{l+s}{        let}
+\PYG{l+s}{          s = fst tr;}
+\PYG{l+s}{          a = fst (snd tr);}
+\PYG{l+s}{          t = snd (snd tr)}
+\PYG{l+s}{        in}
+\PYG{l+s}{          (a ∈ act A ∨ a ∈ act B) ∧}
+\PYG{l+s}{          (if a ∈ act A then (fst s, a, fst t) ∈ trans\PYGZus{}of A}
+\PYG{l+s}{           else fst t = fst s) ∧}
+\PYG{l+s}{          (if a ∈ act B then (snd s, a, snd t) ∈ trans\PYGZus{}of B}
+\PYG{l+s}{           else snd t = snd s)\PYGZcb{},}
+\PYG{l+s}{      wfair\PYGZus{}of A ∪ wfair\PYGZus{}of B,}
+\PYG{l+s}{      sfair\PYGZus{}of A ∪ sfair\PYGZus{}of B)\PYGZdq{}}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹Hiding›}
+
+\PYG{g+gu}{subsubsection}\PYG{+w}{ }\PYG{l+s}{‹Hiding and restricting›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}asig}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}a signature ⇒ \PYGZsq{}a set ⇒ \PYGZsq{}a signature\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}restrict\PYGZus{}asig asig actns =}
+\PYG{l+s}{    (inputs asig ∩ actns,}
+\PYG{l+s}{     outputs asig ∩ actns,}
+\PYG{l+s}{     internals asig ∪ (externals asig \PYGZhy{} actns))\PYGZdq{}}
+
+\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹}
+\PYG{l+s}{  Notice that for ‹wfair\PYGZus{}of› and ‹sfair\PYGZus{}of› nothing has to be changed, as}
+\PYG{l+s}{  changes from the outputs to the internals does not touch the locals as a}
+\PYG{l+s}{  whole, which is of importance for fairness only.}
+\PYG{l+s}{›}
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{restrict}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a set ⇒ (\PYGZsq{}a, \PYGZsq{}s) ioa\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}restrict A actns =}
+\PYG{l+s}{    (restrict\PYGZus{}asig (asig\PYGZus{}of A) actns,}
+\PYG{l+s}{     starts\PYGZus{}of A,}
+\PYG{l+s}{     trans\PYGZus{}of A,}
+\PYG{l+s}{     wfair\PYGZus{}of A,}
+\PYG{l+s}{     sfair\PYGZus{}of A)\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{hide\PYGZus{}asig}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}a signature ⇒ \PYGZsq{}a set ⇒ \PYGZsq{}a signature\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}hide\PYGZus{}asig asig actns =}
+\PYG{l+s}{    (inputs asig \PYGZhy{} actns,}
+\PYG{l+s}{     outputs asig \PYGZhy{} actns,}
+\PYG{l+s}{     internals asig ∪ actns)\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{hide}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a set ⇒ (\PYGZsq{}a, \PYGZsq{}s) ioa\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}hide A actns =}
+\PYG{l+s}{    (hide\PYGZus{}asig (asig\PYGZus{}of A) actns,}
+\PYG{l+s}{     starts\PYGZus{}of A,}
+\PYG{l+s}{     trans\PYGZus{}of A,}
+\PYG{l+s}{     wfair\PYGZus{}of A,}
+\PYG{l+s}{     sfair\PYGZus{}of A)\PYGZdq{}}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹Renaming›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{rename\PYGZus{}set}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}a set ⇒ (\PYGZsq{}c ⇒ \PYGZsq{}a option) ⇒ \PYGZsq{}c set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}rename\PYGZus{}set A ren = \PYGZob{}b. ∃x. Some x = ren b ∧ x ∈ A\PYGZcb{}\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{rename}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}b) ioa ⇒ (\PYGZsq{}c ⇒ \PYGZsq{}a option) ⇒ (\PYGZsq{}c, \PYGZsq{}b) ioa\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}rename ioa ren =}
+\PYG{l+s}{    ((rename\PYGZus{}set (inp ioa) ren,}
+\PYG{l+s}{      rename\PYGZus{}set (out ioa) ren,}
+\PYG{l+s}{      rename\PYGZus{}set (int ioa) ren),}
+\PYG{l+s}{     starts\PYGZus{}of ioa,}
+\PYG{l+s}{     \PYGZob{}tr.}
+\PYG{l+s}{        let}
+\PYG{l+s}{          s = fst tr;}
+\PYG{l+s}{          a = fst (snd tr);}
+\PYG{l+s}{          t = snd (snd tr)}
+\PYG{l+s}{        in ∃x. Some x = ren a ∧ s ─x─ioa→ t\PYGZcb{},}
+\PYG{l+s}{     \PYGZob{}rename\PYGZus{}set s ren | s. s ∈ wfair\PYGZus{}of ioa\PYGZcb{},}
+\PYG{l+s}{     \PYGZob{}rename\PYGZus{}set s ren | s. s ∈ sfair\PYGZus{}of ioa\PYGZcb{})\PYGZdq{}}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹Fairness›}
+
+\PYG{g+gu}{subsubsection}\PYG{+w}{ }\PYG{l+s}{‹Enabledness of actions and action sets›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{enabled}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a ⇒ \PYGZsq{}s ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}enabled A a s ⟷ (∃t. s ─a─A→ t)\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{Enabled}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a set ⇒ \PYGZsq{}s ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Enabled A W s ⟷ (∃w ∈ W. enabled A w s)\PYGZdq{}}
+
+
+\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹Action set keeps enabled until probably disabled by itself.›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{en\PYGZus{}persistent}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a set ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}en\PYGZus{}persistent A W ⟷}
+\PYG{l+s}{    (∀s a t. Enabled A W s ∧ a ∉ W ∧ s ─a─A→ t ⟶ Enabled A W t)\PYGZdq{}}
+
+
+\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹Post conditions for actions and action sets.›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{was\PYGZus{}enabled}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a ⇒ \PYGZsq{}s ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}was\PYGZus{}enabled A a t ⟷ (∃s. s ─a─A→ t)\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{set\PYGZus{}was\PYGZus{}enabled}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ \PYGZsq{}a set ⇒ \PYGZsq{}s ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}set\PYGZus{}was\PYGZus{}enabled A W t ⟷ (∃w ∈ W. was\PYGZus{}enabled A w t)\PYGZdq{}}
+
+
+\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹Constraints for fair IOA.›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{fairIOA}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}fairIOA A ⟷ (∀S ∈ wfair\PYGZus{}of A. S ⊆ local A) ∧ (∀S ∈ sfair\PYGZus{}of A. S ⊆ local A)\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{input\PYGZus{}resistant}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}a, \PYGZsq{}s) ioa ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}input\PYGZus{}resistant A ⟷}
+\PYG{l+s}{    (∀W ∈ sfair\PYGZus{}of A. ∀s a t.}
+\PYG{l+s}{      reachable A s ∧ reachable A t ∧ a ∈ inp A ∧}
+\PYG{l+s}{      Enabled A W s ∧ s ─a─A→ t ⟶ Enabled A W t)\PYGZdq{}}
+
+
+\PYG{k}{declare}\PYG{+w}{ }\PYG{n}{split\PYGZus{}paired\PYGZus{}Ex}\PYG{+w}{ }\PYG{o}{[}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{del}\PYG{o}{]}
+
+\PYG{k}{lemmas}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}projections}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{starts\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{wfair\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{sfair\PYGZus{}of\PYGZus{}def}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}‹asig\PYGZus{}of›, ‹starts\PYGZus{}of›, ‹trans\PYGZus{}of›\PYGZdq{}}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}triple\PYGZus{}proj}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}asig\PYGZus{}of (x, y, z, w, s) = x ∧}
+\PYG{l+s}{   starts\PYGZus{}of (x, y, z, w, s) = y ∧}
+\PYG{l+s}{   trans\PYGZus{}of (x, y, z, w, s) = z ∧}
+\PYG{l+s}{   wfair\PYGZus{}of (x, y, z, w, s) = w ∧}
+\PYG{l+s}{   sfair\PYGZus{}of (x, y, z, w, s) = s\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}projections}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}in\PYGZus{}actions}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}trans\PYGZus{}of A ⟹ s1 ─a─A→ s2 ⟹ a ∈ act A\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{starts\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}starts\PYGZus{}of (A ∥ B) = \PYGZob{}p. fst p ∈ starts\PYGZus{}of A ∧ snd p ∈ starts\PYGZus{}of B\PYGZcb{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}projections}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}par}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}trans\PYGZus{}of(A ∥ B) =}
+\PYG{l+s}{    \PYGZob{}tr.}
+\PYG{l+s}{      let}
+\PYG{l+s}{        s = fst tr;}
+\PYG{l+s}{        a = fst (snd tr);}
+\PYG{l+s}{        t = snd (snd tr)}
+\PYG{l+s}{      in}
+\PYG{l+s}{        (a ∈ act A ∨ a ∈ act B) ∧}
+\PYG{l+s}{        (if a ∈ act A then (fst s, a, fst t) ∈ trans\PYGZus{}of A}
+\PYG{l+s}{         else fst t = fst s) ∧}
+\PYG{l+s}{        (if a ∈ act B then (snd s, a, snd t) ∈ trans\PYGZus{}of B}
+\PYG{l+s}{         else snd t = snd s)\PYGZcb{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}projections}\PYG{o}{)}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹‹actions› and ‹par››}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}asig\PYGZus{}comp}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}actions (asig\PYGZus{}comp a b) = actions a ∪ actions b\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}comp\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}projections}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}asig\PYGZus{}of(A ∥ B) = asig\PYGZus{}comp (asig\PYGZus{}of A) (asig\PYGZus{}of B)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}projections}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}ext (A1 ∥ A2) = ext A1 ∪ ext A2\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}comp\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{Un\PYGZus{}def}\PYG{+w}{ }\PYG{n}{set\PYGZus{}diff\PYGZus{}eq}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}act (A1 ∥ A2) = act A1 ∪ act A2\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}comp\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{Un\PYGZus{}def}\PYG{+w}{ }\PYG{n}{set\PYGZus{}diff\PYGZus{}eq}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{inputs\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inp (A1 ∥ A2) = (inp A1 ∪ inp A2) \PYGZhy{} (out A1 ∪ out A2)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}comp\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{Un\PYGZus{}def}\PYG{+w}{ }\PYG{n}{set\PYGZus{}diff\PYGZus{}eq}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{outputs\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}out (A1 ∥ A2) = out A1 ∪ out A2\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}comp\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{Un\PYGZus{}def}\PYG{+w}{ }\PYG{n}{set\PYGZus{}diff\PYGZus{}eq}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{internals\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}int (A1 ∥ A2) = int A1 ∪ int A2\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}comp\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{Un\PYGZus{}def}\PYG{+w}{ }\PYG{n}{set\PYGZus{}diff\PYGZus{}eq}\PYG{o}{)}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹Actions and compatibility›}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{compat\PYGZus{}commute}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A B = compatible B A\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}\PYG{+w}{ }\PYG{n}{Int\PYGZus{}commute}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{ext1\PYGZus{}is\PYGZus{}not\PYGZus{}int2}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A1 A2 ⟹ a ∈ ext A1 ⟹ a ∉ int A2\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}\PYG{o}{)}
+
+\PYG{c}{(*just commuting the previous one: better commute compatible*)}
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{ext2\PYGZus{}is\PYGZus{}not\PYGZus{}int1}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A2 A1 ⟹ a ∈ ext A1 ⟹ a ∉ int A2\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k}{lemmas}\PYG{+w}{ }\PYG{n}{ext1\PYGZus{}ext2\PYGZus{}is\PYGZus{}not\PYGZus{}act2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{ext1\PYGZus{}is\PYGZus{}not\PYGZus{}int2}\PYG{+w}{ }\PYG{o}{[}\PYG{n}{THEN}\PYG{+w}{ }\PYG{n}{int\PYGZus{}and\PYGZus{}ext\PYGZus{}is\PYGZus{}act}\PYG{o}{]}
+\PYG{k}{lemmas}\PYG{+w}{ }\PYG{n}{ext1\PYGZus{}ext2\PYGZus{}is\PYGZus{}not\PYGZus{}act1}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{ext2\PYGZus{}is\PYGZus{}not\PYGZus{}int1}\PYG{+w}{ }\PYG{o}{[}\PYG{n}{THEN}\PYG{+w}{ }\PYG{n}{int\PYGZus{}and\PYGZus{}ext\PYGZus{}is\PYGZus{}act}\PYG{o}{]}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{intA\PYGZus{}is\PYGZus{}not\PYGZus{}extB}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A B ⟹ x ∈ int A ⟹ x ∉ ext B\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{intA\PYGZus{}is\PYGZus{}not\PYGZus{}actB}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A B ⟹ a ∈ int A ⟹ a ∉ act B\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{c}{(*the only one that needs disjointness of outputs and of internals and \PYGZus{}all\PYGZus{} acts*)}
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{outAactB\PYGZus{}is\PYGZus{}inpB}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A B ⟹ a ∈ out A ⟹ a ∈ act B ⟹ a ∈ inp B\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}
+\PYG{+w}{      }\PYG{n}{compatible\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{c}{(*needed for propagation of input\PYGZus{}enabledness from A, B to A ∥ B*)}
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{inpAAactB\PYGZus{}is\PYGZus{}inpBoroutB}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}compatible A B ⟹ a ∈ inp A ⟹ a ∈ act B ⟹ a ∈ inp B ∨ a ∈ out B\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}
+\PYG{+w}{      }\PYG{n}{compatible\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹Input enabledness and par›}
+
+\PYG{c}{(*ugly case distinctions. Heart of proof:}
+\PYG{c}{    1. inpAAactB\PYGZus{}is\PYGZus{}inpBoroutB ie. internals are really hidden.}
+\PYG{c}{    2. inputs\PYGZus{}of\PYGZus{}par: outputs are no longer inputs of par. This is important here.*)}
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{input\PYGZus{}enabled\PYGZus{}par}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}compatible A B ⟹ input\PYGZus{}enabled A ⟹ input\PYGZus{}enabled B ⟹ input\PYGZus{}enabled (A ∥ B)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{unfold}\PYG{+w}{ }\PYG{n}{input\PYGZus{}enabled\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{inputs\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}par}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{tactic}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}safe\PYGZus{}tac (Context.raw\PYGZus{}transfer }\PYG{l+s+ss}{\PYGZbs{}\PYGZlt{}\PYGZca{}theory\PYGZgt{}}\PYG{l+s}{ }\PYG{l+s+ss}{\PYGZbs{}\PYGZlt{}\PYGZca{}theory\PYGZus{}context\PYGZgt{}}\PYG{l+s}{‹Fun›)\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{inp\PYGZus{}is\PYGZus{}act}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{prefer}\PYG{+w}{ }\PYG{n}{2}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{inp\PYGZus{}is\PYGZus{}act}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹‹a ∈ inp A››}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{case\PYGZus{}tac}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a ∈ act B\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹‹a ∈ inp B››}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{drule}\PYG{+w}{ }\PYG{n}{inpAAactB\PYGZus{}is\PYGZus{}inpBoroutB}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{assumption}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{assumption}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}aa\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}b\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{exE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{exE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(s2, s2a)\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{exI}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{inp\PYGZus{}is\PYGZus{}act}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹‹a ∉ act B››}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{inp\PYGZus{}is\PYGZus{}act}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}aa\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{exE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} (s2,b) \PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{exI}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{simp}
+
+\PYG{+w}{  }\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹‹a ∈ inp B››}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{case\PYGZus{}tac}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a ∈ act A\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹‹a ∈ act A››}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{inp\PYGZus{}is\PYGZus{}act}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{frule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{A1}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}A\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{compat\PYGZus{}commute}\PYG{+w}{ }\PYG{o}{[}\PYG{n}{THEN}\PYG{+w}{ }\PYG{n}{iffD1}\PYG{o}{])}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{drule}\PYG{+w}{ }\PYG{n}{inpAAactB\PYGZus{}is\PYGZus{}inpBoroutB}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{back}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{assumption}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{assumption}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}aa\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}b\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{exE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{exE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(s2, s2a)\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{exI}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{inp\PYGZus{}is\PYGZus{}act}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹‹a ∉ act B››}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{inp\PYGZus{}is\PYGZus{}act}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}b\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{allE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{exE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(aa, s2)\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{exI}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{done}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹Invariants›}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{invariantI}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}⋀s. s ∈ starts\PYGZus{}of A ⟹ P s\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}⋀s t a. reachable A s ⟹ P s ⟹ (s, a, t) ∈ trans\PYGZus{}of A ⟶ P t\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}invariant A P\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{unfold}\PYG{+w}{ }\PYG{n}{invariant\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule}\PYG{+w}{ }\PYG{n}{allI}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule}\PYG{+w}{ }\PYG{n}{impI}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule\PYGZus{}tac}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}s\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{reachable.induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{assumption}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{done}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{invariantI1}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}⋀s. s ∈ starts\PYGZus{}of A ⟹ P s\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}⋀s t a. reachable A s ⟹ P s ⟶ (s, a, t) ∈ trans\PYGZus{}of A ⟶ P t\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}invariant A P\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{blast}\PYG{+w}{ }\PYG{n}{intro}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{invariantI}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{invariantE}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}invariant A P ⟹ reachable A s ⟹ P s\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{unfolding}\PYG{+w}{ }\PYG{n}{invariant\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹‹restrict››}
+
+\PYG{k}{lemmas}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}0}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{reachable.reachable\PYGZus{}0}
+\PYG{+w}{  }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}n}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{reachable.reachable\PYGZus{}n}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict\PYGZus{}a}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}starts\PYGZus{}of (restrict ioa acts) = starts\PYGZus{}of ioa ∧}
+\PYG{l+s}{   trans\PYGZus{}of (restrict ioa acts) = trans\PYGZus{}of ioa\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}def}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}projections}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict\PYGZus{}b}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}reachable (restrict ioa acts) s = reachable ioa s\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule}\PYG{+w}{ }\PYG{n}{iffI}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{reachable.induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict\PYGZus{}a}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}0}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}n}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict\PYGZus{}a}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{text}\PYG{+w}{ }\PYG{l+s}{‹‹⟵››}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{reachable.induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}0}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict\PYGZus{}a}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}n}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict\PYGZus{}a}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{done}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{acts\PYGZus{}restrict}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}act (restrict A acts) = act A\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}def}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}asig\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}starts\PYGZus{}of (restrict ioa acts) = starts\PYGZus{}of ioa ∧}
+\PYG{l+s}{   trans\PYGZus{}of (restrict ioa acts) = trans\PYGZus{}of ioa ∧}
+\PYG{l+s}{   reachable (restrict ioa acts) s = reachable ioa s ∧}
+\PYG{l+s}{   act (restrict A acts) = act A\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict\PYGZus{}a}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict\PYGZus{}b}\PYG{+w}{ }\PYG{n}{acts\PYGZus{}restrict}\PYG{o}{)}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹‹rename››}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}rename}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}s ─a─(rename C f)→ t ⟹ (∃x. Some x = f a ∧ s ─x─C→ t)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{rename\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}rename}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}reachable (rename C g) s ⟹ reachable C s\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{reachable.induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}0}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{rename\PYGZus{}def}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}projections}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{drule}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}rename}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{exE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{conjE}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{erule}\PYG{+w}{ }\PYG{n}{reachable\PYGZus{}n}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{assumption}
+\PYG{+w}{  }\PYG{k}{done}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹‹trans\PYGZus{}of (A ∥ B)››}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}A\PYGZus{}proj}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}(s, a, t) ∈ trans\PYGZus{}of (A ∥ B) ⟹ a ∈ act A ⟹ (fst s, a, fst t) ∈ trans\PYGZus{}of A\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}B\PYGZus{}proj}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}(s, a, t) ∈ trans\PYGZus{}of (A ∥ B) ⟹ a ∈ act B ⟹ (snd s, a, snd t) ∈ trans\PYGZus{}of B\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}A\PYGZus{}proj2}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(s, a, t) ∈ trans\PYGZus{}of (A ∥ B) ⟹ a ∉ act A ⟹ fst s = fst t\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}B\PYGZus{}proj2}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(s, a, t) ∈ trans\PYGZus{}of (A ∥ B) ⟹ a ∉ act B ⟹ snd s = snd t\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}AB\PYGZus{}proj}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(s, a, t) ∈ trans\PYGZus{}of (A ∥ B) ⟹ a ∈ act A ∨ a ∈ act B\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}AB}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}a ∈ act A ⟹ a ∈ act B ⟹}
+\PYG{l+s}{  (fst s, a, fst t) ∈ trans\PYGZus{}of A ⟹}
+\PYG{l+s}{  (snd s, a, snd t) ∈ trans\PYGZus{}of B ⟹}
+\PYG{l+s}{  (s, a, t) ∈ trans\PYGZus{}of (A ∥ B)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}A\PYGZus{}notB}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}a ∈ act A ⟹ a ∉ act B ⟹}
+\PYG{l+s}{  (fst s, a, fst t) ∈ trans\PYGZus{}of A ⟹}
+\PYG{l+s}{  snd s = snd t ⟹}
+\PYG{l+s}{  (s, a, t) ∈ trans\PYGZus{}of (A ∥ B)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}notA\PYGZus{}B}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}a ∉ act A ⟹ a ∈ act B ⟹}
+\PYG{l+s}{  (snd s, a, snd t) ∈ trans\PYGZus{}of B ⟹}
+\PYG{l+s}{  fst s = fst t ⟹}
+\PYG{l+s}{  (s, a, t) ∈ trans\PYGZus{}of (A ∥ B)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k}{lemmas}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}defs1}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}AB}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}A\PYGZus{}notB}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}notA\PYGZus{}B}
+\PYG{+w}{  }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}defs2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}A\PYGZus{}proj}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}B\PYGZus{}proj}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}A\PYGZus{}proj2}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}B\PYGZus{}proj2}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}AB\PYGZus{}proj}
+
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}par4}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}(s, a, t) ∈ trans\PYGZus{}of (A ∥ B ∥ C ∥ D) ⟷}
+\PYG{l+s}{    ((a ∈ actions (asig\PYGZus{}of A) ∨ a ∈ actions (asig\PYGZus{}of B) ∨ a ∈ actions (asig\PYGZus{}of C) ∨}
+\PYG{l+s}{      a ∈ actions (asig\PYGZus{}of D)) ∧}
+\PYG{l+s}{     (if a ∈ actions (asig\PYGZus{}of A)}
+\PYG{l+s}{      then (fst s, a, fst t) ∈ trans\PYGZus{}of A}
+\PYG{l+s}{      else fst t = fst s) ∧}
+\PYG{l+s}{     (if a ∈ actions (asig\PYGZus{}of B)}
+\PYG{l+s}{      then (fst (snd s), a, fst (snd t)) ∈ trans\PYGZus{}of B}
+\PYG{l+s}{      else fst (snd t) = fst (snd s)) ∧}
+\PYG{l+s}{     (if a ∈ actions (asig\PYGZus{}of C)}
+\PYG{l+s}{      then (fst (snd (snd s)), a, fst (snd (snd t))) ∈ trans\PYGZus{}of C}
+\PYG{l+s}{      else fst (snd (snd t)) = fst (snd (snd s))) ∧}
+\PYG{l+s}{     (if a ∈ actions (asig\PYGZus{}of D)}
+\PYG{l+s}{      then (snd (snd (snd s)), a, snd (snd (snd t))) ∈ trans\PYGZus{}of D}
+\PYG{l+s}{      else snd (snd (snd t)) = snd (snd (snd s))))\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{par\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}asig\PYGZus{}comp}\PYG{+w}{ }\PYG{n}{prod\PYGZus{}eq\PYGZus{}iff}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}projections}\PYG{o}{)}
+
+
+\PYG{g+gu}{subsection}\PYG{+w}{ }\PYG{l+s}{‹Proof obligation generator for IOA requirements›}
+
+\PYG{c}{(*without assumptions on A and B because is\PYGZus{}trans\PYGZus{}of is also incorporated in par\PYGZus{}def*)}
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}trans\PYGZus{}of (A ∥ B)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}par}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}restrict}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}trans\PYGZus{}of A ⟹ is\PYGZus{}trans\PYGZus{}of (restrict A acts)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{cancel\PYGZus{}restrict}\PYG{+w}{ }\PYG{n}{acts\PYGZus{}restrict}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}rename}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}trans\PYGZus{}of A ⟹ is\PYGZus{}trans\PYGZus{}of (rename A f)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{unfold}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}def}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}asig\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{Let\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{trans\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{rename\PYGZus{}def}\PYG{+w}{ }\PYG{n}{rename\PYGZus{}set\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{done}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}asig\PYGZus{}of A ⟹ is\PYGZus{}asig\PYGZus{}of B ⟹ compatible A B ⟹ is\PYGZus{}asig\PYGZus{}of (A ∥ B)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}comp\PYGZus{}def}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k}{done}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}restrict}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}asig\PYGZus{}of A ⟹ is\PYGZus{}asig\PYGZus{}of (restrict A f)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{unfold}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}def}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}asig\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{o\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k}{done}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}rename}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}asig\PYGZus{}of A ⟹ is\PYGZus{}asig\PYGZus{}of (rename A f)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}def}\PYG{+w}{ }\PYG{n}{rename\PYGZus{}def}\PYG{+w}{ }\PYG{n}{rename\PYGZus{}set\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}of\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{drule\PYGZus{}tac}\PYG{+w}{ }\PYG{o}{[!]}\PYG{+w}{ }\PYG{n}{s}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Some \PYGZus{}\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{in}\PYG{+w}{ }\PYG{n}{sym}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k}{done}
+
+\PYG{k}{lemmas}\PYG{+w}{ }\PYG{o}{[}\PYG{n}{simp}\PYG{o}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}restrict}
+\PYG{+w}{  }\PYG{n}{is\PYGZus{}asig\PYGZus{}of\PYGZus{}rename}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}restrict}\PYG{+w}{ }\PYG{n}{is\PYGZus{}trans\PYGZus{}of\PYGZus{}rename}
+
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}par}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A B ⟹ compatible A C ⟹ compatible A (B ∥ C)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}\PYG{+w}{ }\PYG{n}{internals\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{outputs\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}of\PYGZus{}par}\PYG{o}{)}
+
+\PYG{c}{(*better derive by previous one and compat\PYGZus{}commute*)}
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}par2}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}compatible A C ⟹ compatible B C ⟹ compatible (A ∥ B) C\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}\PYG{+w}{ }\PYG{n}{internals\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{outputs\PYGZus{}of\PYGZus{}par}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}of\PYGZus{}par}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}restrict}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}compatible A B ⟹ (ext B \PYGZhy{} S) ∩ ext A = \PYGZob{}\PYGZcb{} ⟹ compatible A (restrict B S)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{compatible\PYGZus{}def}\PYG{+w}{ }\PYG{n}{ioa\PYGZus{}triple\PYGZus{}proj}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}triple\PYGZus{}proj}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}
+\PYG{+w}{    }\PYG{n}{restrict\PYGZus{}def}\PYG{+w}{ }\PYG{n}{restrict\PYGZus{}asig\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k}{declare}\PYG{+w}{ }\PYG{n}{split\PYGZus{}paired\PYGZus{}Ex}\PYG{+w}{ }\PYG{o}{[}\PYG{n}{simp}\PYG{o}{]}
+
+\PYG{k}{end}
+\end{MintedVerbatim}

@@ -1,0 +1,20 @@
+\beamer@sectionintoc {1}{Einleitung}{3}{0}{1}
+\beamer@sectionintoc {2}{Das Zwei-Phase-Commit-Protokoll}{4}{0}{2}
+\beamer@subsectionintoc {2}{1}{Übergänge des Koordinators}{4}{0}{2}
+\beamer@subsectionintoc {2}{2}{Übergänge eines Teilnehmers}{9}{0}{2}
+\beamer@subsectionintoc {2}{3}{Beispielhafte Abläufe}{13}{0}{2}
+\beamer@sectionintoc {3}{I/O Automaten}{35}{0}{3}
+\beamer@subsectionintoc {3}{1}{Signatur}{35}{0}{3}
+\beamer@subsectionintoc {3}{2}{Mathematische Definition}{36}{0}{3}
+\beamer@subsectionintoc {3}{3}{Ausführung}{37}{0}{3}
+\beamer@subsectionintoc {3}{4}{Komposition}{38}{0}{3}
+\beamer@sectionintoc {4}{Vergleich}{39}{0}{4}
+\beamer@subsectionintoc {4}{1}{Modellierung}{39}{0}{4}
+\beamer@subsectionintoc {4}{2}{Invarianten}{54}{0}{4}
+\beamer@subsectionintoc {4}{3}{Ausführungssemantik}{63}{0}{4}
+\beamer@subsectionintoc {4}{4}{Beweis einer Invarianten}{65}{0}{4}
+\beamer@subsectionintoc {4}{5}{Hilfslemmas}{71}{0}{4}
+\beamer@subsectionintoc {4}{6}{Beweis der einheitlichen Zustimmung}{85}{0}{4}
+\beamer@sectionintoc {5}{Vergleich}{85}{0}{5}
+\beamer@subsectionintoc {5}{1}{Kriterien...}{86}{0}{5}
+\beamer@sectionintoc {6}{Fazit}{86}{0}{6}

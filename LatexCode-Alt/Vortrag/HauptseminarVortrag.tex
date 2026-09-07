@@ -1,0 +1,458 @@
+\makeatletter
+\def\input@path{{./tuc2019/beamer/}}
+\makeatother
+\documentclass[10pt]{beamer}
+\usetheme[fakcolor=if]{tuc2019}
+
+\usepackage{pgffor}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{stmaryrd}
+\usepackage{minted}
+
+\DeclareUnicodeCharacter{21D2}{$\Rightarrow$}
+\DeclareUnicodeCharacter{2200}{$\forall$}
+\DeclareUnicodeCharacter{2203}{$\exists$}
+\DeclareUnicodeCharacter{2260}{$\neq$}
+\DeclareUnicodeCharacter{2227}{$\land$}
+\DeclareUnicodeCharacter{27F6}{$\longrightarrow$}
+\DeclareUnicodeCharacter{2208}{$\in$}
+\DeclareUnicodeCharacter{27F7}{$\longleftrightarrow$}
+\DeclareUnicodeCharacter{2228}{$\lor$}
+\DeclareUnicodeCharacter{2209}{$\notin$}
+\DeclareUnicodeCharacter{222A}{$\cup$}
+\DeclareUnicodeCharacter{27E6}{$\llbracket$}
+\DeclareUnicodeCharacter{03BB}{$\lambda$}
+\DeclareUnicodeCharacter{27E7}{$\rrbracket$}
+\DeclareUnicodeCharacter{27F9}{$\Longrightarrow$}
+\DeclareUnicodeCharacter{2218}{$\circ$}
+\DeclareUnicodeCharacter{2500}{\texttt{-}}
+\DeclareUnicodeCharacter{2261}{$\equiv$}
+\DeclareUnicodeCharacter{2225}{$\parallel$}
+\DeclareUnicodeCharacter{22C0}{$\bigwedge$}
+
+\newtheorem{sigdefinition}{Definition einer Signatur $S$}
+\newtheorem{iodefinition}{Definition eines I/O Automaten $A$}
+\newtheorem{execdefinition}{Ausführung eines I/O Automaten $A$}
+\newtheorem{pardefinition}{Komposition zweier I/O Automaten $A$ \& $B$}
+
+\newcommand{\CoverFromTop}[2][img]{%
+	\fill[white]
+	($(#1.north west)!#2!(#1.south west)$)
+	rectangle
+	(#1.south east);%
+}
+
+\newcommand{\isabelle}[1]{\mintinline{isabelle}{#1}}
+
+\newcommand{\thy}[3]{
+	\inputminted[
+	fontsize=\small,%<-- what does this affect? what else can I write here?
+	breaklines,
+	linenos,
+	xleftmargin=1em,
+	firstline=#1,
+	lastline=#2
+	]{isabelle}{#3}
+}
+
+\newcommand{\thyKleppNetw}[2]{
+	\thy{#1}{#2}{Hauptseminar/Kleppmann/Network.thy}
+}
+\newcommand{\thyKleppTupac}[2]{
+	\thy{#1}{#2}{Hauptseminar/Kleppmann/Kleppmann_2PC.thy}
+}
+\newcommand{\thyKleppInv}[2]{
+	\thy{#1}{#2}{Hauptseminar/Kleppmann/Kleppmann_inv_def.thy}
+}
+\newcommand{\thyKleppInvOne}[2]{
+	\thy{#1}{#2}{Hauptseminar/Kleppmann/Kleppmann_inv_1.thy}
+}
+\newcommand{\thyKleppAc}[2]{
+	\thy{#1}{#2}{Hauptseminar/Kleppmann/Kleppmann_ac.thy}
+}
+
+\newcommand{\thyIoaAsig}[2]{
+	\thy{#1}{#2}{Hauptseminar/IOA/HOLCF/Asig.thy}
+}
+\newcommand{\thyIoaAutomata}[2]{
+	\thy{#1}{#2}{Hauptseminar/IOA/HOLCF/Automata.thy}
+}
+\newcommand{\thyIoaTupac}[2]{
+	\thy{#1}{#2}{Hauptseminar/IOA/HOLCF/Automata_2PC.thy}
+}
+\newcommand{\thyIoaInv}[2]{
+	\thy{#1}{#2}{Hauptseminar/IOA/HOLCF/Automata_inv_def.thy}
+}
+\newcommand{\thyIoaInvOne}[2]{
+	\thy{#1}{#2}{Hauptseminar/IOA/HOLCF/Automata_inv_1.thy}
+}
+\newcommand{\thyIoaAc}[2]{
+	\thy{#1}{#2}{Hauptseminar/IOA/HOLCF/Automata_ac.thy}
+}
+
+\title{Verifikation verteilter Systeme in Isabelle}
+\subtitle{Ein Vergleich von Kleppmann und I/O-Automaten}
+\author{Sepp Stage}
+\date[\today]{}
+\institute[TUC, Fak. BS]{TU Chemnitz, Fakultät Betriebssysteme}
+\titlegraphic{\includegraphics[height=0.2\textheight]{tuc2019/logo/tuc_green}}
+
+\begin{document}
+	\begingroup
+	\tucthreeheadlines
+	\frame{\titlepage}
+	\endgroup
+	
+	\frame{\tableofcontents}
+	
+	\newpage
+	\section{Einleitung}
+	AT\&T
+	\newpage
+	\section{Das Zwei-Phase-Commit-Protokoll}
+	\subsection{Übergänge des Koordinators}
+	\begin{frame}
+	\centering
+	\foreach \i in {1,...,5}{
+		\only<\i>{%
+			\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{Bilder/AutomatCoord\i}
+		}
+	}
+	\end{frame}
+	
+	\subsection{Übergänge eines Teilnehmers}	
+	\begin{frame}
+		\centering
+		\foreach \i in {1,...,4}{
+			\only<\i>{%
+				\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{Bilder/AutomatPart\i}
+			}
+		}
+	\end{frame}
+
+	\newpage
+	\subsection{Beispielhafte Abläufe}
+
+	\begin{frame}[t]
+		\vspace*{0pt}
+		\centering
+		\begin{tikzpicture}
+			\node[anchor=north west,inner sep=0] (img) at (0,0) {%
+				\includegraphics[width=\textwidth, height=0.98\textheight, keepaspectratio]{Bilder/Sequences/1/4}%
+			};
+			
+			\only<1>{\CoverFromTop{0.3}}
+			\only<2>{\CoverFromTop{0.51}}
+			\only<3>{\CoverFromTop{0.688}}
+			\only<4>{\CoverFromTop{1}}
+		\end{tikzpicture}
+	\end{frame}
+	
+	\begin{frame}[t]
+		\vspace*{0pt}
+		\centering
+		\begin{tikzpicture}
+			\node[anchor=north west,inner sep=0] (img) at (0,0) {%
+				\includegraphics[width=\textwidth, height=0.98\textheight, keepaspectratio]{Bilder/Sequences/2/5}%
+			};
+			
+			\only<1>{\CoverFromTop{0.298}}
+			\only<2>{\CoverFromTop{0.4}}
+			\only<3>{\CoverFromTop{0.58}}
+			\only<4>{\CoverFromTop{0.67}}
+			\only<5>{\CoverFromTop{1}}
+		\end{tikzpicture}
+	\end{frame}
+
+	\begin{frame}[t]
+		\vspace*{0pt}
+		\centering
+		\begin{tikzpicture}
+			\node[anchor=north west,inner sep=0] (leftimg) at (0,0) {%
+				\includegraphics[width=0.49\textwidth]{Bilder/Sequences/3/2}%
+			};
+			\node[anchor=north west,inner sep=0] (rightimg) at (6.2cm,0) {%
+				\includegraphics[width=0.49\textwidth]{Bilder/Sequences/3/6}%
+			};
+			
+			\only<1>{\CoverFromTop[leftimg]{0.75}}
+			\only<1,2>{\CoverFromTop[rightimg]{0}}
+			\only<3>{\CoverFromTop[rightimg]{0.317}}
+			\only<4>{\CoverFromTop[rightimg]{0.43}}
+			\only<5>{\CoverFromTop[rightimg]{0.64}}
+			\only<6>{\CoverFromTop[rightimg]{1}}
+		\end{tikzpicture}
+	\end{frame}
+	
+	\begin{frame}[t]
+		\vspace*{0pt}
+		\centering
+		\begin{tikzpicture}
+			\node[anchor=north west,inner sep=0] (leftimg) at (0,0) {%
+				\includegraphics[width=0.49\textwidth]{Bilder/Sequences/4/3}%
+			};
+			\node[anchor=north west,inner sep=0] (rightimg) at (6.2cm,0) {%
+				\includegraphics[width=0.49\textwidth]{Bilder/Sequences/4/6}%
+			};
+			
+			\only<1>{\CoverFromTop[leftimg]{0.55}}
+			\only<2>{\CoverFromTop[leftimg]{0.75}}
+			\only<1-3>{\CoverFromTop[rightimg]{0}}
+			\only<4>{\CoverFromTop[rightimg]{0.382}}
+			\only<5>{\CoverFromTop[rightimg]{0.52}}
+			\only<6>{\CoverFromTop[rightimg]{0.66}}
+			\only<7>{\CoverFromTop[rightimg]{1}}
+		\end{tikzpicture}
+	\end{frame}
+	
+	\newpage
+	\section{I/O Automaten}
+	\subsection{Signatur}
+	\begin{sigdefinition}
+		\begin{itemize}
+			\item Input-Übergänge $in(S)$
+			\item Output-Übergänge $out(S)$
+			\item Internal-Übergänge $int(S)$
+		\end{itemize}
+	\end{sigdefinition}
+	
+	Beispielbild!!!!!
+	
+	\newpage
+	\subsection{Mathematische Definition}
+	\begin{iodefinition}
+		\begin{itemize}
+			\item Signatur $sig(A)$	
+			\item Menge an Zuständen $states(A)$
+			\item nichtleere Menge an Startzuständen $start(A) \subseteq states(A)$
+			\item Übergangsrelation
+			\[
+			trans(A) \subseteq states(A) \times acts(sig(A)) \times states(A)
+			\]
+			\item Aufgabenpartition $tasks(A)$
+		\end{itemize}
+	\end{iodefinition}
+	
+	Beispielbild????
+	
+	\newpage
+	\subsection{Ausführung}
+	\begin{execdefinition}
+		\begin{itemize}
+			\item Ausführungsfragment $s_0, \pi_1, s_1, \pi_2,...$
+			\item $\forall i \geq 0. (s_i, \pi_{i+1}), s_{i+1}) \in trans(A)$
+			\item Ausführung falls $s_0 \in starts(A)$
+		\end{itemize}
+	\end{execdefinition}
+	
+	Beispielbild????
+	
+	\newpage
+	\subsection{Komposition}
+	\begin{pardefinition}
+		\begin{itemize}
+			\item Automaten müssen kompatibel sein
+			\item Signaturen werden Verknüpft  
+			\item entstehende Zustände sind Vektoren $(s_a, s_b)$ mit $s_i \in start(I)$
+			\item $A$ und $B$ dürfen bei gemeinsamen Übergängen gleichzeitig agieren
+		\end{itemize}
+	\end{pardefinition}
+	
+	OUTPUTS bleiben OUTPUTS für weitere Komposition!
+	
+	\newpage
+	\section{Vergleich}
+	\subsection{Modellierung}
+	
+	%event vs action & msgs
+	\begin{frame}[fragile]
+		\thyKleppTupac{5}{5}
+		\thyKleppNetw{10}{14}
+		\noindent\rule{\linewidth}{0.4pt}
+		\thyIoaTupac{6}{6}
+		\thyIoaTupac{8}{13}
+		
+	\end{frame}
+	
+	\newpage
+	%asigs
+	\begin{frame}
+		\thyIoaTupac{50}{54}
+		\thyIoaTupac{89}{93}
+		\thyIoaTupac{113}{117}
+	\end{frame}
+	
+	\newpage
+	%states
+	\begin{frame}[fragile]
+		\thyKleppTupac{7}{12}
+		\noindent\rule{\linewidth}{0.4pt}
+		\only<1>{\thyIoaTupac{17}{22}}
+		\only<2>{\thyIoaTupac{61}{65}}
+		\only<3>{\thyIoaTupac{106}{106}}
+	\end{frame}
+	
+	\newpage
+	%step funcs
+	\begin{frame}[fragile]
+		\only<1>{\thyKleppTupac{14}{15}}
+		\only<1>{\thyKleppTupac{34}{35}}
+		
+		\only<2>{\thyKleppTupac{16}{16}}
+		
+		\only<3>{\thyKleppTupac{17}{21}}
+		
+		\only<4>{\thyKleppTupac{22}{23}}
+		
+		\only<5>{\thyKleppTupac{26}{27}}
+		
+		%-----%
+		\noindent\rule{\linewidth}{0.4pt}
+		%-----%
+		
+		\only<1>{\thyIoaTupac{24}{25}}
+		\only<1>{\thyIoaTupac{67}{68}}
+		
+		\only<2>{\thyIoaTupac{26}{26}}
+		
+		\only<3>{\thyIoaTupac{27}{31}}
+		
+		\only<4>{\thyIoaTupac{32}{33}}
+		
+		\only<5>{\thyIoaTupac{36}{37}}
+	\end{frame}
+	
+	\newpage
+	%trans
+	\begin{frame}[fragile]
+		\only<5>{\thyKleppTupac{47}{48}}
+		
+		\noindent\rule{\linewidth}{0.4pt}
+		%coord
+		\only<1>{\thyIoaTupac{44}{48}}
+		\only<1>{\thyIoaTupac{56}{57}}
+		
+		\only<2>{\thyIoaTupac{81}{85}}
+		\only<3>{\thyIoaTupac{95}{99}}
+		\only<3>{\thyIoaTupac{101}{102}}
+		
+		\only<4>{\thyIoaTupac{108}{111}}
+		\only<4>{\thyIoaTupac{119}{120}}
+		
+		\only<5>{\thyIoaTupac{124}{125}}
+	\end{frame}
+	
+	\subsection{Invarianten}
+	\begin{frame}[fragile]
+		\only<1>{Wenn es einen Teilnehmer im Committed-Zustand gibt, so muss es eine Commit-Nachricht geben}
+		\only<2>{Wenn es eine Commit-Nachricht gibt oder der Koordinator im Committed-Zustand ist, so hat jeder Teilnehmer eine Yes-Nachricht gesendet}
+		\only<3>{Wenn der Koordinator im Collecting-Zustand ist, so stimmen hat er sich die korrekten Werte abgespeichert}
+		\only<4>{Wenn der Koordinator im Initial-Zustand ist, so stimmen hat er sich die korrekte Menge an Prozessen abgespeichert}
+		\only<5>{Wenn sich der Koordinator im Initial-, Collecting- oder Committed- Zustand befindet, so wurde keine Abort-Nachricht gesendet}
+		\only<6>{Wenn sich ein Teilnehmer im Aborted-Zustand befindet und keine Abort-Nachricht gesendet wurde, so hat der Teilnehmer auch keine Yes-Nachricht gesendet}
+		\only<7>{Wenn sich der Koordinator im Initial-, Collecting- oder Aborted- Zustand befindet, so wurde keine Commit-Nachricht gesendet}
+		\only<8>{Wenn eine Commit-Nachricht gesendet wurde, so befindet sich der Koordinator entweder im Committed- oder Forgotten-Zustand}
+		\only<9>{Wenn eine Commit-Nachricht gesendet wurde, so wurde keine Abort-Nachricht gesendet}
+		
+		
+		\vspace{0.5em}
+		
+		\only<1>{\thyKleppInv{8}{11}}
+		\only<2>{\thyKleppInv{13}{16}}
+		\only<3>{\thyKleppInv{22}{25}}
+		\only<4>{\thyKleppInv{27}{29}}
+		\only<5>{\thyKleppInv{31}{34}}
+		\only<6>{\thyKleppInv{40}{42}}
+		\only<7>{\thyKleppInv{52}{55}}
+		\only<8>{\thyKleppInv{57}{59}}
+		\only<9>{\thyKleppInv{67}{69}}
+		
+		\noindent\rule{\linewidth}{0.4pt}
+		
+		\only<1>{\thyIoaInv{6}{9}}
+		\only<2>{\thyIoaInv{11}{14}}
+		\only<3>{\thyIoaInv{16}{19}}
+		\only<4>{\thyIoaInv{21}{23}}
+		\only<5>{\thyIoaInv{25}{28}}
+		\only<6>{\thyIoaInv{30}{32}}
+		\only<7>{\thyIoaInv{34}{37}}
+		\only<8>{\thyIoaInv{39}{42}}
+		\only<9>{\thyIoaInv{44}{46}}
+	\end{frame}
+	
+	\newpage
+	\subsection{Ausführungssemantik}
+	\begin{frame}[fragile]
+		\only<1>{\thyKleppNetw{19}{33}}
+		
+		\noindent\rule{\linewidth}{0.4pt}
+		
+		\only<2>{\thyIoaAutomata{69}{75}}
+		\only<2>{\vspace{0.5em}}
+		\only<2>{\thyIoaAutomata{380}{383}}
+	\end{frame}
+	
+	\newpage
+	\subsection{Beweis einer Invarianten}
+	\begin{frame}[fragile]
+		\only<1>{\thyKleppInvOne{90}{92}}
+		\only<2>{\thyKleppInvOne{93}{93}}
+		\only<3>{\thyKleppInvOne{94}{100}}
+		\only<4>{\thyKleppInvOne{102}{113}}
+		\only<5>{\thyKleppInvOne{114}{122}}
+		\only<6>{\thyKleppInvOne{124}{132}}
+		
+		\noindent\rule{\linewidth}{0.4pt}
+		
+		\only<1>{\thyIoaInvOne{369}{370}}
+		\only<2>{\thyIoaInvOne{371}{371}}
+		\only<3>{\thyIoaInvOne{372}{378}}
+		\only<4-6>{\thyIoaInvOne{380}{382}}
+	\end{frame}
+	
+	\newpage
+	\subsection{Hilfslemmas}
+	\begin{frame}[fragile]
+		\only<1>{\thyKleppInvOne{5}{11}}
+		\only<2>{\thyKleppInvOne{12}{14}}
+		\only<3>{\thyKleppInvOne{16}{25}}
+		\only<4-14>{\thyKleppInvOne{25}{25}}
+		
+		\noindent\rule{\linewidth}{0.4pt}
+		
+		\only<1,3>{\thyIoaInvOne{63}{67}}
+		\only<2,3>{\thyIoaInvOne{68}{68}}
+		\only<4>{\thyIoaInvOne{69}{72}}
+		\only<5>{\thyIoaInvOne{73}{78}}
+		\only<6>{\thyIoaInvOne{79}{83}}
+		\only<7>{\thyIoaInvOne{84}{87}}
+		\only<8>{\thyIoaInvOne{89}{91}}
+		\only<9>{\thyIoaInvOne{92}{97}}
+		\only<10>{\thyIoaInvOne{99}{105}}
+		\only<11>{\thyIoaInvOne{106}{112}}
+		\only<12>{\thyIoaInvOne{114}{116}}
+		\only<13>{\thyIoaInvOne{118}{123}}
+		\only<14>{\thyIoaInvOne{125}{131}}
+	\end{frame}
+	
+	\newpage
+	\subsection{Beweis der einheitlichen Zustimmung}
+	
+	\newpage
+	\section{Vergleich}
+	
+	"By itself, the I/O automaton model has very little structure, which allows it to be used for modelling many different types of distributed systems. Additional structure must be added to the basic model to enable it to describe particular types of asynchronous systems."
+	~Lynch buch s.199
+	
+	\newpage
+	\subsection{Kriterien...}
+	
+	\newpage
+	\section{Fazit}
+	blblblb
+\end{document}

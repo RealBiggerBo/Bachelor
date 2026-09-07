@@ -1,0 +1,31 @@
+\ProvidesFile{urz.lco}
+
+\setkomavar{tucbackaddress}{TU Chemnitz\\%
+  Universit\"atsrechenzentrum\\09107 Chemnitz}
+\setkomavar{visitaddress}{Technische Universit\"at Chemnitz\linebreak%
+  Universit\"atsrechenzentrum\\%
+  Stra\ss e der Nationen 62\\09111 Chemnitz}
+\setkomavar{fromaddress}{Technische Universit\"at Chemnitz\\%
+  09107 Chemnitz\\GERMANY}
+
+\setkomavar{depname}{}
+\setkomavar{deproom}{A11.307}
+\setkomavar{depphone}{13401}
+\setkomavar{depemail}{urz@tu-chemnitz.de}
+\setkomavar{depurl}{https://www.tu-chemnitz.de/urz/}
+
+\iftucenglish
+\setkomavar{tucheadline1}{Computing Center}
+\else
+\setkomavar{tucheadline1}{Universit\"atsrechenzentrum}
+\fi
+\setkomavar{tucheadline2}{}
+\setkomavar{tucheadline3}{}
+
+\iftucblack
+\setkomavar{logo1}{tuc2019/logo/urzlogo_grau}
+\else
+\setkomavar{logo1}{tuc2019/logo/urzlogo}
+\fi
+
+\endinput

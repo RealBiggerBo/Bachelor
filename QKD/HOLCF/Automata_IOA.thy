@@ -10,7 +10,7 @@ locale IOA =
       and input_enabled: "input_enabled ioa'"
 begin
 
-abbreviation asig where
+(*abbreviation asig where
   \<open>asig \<equiv> asig_of ioa'\<close>
 
 abbreviation starts where
@@ -23,7 +23,7 @@ abbreviation wfair where
   \<open>wfair \<equiv> wfair_of ioa'\<close>
 
 abbreviation sfair where
-  \<open>sfair \<equiv> sfair_of ioa'\<close>
+  \<open>sfair \<equiv> sfair_of ioa'\<close>*)
 
 abbreviation ioa where
   \<open>ioa \<equiv> ioa'\<close>

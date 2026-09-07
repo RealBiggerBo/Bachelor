@@ -1,0 +1,52 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{theory}\PYG{+w}{ }\PYG{n}{Kleppmann\PYGZus{}2PC}
+\PYG{+w}{  }\PYG{k+kp}{imports}\PYG{+w}{ }\PYG{n}{Network}
+\PYG{k}{begin}
+
+\PYG{k}{datatype}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}t}\PYG{+w}{ }\PYG{n}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Prepare}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{transaction}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}t}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Yes}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{No}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Commit}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Abort}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Ack}
+
+\PYG{k}{datatype}\PYG{+w}{ }\PYG{o}{(}\PYG{n+nType}{\PYGZsq{}t}\PYG{o}{,}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}proc}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{state}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Initial}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{transaction}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}t}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{all}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc set\PYGZdq{}}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{retry\PYGZus{}count}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}nat\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Collecting}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{transaction}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}t}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{all}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc set\PYGZdq{}}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{yes}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc set\PYGZdq{}}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{retry\PYGZus{}count}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}nat\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Prepared}\PYG{+w}{ }
+\PYG{+w}{  }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Committed}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{all}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc set\PYGZdq{}}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{ack}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc set\PYGZdq{}}\PYG{o}{)}\PYG{+w}{ }
+\PYG{+w}{  }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Aborted}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{all}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc set\PYGZdq{}}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{ack}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc set\PYGZdq{}}\PYG{o}{)}\PYG{+w}{ }
+\PYG{+w}{  }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Forgotten}
+
+\PYG{k}{fun}\PYG{+w}{ }\PYG{n}{coordinator\PYGZus{}step}\PYG{o}{::}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc ⇒ (\PYGZsq{}t, \PYGZsq{}proc) state ⇒ (\PYGZsq{}proc, \PYGZsq{}t msg) event ⇒ (\PYGZsq{}t, \PYGZsq{}proc) state × (\PYGZsq{}proc, \PYGZsq{}t msg) send set\PYGZdq{}}\PYG{+w}{  }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step pid (Initial t a r) Start = (Collecting t a \PYGZob{}pid\PYGZcb{} r, \PYGZob{}Send p (Prepare t) | p. p ∈ a\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step pid (Collecting t a y r) (Receive sender msg) = }
+\PYG{l+s}{      (case msg of}
+\PYG{l+s}{        Yes ⇒(if y ∪ \PYGZob{}sender\PYGZcb{} = a then (Committed a \PYGZob{}pid\PYGZcb{}, \PYGZob{}Send p (Commit) | p. p ∈ a\PYGZcb{}) else (Collecting t a (y ∪ \PYGZob{}sender\PYGZcb{}) r, \PYGZob{}\PYGZcb{})) |}
+\PYG{l+s}{        No ⇒(Aborted a \PYGZob{}pid\PYGZcb{}, \PYGZob{}Send p (Abort) | p. p ∈ a\PYGZcb{}) |}
+\PYG{l+s}{        \PYGZus{} ⇒(Collecting t a y r, \PYGZob{}\PYGZcb{}))›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step pid (Collecting t a y 0) Timeout = (Aborted a \PYGZob{}pid\PYGZcb{}, \PYGZob{}Send p (Abort) | p. p ∈ a\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step \PYGZus{} (Collecting t a y (Suc r)) Timeout = (Collecting t a y r, \PYGZob{}Send p (Prepare t) | p. p ∈ (a \PYGZhy{} y)\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step \PYGZus{} (Committed a ack\PYGZsq{}) (Receive sender Ack) = }
+\PYG{l+s}{      (if \PYGZob{}sender\PYGZcb{} ∪ ack\PYGZsq{} = a then (Forgotten, \PYGZob{}\PYGZcb{}) else (Committed a (ack\PYGZsq{} ∪ \PYGZob{}sender\PYGZcb{}), \PYGZob{}\PYGZcb{}))›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step \PYGZus{} (Committed a ack\PYGZsq{}) Timeout = (Committed a ack\PYGZsq{}, \PYGZob{}Send p Commit | p. p ∈ (a \PYGZhy{} ack\PYGZsq{})\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step \PYGZus{} (Committed a ack\PYGZsq{}) Restart = (Committed a ack\PYGZsq{}, \PYGZob{}Send p Commit | p. p ∈ a\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step \PYGZus{} (Aborted a ack\PYGZsq{}) (Receive sender Ack) = }
+\PYG{l+s}{      (if \PYGZob{}sender\PYGZcb{} ∪ ack\PYGZsq{} = a then (Forgotten, \PYGZob{}\PYGZcb{}) else (Aborted a (ack\PYGZsq{} ∪ \PYGZob{}sender\PYGZcb{}), \PYGZob{}\PYGZcb{}))›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step \PYGZus{} (Aborted a ack\PYGZsq{}) Timeout = (Aborted a ack\PYGZsq{}, \PYGZob{}Send p Abort  | p. p ∈ (a \PYGZhy{} ack\PYGZsq{})\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step \PYGZus{} (Aborted a ack\PYGZsq{}) Restart = (Aborted a ack\PYGZsq{}, \PYGZob{}Send p Abort  | p. p ∈ a\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹coordinator\PYGZus{}step \PYGZus{} state \PYGZus{} = (state, \PYGZob{}\PYGZcb{})›}
+
+\PYG{k}{fun}\PYG{+w}{ }\PYG{n}{participant\PYGZus{}step}\PYG{o}{::}
+\PYG{+w}{    }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}t, \PYGZsq{}proc) state ⇒ (\PYGZsq{}proc, \PYGZsq{}t msg) event ⇒ (\PYGZsq{}t, \PYGZsq{}proc) state × (\PYGZsq{}proc, \PYGZsq{}t msg) send set\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹participant\PYGZus{}step (Initial t \PYGZus{} \PYGZus{}) (Receive sender (Prepare t\PYGZsq{})) = (if t = t\PYGZsq{} then (Prepared, \PYGZob{}Send sender Yes\PYGZcb{}) else (Aborted \PYGZob{}\PYGZcb{} \PYGZob{}\PYGZcb{}, \PYGZob{}Send sender No\PYGZcb{}))›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹participant\PYGZus{}step (Initial \PYGZus{} \PYGZus{} \PYGZus{}) Timeout = (Aborted \PYGZob{}\PYGZcb{} \PYGZob{}\PYGZcb{}, \PYGZob{}\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹participant\PYGZus{}step Prepared (Receive sender msg) = }
+\PYG{l+s}{      (case msg of}
+\PYG{l+s}{        Commit ⇒ (Committed \PYGZob{}\PYGZcb{} \PYGZob{}\PYGZcb{}, \PYGZob{}Send sender Ack\PYGZcb{}) |}
+\PYG{l+s}{        Abort ⇒ (Aborted \PYGZob{}\PYGZcb{} \PYGZob{}\PYGZcb{}, \PYGZob{}Send sender Ack\PYGZcb{}) |}
+\PYG{l+s}{        \PYGZus{} ⇒ (Prepared, \PYGZob{}\PYGZcb{}))›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹participant\PYGZus{}step (Committed \PYGZus{} \PYGZus{}) (Receive sender Commit) = (Committed \PYGZob{}\PYGZcb{} \PYGZob{}\PYGZcb{}, \PYGZob{}Send sender Ack\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹participant\PYGZus{}step (Aborted \PYGZus{} \PYGZus{}) (Receive sender Abort) = (Aborted \PYGZob{}\PYGZcb{} \PYGZob{}\PYGZcb{}, \PYGZob{}Send sender Ack\PYGZcb{})›}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{‹participant\PYGZus{}step state \PYGZus{} = (state, \PYGZob{}\PYGZcb{})›}
+
+\PYG{k}{fun}\PYG{+w}{ }\PYG{n}{tupac\PYGZus{}step}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹tupac\PYGZus{}step proc = (if proc = 0 then coordinator\PYGZus{}step proc else participant\PYGZus{}step)›}
+
+\PYG{k}{end}
+\end{MintedVerbatim}

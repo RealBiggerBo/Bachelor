@@ -1,0 +1,55 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{theory}\PYG{+w}{ }\PYG{n}{Automata\PYGZus{}inv\PYGZus{}def}
+\PYG{+w}{  }\PYG{k+kp}{imports}\PYG{+w}{ }\PYG{n}{Automata\PYGZus{}2PC}
+\PYG{k}{begin}
+
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv1}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv1 s ⟷}
+\PYG{l+s}{     ((∃msgs p. (snd s) p = PState PCommitted msgs) ⟶}
+\PYG{l+s}{                 (∃sender rcpt. (sender, rcpt, Commit) ∈ snd (fst s)))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv11}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv11 procs s ⟷}
+\PYG{l+s}{    ((∃sender rcpt. (sender, rcpt, Commit) ∈ snd (fst s)) ∨ (∃all ack msgs. fst (fst s) = CState (CCommitted all ack) msgs) ⟶}
+\PYG{l+s}{                 (∀p ∈ procs. p ≠ 0 ⟶ (∃rcpt. (p, rcpt, Yes) ∈ snd (fst s))))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv13}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv13 procs s ⟷}
+\PYG{l+s}{    (∀t all yes r msgs. fst (fst s) = CState (Collecting t all yes r) msgs ⟶ }
+\PYG{l+s}{                (procs = all ∧ (∀p ∈ yes. p ≠ 0 ⟶ (∃rcpt. (p, rcpt, Yes) ∈ snd (fst s)))))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv14}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv14 procs s ⟷}
+\PYG{l+s}{    (∀t all r msgs. fst (fst s) = CState (CInitial t all r) msgs ⟶ procs = all)›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv15}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv15 s ⟷}
+\PYG{l+s}{    ((∃t all yes r msgs. fst (fst s) = CState (CInitial t all r) msgs ∨ fst (fst s) = CState (Collecting t all yes r) msgs ∨ fst (fst s) = CState (CCommitted all yes) msgs) ⟶ }
+\PYG{l+s}{              (∀sender rcpt. (sender, rcpt, Abort) ∉ snd (fst s)))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv17}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv17 s ⟷}
+\PYG{l+s}{    (∀p. p ≠ 0 ∧ (∃msgs. (snd s) p = PState PAborted msgs) ∧ (∀sender recpt. (sender, recpt, Abort) ∉ snd (fst s)) ⟶ (∀rcpt. (p, rcpt, Yes) ∉ snd (fst s)))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv110}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv110 s ⟷}
+\PYG{l+s}{    ((∃t all yes r msgs. fst (fst s) = CState (CInitial t all r) msgs ∨ fst (fst s) = CState (Collecting t all yes r) msgs ∨ fst (fst s) = CState (CAborted all yes) msgs) ⟶ }
+\PYG{l+s}{              (∀sender rcpt. (sender, rcpt, Commit) ∉ snd (fst s)))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv111}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv111 s ⟷}
+\PYG{l+s}{    ((∃sender rcpt. (sender, rcpt, Commit) ∈ snd (fst s)) ⟶}
+\PYG{l+s}{     (∃all ack cmsgs. fst (fst s) = CState (CCommitted all ack) cmsgs ∨ fst (fst s) = CState Forgotten cmsgs))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv3}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv3 s ⟷}
+\PYG{l+s}{    (∃sender recpt. (sender, recpt, Commit) ∈ snd (fst s)) ⟶ (∀sender recpt. (sender, recpt, Abort) ∉ snd (fst s))›}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inv\PYGZus{}part\PYGZus{}commit\PYGZus{}msg}\PYG{+w}{  }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{‹inv\PYGZus{}part\PYGZus{}commit\PYGZus{}msg s ⟷}
+\PYG{l+s}{    (∀p. (∃msgs. (snd s) p = PState PCommitted msgs) ⟶ }
+\PYG{l+s}{      (∃sender rcpt. (sender, rcpt, Commit) ∈ snd (fst s)))›}
+
+\PYG{k}{end}
+\end{MintedVerbatim}

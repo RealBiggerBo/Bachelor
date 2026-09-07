@@ -1,0 +1,5 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{	}\PYG{k}{fun}\PYG{+w}{ }\PYG{n}{sq2}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}nat ⇒ nat\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{	}\PYG{l+s}{\PYGZdq{}sq2 0 = 0\PYGZdq{}}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{	}\PYG{l+s}{\PYGZdq{}sq2 (Suc n) = sq2 n + 2*n + 1\PYGZdq{}}
+\end{MintedVerbatim}

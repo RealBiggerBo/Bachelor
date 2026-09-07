@@ -26,11 +26,11 @@ lemma deterministic:
 end
 
 sublocale Network_DIOA < IOA "(dioa_asig, {IoaState start {}}, dioa_trans, {}, {})"
-  rewrites asig_eq:"asig = dioa_asig"
-      and starts_eq:"starts = {IoaState start {}}"
-      and trans_eq:"trans = dioa_trans"
-      and wfair_eq:"wfair = {}"
-      and sfair_eq:"sfair = {}"
+  rewrites asig_eq:"asig_of ioa = dioa_asig"
+      and starts_eq:"starts_of ioa = {IoaState start {}}"
+      and trans_eq:"trans_of ioa = dioa_trans"
+      and wfair_eq:"wfair_of ioa = {}"
+      and sfair_eq:"sfair_of ioa = {}"
   apply (unfold_locales)
 proof -
   let ?ioa = "(dioa_asig, {IoaState start {}}, dioa_trans, {}, {})"

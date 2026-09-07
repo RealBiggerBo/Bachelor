@@ -1,0 +1,78 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c}{(*  Title:      HOL/HOLCF/IOA/Asig.thy}
+\PYG{c}{    Author:     Olaf Müller, Tobias Nipkow \PYGZam{} Konrad Slind}
+\PYG{c}{*)}
+
+\PYG{g+gu}{section}\PYG{+w}{ }\PYG{l+s}{‹Action signatures›}
+
+\PYG{k}{theory}\PYG{+w}{ }\PYG{n}{Asig}
+\PYG{k+kp}{imports}\PYG{+w}{ }\PYG{n}{Main}
+\PYG{k}{begin}
+
+\PYG{k}{type\PYGZus{}synonym}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}a}\PYG{+w}{ }\PYG{n}{signature}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}a set × \PYGZsq{}a set × \PYGZsq{}a set\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{inputs}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}action signature ⇒ \PYGZsq{}action set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inputs = fst\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{outputs}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}action signature ⇒ \PYGZsq{}action set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}outputs = fst ∘ snd\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{internals}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}action signature ⇒ \PYGZsq{}action set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}internals = snd ∘ snd\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{actions}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}action signature ⇒ \PYGZsq{}action set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}actions asig = inputs asig ∪ outputs asig ∪ internals asig\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{externals}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}action signature ⇒ \PYGZsq{}action set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}externals asig = inputs asig ∪ outputs asig\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{locals}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}action signature ⇒ \PYGZsq{}action set\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}locals asig = internals asig ∪ outputs asig\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}action signature ⇒ bool\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}asig triple ⟷}
+\PYG{l+s}{    inputs triple ∩ outputs triple = \PYGZob{}\PYGZcb{} ∧}
+\PYG{l+s}{    outputs triple ∩ internals triple = \PYGZob{}\PYGZcb{} ∧}
+\PYG{l+s}{    inputs triple ∩ internals triple = \PYGZob{}\PYGZcb{}\PYGZdq{}}
+
+\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{mk\PYGZus{}ext\PYGZus{}asig}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZsq{}action signature ⇒ \PYGZsq{}action signature\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}mk\PYGZus{}ext\PYGZus{}asig triple = (inputs triple, outputs triple, \PYGZob{}\PYGZcb{})\PYGZdq{}}
+
+
+\PYG{k}{lemmas}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}projections}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}triple\PYGZus{}proj}\PYG{o}{:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}outputs (a, b, c) = b ∧}
+\PYG{l+s}{   inputs (a, b, c) = a ∧}
+\PYG{l+s}{   internals (a, b, c) = c\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}projections}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{int\PYGZus{}and\PYGZus{}ext\PYGZus{}is\PYGZus{}act}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a ∉ internals S ⟹ a ∉ externals S ⟹ a ∉ actions S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{ext\PYGZus{}is\PYGZus{}act}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a ∈ externals S ⟹ a ∈ actions S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{int\PYGZus{}is\PYGZus{}act}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a ∈ internals S ⟹ a ∈ actions S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}internals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{inp\PYGZus{}is\PYGZus{}act}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a ∈ inputs S ⟹ a ∈ actions S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}inputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{out\PYGZus{}is\PYGZus{}act}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}a ∈ outputs S ⟹ a ∈ actions S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{asig\PYGZus{}outputs\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{ext\PYGZus{}and\PYGZus{}act}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}x ∈ actions S ∧ x ∈ externals S ⟷ x ∈ externals S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{fast}\PYG{+w}{ }\PYG{n}{intro}\PYG{o}{!:}\PYG{+w}{ }\PYG{n}{ext\PYGZus{}is\PYGZus{}act}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{not\PYGZus{}ext\PYGZus{}is\PYGZus{}int}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}asig S ⟹ x ∈ actions S ⟹ x ∉ externals S ⟷ x ∈ internals S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{not\PYGZus{}ext\PYGZus{}is\PYGZus{}int\PYGZus{}or\PYGZus{}not\PYGZus{}act}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}is\PYGZus{}asig S ⟹ x ∉ externals S ⟷ x ∈ internals S ∨ x ∉ actions S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{int\PYGZus{}is\PYGZus{}not\PYGZus{}ext}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}is\PYGZus{}asig S ⟹ x ∈ internals S ⟹ x ∉ externals S\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{externals\PYGZus{}def}\PYG{+w}{ }\PYG{n}{actions\PYGZus{}def}\PYG{+w}{ }\PYG{n}{is\PYGZus{}asig\PYGZus{}def}\PYG{o}{)}
+
+\PYG{k}{end}
+\end{MintedVerbatim}

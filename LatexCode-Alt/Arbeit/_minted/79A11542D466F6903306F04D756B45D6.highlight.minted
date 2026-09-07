@@ -1,0 +1,4 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{	}\PYG{k}{definition}\PYG{+w}{ }\PYG{n}{sq1}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}nat ⇒ nat\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{	}\PYG{l+s}{\PYGZdq{}sq1 n = n*n\PYGZdq{}}
+\end{MintedVerbatim}

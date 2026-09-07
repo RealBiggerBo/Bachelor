@@ -26,15 +26,15 @@ abbreviation par_trans where
 end
 
 sublocale Par_IOA < IOA "A \<parallel> B"
-  rewrites asig_eq:"asig = asig_comp (asig_of A) (asig_of B)"
-     and inp_eq:"inp (A \<parallel> B) = (inp A \<union> inp B) - (out A \<union> out B)"
-     and out_eq:"out (A \<parallel> B) = out A \<union> out B"
-     and int_eq:"int (A \<parallel> B) = int A \<union> int B"
-     and act_eq:"act (A \<parallel> B) = act A \<union> act B"
-     and starts_eq:"starts = {p. fst p \<in> starts_of A \<and> snd p \<in> starts_of B}"
-     and trans_eq:"trans = par_trans"
-     and wfair_eq:"wfair = wfair_of A \<union> wfair_of B"
-     and sfair_eq:"sfair = sfair_of A \<union> sfair_of B"
+  rewrites asig_eq:"asig_of ioa = asig_comp (asig_of A) (asig_of B)"
+     and inp_eq:"inp ioa = (inp A \<union> inp B) - (out A \<union> out B)"
+     and out_eq:"out ioa = out A \<union> out B"
+     and int_eq:"int ioa = int A \<union> int B"
+     and act_eq:"act ioa = act A \<union> act B"
+     and starts_eq:"starts_of ioa = {p. fst p \<in> starts_of A \<and> snd p \<in> starts_of B}"
+     and trans_eq:"trans_of ioa = par_trans"
+     and wfair_eq:"wfair_of ioa = wfair_of A \<union> wfair_of B"
+     and sfair_eq:"sfair_of ioa = sfair_of A \<union> sfair_of B"
   apply (unfold_locales)
 proof -
   let ?ioa = "A \<parallel> B"
@@ -61,9 +61,9 @@ proof -
     using A.is_trans_of B.is_trans_of trans_of_par by simp
   show "input_enabled ?ioa"
     using compatible A.input_enabled B.input_enabled input_enabled_par by blast
-  show "asig_of ?ioa = asig_comp A.asig B.asig"
+  show "asig_of ?ioa = asig_comp (asig_of A) (asig_of B)"
     unfolding asig_of_def par_def by simp
-  show "starts_of ?ioa = {p. fst p \<in> A.starts \<and> snd p \<in> B.starts}"
+  show "starts_of ?ioa = {p. fst p \<in> starts_of A \<and> snd p \<in> starts_of B}"
     unfolding starts_of_def par_def by simp
   show in':"inp ?ioa = inp A \<union> inp B - (out A \<union> out B)"
     unfolding par_def asig_of_def asig_inputs_def asig_comp_def by simp
@@ -76,9 +76,9 @@ proof -
     unfolding actions_def par_def asig_projections asig_comp_def by auto
   show "trans_of ?ioa = par_trans"
     unfolding par_def trans_of_def by simp
-  show "wfair_of ?ioa = A.wfair \<union> B.wfair"
+  show "wfair_of ?ioa = wfair_of A \<union> wfair_of B"
     unfolding par_def wfair_of_def by simp
-  show "sfair_of ?ioa = A.sfair \<union> B.sfair"
+  show "sfair_of ?ioa = sfair_of A \<union> sfair_of B"
     unfolding par_def sfair_of_def by simp
 qed
 

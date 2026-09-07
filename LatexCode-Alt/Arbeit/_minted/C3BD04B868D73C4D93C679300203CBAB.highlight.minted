@@ -1,0 +1,136 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{theory}\PYG{+w}{ }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}1}
+\PYG{+w}{  }\PYG{k+kp}{imports}\PYG{+w}{ }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}def}\PYG{+w}{ }\PYG{n}{Kleppmann\PYGZus{}step\PYGZus{}inducts}
+\PYG{k}{begin}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{invariant1\PYGZus{}coordinator}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}coordinator\PYGZus{}step 0 (states 0) event = (new\PYGZus{}state, sent)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs\PYGZsq{} = msgs ∪ ((λmsg. (0, msg)) ` sent)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZsq{} = states (0 := new\PYGZus{}state)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV (events @ [(0, event)]) msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inv1 msgs states\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inv1 msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{rule}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{coordinator\PYGZus{}induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}\PYG{+w}{ }\PYG{n}{UnCI}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{,}\PYG{n}{3}\PYG{o}{,}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{mono\PYGZus{}tags}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{lifting}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{fun\PYGZus{}upd\PYGZus{}apply}\PYG{o}{)+}
+\PYG{+w}{  }\PYG{k}{done}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{invariant1\PYGZus{}participant}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}participant\PYGZus{}step (states proc) event = (new\PYGZus{}state, sent)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}proc ≠ 0\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs\PYGZsq{} = msgs ∪ ((λmsg. (proc, msg)) ` sent)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZsq{} = states (proc := new\PYGZus{}state)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV (events @ [(proc, event)]) msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inv1 msgs states\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inv1 msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{rule}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{participant\PYGZus{}induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{Init\PYGZus{}Prep\PYGZus{}Yes}\PYG{+w}{ }\PYG{n}{t}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{n}{r}\PYG{+w}{ }\PYG{n}{sender}\PYG{+w}{ }\PYG{n}{t\PYGZsq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃proc a ack\PYGZsq{}. (proc ≠ 0 ∧ states proc = Committed a ack\PYGZsq{}) ⟷ (proc ≠ 0 ∧ states\PYGZsq{} proc = Committed a ack\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. ((sender, Send rcpt Commit) ∈ msgs) ⟷ ((sender, Send rcpt Commit) ∈ msgs\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Init\PYGZus{}Prep\PYGZus{}Yes}\PYG{o}{(}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{no\PYGZus{}types}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{lifting}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Init\PYGZus{}Prep\PYGZus{}Yes}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{UnCI}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{,}\PYG{n}{4}\PYG{o}{,}\PYG{n}{6}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{fun\PYGZus{}upd\PYGZus{}apply}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}
+\PYG{+w}{        }\PYG{n}{state.distinct}\PYG{o}{(}\PYG{n}{19}\PYG{o}{))}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{Init\PYGZus{}Prep\PYGZus{}No}\PYG{+w}{ }\PYG{n}{t}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{n}{r}\PYG{+w}{ }\PYG{n}{sender}\PYG{+w}{ }\PYG{n}{t\PYGZsq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃proc a ack\PYGZsq{}. (proc ≠ 0 ∧ states proc = Committed a ack\PYGZsq{}) ⟷ (proc ≠ 0 ∧ states\PYGZsq{} proc = Committed a ack\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. ((sender, Send rcpt Commit) ∈ msgs) ⟷ ((sender, Send rcpt Commit) ∈ msgs\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Init\PYGZus{}Prep\PYGZus{}No}\PYG{o}{(}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{no\PYGZus{}types}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{lifting}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Init\PYGZus{}Prep\PYGZus{}No}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{UnCI}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{,}\PYG{n}{4}\PYG{o}{,}\PYG{n}{6}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{fun\PYGZus{}upd\PYGZus{}apply}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}
+\PYG{+w}{        }\PYG{n}{state.distinct}\PYG{o}{(}\PYG{n}{25}\PYG{o}{))}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{Init\PYGZus{}Timeout}\PYG{+w}{ }\PYG{n}{t}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{n}{r}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃proc a ack\PYGZsq{}. (proc ≠ 0 ∧ states proc = Committed a ack\PYGZsq{}) ⟷ (proc ≠ 0 ∧ states\PYGZsq{} proc = Committed a ack\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. ((sender, Send rcpt Commit) ∈ msgs) ⟷ ((sender, Send rcpt Commit) ∈ msgs\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Init\PYGZus{}Timeout}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{no\PYGZus{}types}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{lifting}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Init\PYGZus{}Timeout}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{UnCI}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{,}\PYG{n}{4}\PYG{o}{,}\PYG{n}{6}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{fun\PYGZus{}upd\PYGZus{}apply}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}
+\PYG{+w}{        }\PYG{n}{state.distinct}\PYG{o}{(}\PYG{n}{25}\PYG{o}{))}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{Prep\PYGZus{}Commit}\PYG{+w}{ }\PYG{n}{sender}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{,}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}receive}\PYG{+w}{ }\PYG{n}{Un\PYGZus{}commute}\PYG{+w}{ }\PYG{n}{image\PYGZus{}insert}\PYG{+w}{ }\PYG{n}{image\PYGZus{}is\PYGZus{}empty}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{smt}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{verit}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{ccfv\PYGZus{}SIG}\PYG{o}{)}\PYG{+w}{ }
+\PYG{+w}{          }\PYG{n}{insert\PYGZus{}iff}\PYG{+w}{ }\PYG{n}{insert\PYGZus{}is\PYGZus{}Un}\PYG{+w}{ }\PYG{n}{msg.distinct}\PYG{o}{(}\PYG{n}{27}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{prod.inject}\PYG{+w}{ }\PYG{n}{send.inject}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{Prep\PYGZus{}Abort}\PYG{+w}{ }\PYG{n}{sender}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃proc a ack\PYGZsq{}. (proc ≠ 0 ∧ states proc = Committed a ack\PYGZsq{}) ⟷ (proc ≠ 0 ∧ states\PYGZsq{} proc = Committed a ack\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. ((sender, Send rcpt Commit) ∈ msgs) ⟷ ((sender, Send rcpt Commit) ∈ msgs\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Prep\PYGZus{}Abort}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{no\PYGZus{}types}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{lifting}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Prep\PYGZus{}Abort}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{UnCI}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{,}\PYG{n}{4}\PYG{o}{,}\PYG{n}{6}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{fun\PYGZus{}upd\PYGZus{}apply}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}
+\PYG{+w}{        }\PYG{n}{state.distinct}\PYG{o}{(}\PYG{n}{25}\PYG{o}{))}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{Committed\PYGZus{}Commit}\PYG{+w}{ }\PYG{n}{all}\PYG{+w}{ }\PYG{n}{ack}\PYG{+w}{ }\PYG{n}{sender}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{,}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}receive}\PYG{+w}{ }\PYG{n}{Un\PYGZus{}commute}\PYG{+w}{ }\PYG{n}{image\PYGZus{}insert}\PYG{+w}{ }\PYG{n}{image\PYGZus{}is\PYGZus{}empty}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{smt}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{verit}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{ccfv\PYGZus{}SIG}\PYG{o}{)}\PYG{+w}{ }
+\PYG{+w}{          }\PYG{n}{insert\PYGZus{}iff}\PYG{+w}{ }\PYG{n}{insert\PYGZus{}is\PYGZus{}Un}\PYG{+w}{ }\PYG{n}{msg.distinct}\PYG{o}{(}\PYG{n}{27}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{prod.inject}\PYG{+w}{ }\PYG{n}{send.inject}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{Aborted\PYGZus{}Abort}\PYG{+w}{ }\PYG{n}{all}\PYG{+w}{ }\PYG{n}{ack}\PYG{+w}{ }\PYG{n}{sender}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃proc a ack\PYGZsq{}. (proc ≠ 0 ∧ states proc = Committed a ack\PYGZsq{}) ⟷ (proc ≠ 0 ∧ states\PYGZsq{} proc = Committed a ack\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃sender rcpt. ((sender, Send rcpt Commit) ∈ msgs) ⟷ ((sender, Send rcpt Commit) ∈ msgs\PYGZsq{})\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{Aborted\PYGZus{}Abort}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{no\PYGZus{}types}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{lifting}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{UnCI}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{,}\PYG{n}{4}\PYG{o}{,}\PYG{n}{6}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{fun\PYGZus{}upd\PYGZus{}apply}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}
+\PYG{+w}{        }\PYG{n}{Aborted\PYGZus{}Abort}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{state.distinct}\PYG{o}{(}\PYG{n}{25}\PYG{o}{))}
+\PYG{k}{qed}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{invariant1}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{‹execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs\PYGZsq{} states\PYGZsq{}›}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inv1 msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{proof}\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{events}\PYG{+w}{ }\PYG{n}{arbitrary}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{msgs\PYGZsq{}}\PYG{+w}{ }\PYG{n}{states\PYGZsq{}}\PYG{+w}{ }\PYG{n}{r}\PYG{+w}{ }\PYG{n}{rule}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{List.rev\PYGZus{}induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{Nil}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{statesInit}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}∀p. states\PYGZsq{} p = Initial (init\PYGZus{}val p) UNIV r\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}init}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fast}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{msgsEmpty}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}msgs\PYGZsq{} = \PYGZob{}\PYGZcb{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}init}\PYG{+w}{ }\PYG{n}{Nil}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fast}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{snoc}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{n}{events}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{proc}\PYG{+w}{ }\PYG{n}{event}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}x = (proc, event)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{  }\PYG{k}{hence}\PYG{+w}{ }\PYG{n}{exec}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV}
+\PYG{l+s}{               (events @ [(proc, event)]) msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc.prems}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fast}
+\PYG{+w}{  }\PYG{k}{from}\PYG{+w}{ }\PYG{n}{this}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs}\PYG{+w}{ }\PYG{n}{states}\PYG{+w}{ }\PYG{n}{sent}\PYG{+w}{ }\PYG{n}{new\PYGZus{}state}
+\PYG{+w}{    }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel1}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs states\PYGZdq{}}
+\PYG{+w}{      }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel2}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}tupac\PYGZus{}step proc (states proc) event = (new\PYGZus{}state, sent)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel3}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs\PYGZsq{} = msgs ∪ ((λmsg. (proc, msg)) ` sent)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel4}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZsq{} = states (proc := new\PYGZus{}state)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{  }\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{cases}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}proc = 0\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{True}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}coordinator\PYGZus{}step proc (states 0) event = (new\PYGZus{}state, sent)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel2}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{l+s}{\PYGZdq{}inv1 msgs states\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc.IH}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel1}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fast}
+\PYG{+w}{    }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariant1\PYGZus{}coordinator}\PYG{+w}{ }\PYG{n}{True}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel3}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel4}\PYG{+w}{ }\PYG{n}{exec}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{next}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{False}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}participant\PYGZus{}step (states proc) event = (new\PYGZus{}state, sent)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel2}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{l+s}{\PYGZdq{}inv1 msgs states\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc.IH}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel1}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fast}
+\PYG{+w}{    }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariant1\PYGZus{}participant}\PYG{+w}{ }\PYG{n}{False}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel3}\PYG{+w}{ }\PYG{n}{step\PYGZus{}rel4}\PYG{+w}{ }\PYG{n}{exec}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{qed}
+\PYG{k}{qed}
+
+\PYG{k}{end}
+\end{MintedVerbatim}

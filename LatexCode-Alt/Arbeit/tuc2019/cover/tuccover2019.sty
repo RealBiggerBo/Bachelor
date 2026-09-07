@@ -1,0 +1,617 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tuccover2019}[2024/07/29 v0.1 covers for TUC publications]
+
+
+\newlength{\tucc@ver@logosep}        % Logo-Schutzraum
+\newlength{\tucc@ver@logowidth}      % Logo-Breite
+\newlength{\tucc@ver@rulethickness}  % Dicke der Trennlinien
+
+\newif\iftuckhs\tuckhsfalse
+
+
+\RequirePackage{xkeyval}
+
+% Abmessungen
+\define@choicekey*{tuccover2019.sty}{size}[\val\nr]{a4,a5}{%
+  \ifcase\nr\relax
+    \setlength{\tucc@ver@logosep}{10.3mm}
+    \setlength{\tucc@ver@logowidth}{47.0mm}
+    \setlength{\tucc@ver@rulethickness}{0.7pt}
+    \def\tucc@ver@front@size{14.0}
+    % Laut CI-Vorgabe sollen es 21pt sein, aber das passt nicht zu den Mustern.
+    % 18pt erscheinen passender.
+    %\def\tucc@ver@front@skip{21.0}
+    \def\tucc@ver@front@skip{18.0}
+    \def\tucc@ver@back@size{12.0}
+    \def\tucc@ver@back@skip{18.0}
+  \or
+    \setlength{\tucc@ver@logosep}{7.0mm}
+    \setlength{\tucc@ver@logowidth}{32.0mm}
+    \setlength{\tucc@ver@rulethickness}{0.7pt}
+    % Laut CI-Vorgabe sollen es 14pt sein, aber das passt nicht zu den Mustern.
+    % 9pt erscheinen passender.
+    %\def\tucc@ver@front@size{14.0}
+    \def\tucc@ver@front@size{9.0}
+    % Laut CI-Vorgabe sollen es 21pt sein, aber das passt nicht zu den Mustern.
+    % 12pt erscheinen passender.
+    %\def\tucc@ver@front@skip{21.0}
+    \def\tucc@ver@front@skip{12.0}
+    % Laut CI-Vorgabe sollen es 10pt und 13pt sein, aber das passt nicht zu den
+    % Mustern. 6pt und 8pt passen besser.
+    %\def\tucc@ver@back@size{10.0}
+    %\def\tucc@ver@back@skip{13.0}
+    \def\tucc@ver@back@size{6.0}
+    \def\tucc@ver@back@skip{8.0}
+  \fi
+}
+
+% Logovariante
+\define@choicekey{tuccover2019.sty}{logo}[\val\nr]{black,green,GREEN,2025black,2025green,2025GREEN,2025color,2025COLOR}{
+  \ifcase\nr\relax
+    \def\tucc@ver@frontlogo{tuc2019/logo/tuc_white}
+    \def\tucc@ver@backlogo{tuc2019/logo/tuc_black}
+    \tuckhsfalse
+  \or
+    \def\tucc@ver@frontlogo{tuc2019/logo/tuc_white}
+    \def\tucc@ver@backlogo{\tucc@ver@logo@green}
+    \tuckhsfalse
+  \or
+    \def\tucc@ver@frontlogo{tuc2019/logo/tuc_white}
+    \def\tucc@ver@backlogo{tuc2019/logo/tuc_green}
+    \tuckhsfalse
+  \or
+    \def\tucc@ver@frontlogo{tuc2019/logo/tuckhs_white}
+    \def\tucc@ver@backlogo{tuc2019/logo/tuckhs_black}
+    \tuckhstrue
+  \or
+    \def\tucc@ver@frontlogo{tuc2019/logo/tuckhs_white}
+    \def\tucc@ver@backlogo{\tucc@ver@logo@khsgreen}
+    \tuckhstrue
+  \or
+    \def\tucc@ver@frontlogo{tuc2019/logo/tuckhs_white}
+    \def\tucc@ver@backlogo{tuc2019/logo/tuckhs_green}
+    \tuckhstrue
+  \or
+    \def\tucc@ver@frontlogo{tuc2019/logo/tuckhs_white}
+    \def\tucc@ver@backlogo{\tucc@ver@logo@khscolor}
+    \tuckhstrue
+  \or
+    \def\tucc@ver@frontlogo{tuc2019/logo/tuckhs_white}
+    \def\tucc@ver@backlogo{tuc2019/logo/tuckhs_color}
+    \tuckhstrue
+  \fi
+}
+
+% Farbe
+\define@choicekey{tuccover2019.sty}{color}{tuc,natwi,ma,mb,etit,if,wiwi,phil,hsw,gold,silver}{%
+  \def\tucc@ver@colorname{#1}
+}
+
+\define@choicekey{tuccover2019.sty}{colorspace}{rgb,cmyk}{%
+  \def\tucc@ver@colorspace{#1}
+}
+
+\ExecuteOptionsX{size=a4,logo=2025green,color=tuc,colorspace=rgb}
+\ProcessOptionsX
+
+
+\RequirePackage{eurosym}
+\RequirePackage{geometry}
+\RequirePackage[undo-recent-deprecations]{expl3}
+\RequirePackage{GS1}
+\RequirePackage{graphicx}
+\RequirePackage{roboto}
+\RequirePackage{xcolor}
+\RequirePackage{xifthen}
+
+
+%
+% Farben
+%
+
+\definecolor{tuccolor@black@rgb}{RGB}{0,0,0}
+\definecolor{tuccolor@tuc@rgb}{RGB}{0,95,80}
+\definecolor{tuccolor@natwi@rgb}{RGB}{112,112,111}
+\definecolor{tuccolor@ma@rgb}{RGB}{161,11,112}
+\definecolor{tuccolor@mb@rgb}{RGB}{18,51,117}
+\definecolor{tuccolor@etit@rgb}{RGB}{228,3,45}
+\definecolor{tuccolor@if@rgb}{RGB}{74,130,70}
+\definecolor{tuccolor@wiwi@rgb}{RGB}{157,7,54}
+\definecolor{tuccolor@phil@rgb}{RGB}{198,83,6}
+\definecolor{tuccolor@hsw@rgb}{RGB}{0,117,191}
+\definecolor{tuccolor@gold@rgb}{RGB}{141,104,49}
+\definecolor{tuccolor@silver@rgb}{RGB}{157,156,156}
+%\definecolor{tuccolor@info@rgb}{RGB}{85,85,85}
+%\definecolor{tuccolor@warning@rgb}{RGB}{255,153,0}
+%\definecolor{tuccolor@danger@rgb}{RGB}{255,0,0}
+
+\definecolor{tuccolor@black@cmyk}{cmyk}{0.00,0.00,0.00,1.00}
+\definecolor{tuccolor@tuc@cmyk}{cmyk}{1.00,0.34,0.69,0.30}
+\definecolor{tuccolor@natwi@cmyk}{cmyk}{0.00,0.00,0.00,0.70}
+\definecolor{tuccolor@ma@cmyk}{cmyk}{0.30,1.00,0.00,0.17}
+\definecolor{tuccolor@mb@cmyk}{cmyk}{1.00,0.80,0.00,0.29}
+\definecolor{tuccolor@etit@cmyk}{cmyk}{0.00,1.00,0.81,0.00}
+\definecolor{tuccolor@if@cmyk}{cmyk}{0.74,0.28,0.85,0.13}
+\definecolor{tuccolor@wiwi@cmyk}{cmyk}{0.00,1.00,0.50,0.41}
+\definecolor{tuccolor@phil@cmyk}{cmyk}{0.17,0.75,1.00,0.06}
+\definecolor{tuccolor@hsw@cmyk}{cmyk}{1.00,0.40,0.00,0.00}
+\definecolor{tuccolor@gold@cmyk}{cmyk}{0.29,0.48,0.81,0.36}
+\definecolor{tuccolor@silver@cmyk}{cmyk}{0.00,0.00,0.00,0.50}
+%\definecolor{tuccolor@info@cmyk}{cmyk}{0.00,0.00,0.00,0.76}
+%\definecolor{tuccolor@warning@cmyk}{cmyk}{0,0.40,1.00,0.00}
+%\definecolor{tuccolor@danger@cmyk}{cmyk}{0.0,1.00,1.00,0.00}
+
+\colorlet{tuccolor@black}{tuccolor@black@\tucc@ver@colorspace}
+\colorlet{tuccolor@tuc}{tuccolor@tuc@\tucc@ver@colorspace}
+\colorlet{tuccolor@natwi}{tuccolor@natwi@\tucc@ver@colorspace}
+\colorlet{tuccolor@ma}{tuccolor@ma@\tucc@ver@colorspace}
+\colorlet{tuccolor@mb}{tuccolor@mb@\tucc@ver@colorspace}
+\colorlet{tuccolor@etit}{tuccolor@etit@\tucc@ver@colorspace}
+\colorlet{tuccolor@if}{tuccolor@if@\tucc@ver@colorspace}
+\colorlet{tuccolor@wiwi}{tuccolor@wiwi@\tucc@ver@colorspace}
+\colorlet{tuccolor@phil}{tuccolor@phil@\tucc@ver@colorspace}
+\colorlet{tuccolor@hsw}{tuccolor@hsw@\tucc@ver@colorspace}
+\colorlet{tuccolor@gold}{tuccolor@gold@\tucc@ver@colorspace}
+\colorlet{tuccolor@silver}{tuccolor@silver@\tucc@ver@colorspace}
+%\colorlet{tuccolor@info}{tuccolor@info@\tucc@ver@colorspace}
+%\colorlet{tuccolor@warning}{tuccolor@warning@\tucc@ver@colorspace}
+%\colorlet{tuccolor@danger}{tuccolor@danger@\tucc@ver@colorspace}
+
+\colorlet{tuccolor}{tuccolor@\tucc@ver@colorname}
+
+% Das Logo liegt nicht in den Fakultätsfarben vor. Daher weichen wir im Zweifel
+% auf die schwarze Variante aus.
+\ifthenelse{\equal{\tucc@ver@colorname}{tuc}}
+  {\def\tucc@ver@logo@green{tuc2019/logo/tuc_green}}
+  {\def\tucc@ver@logo@green{tuc2019/logo/tuc_black}}
+\ifthenelse{\equal{\tucc@ver@colorname}{tuc}}
+  {\def\tucc@ver@logo@khsgreen{tuc2019/logo/tuckhs_green}}
+  {\def\tucc@ver@logo@khsgreen{tuc2019/logo/tuckhs_black}}
+\ifthenelse{\equal{\tucc@ver@colorname}{tuc}}
+  {\def\tucc@ver@logo@khscolor{tuc2019/logo/tuckhs_color}}
+  {\def\tucc@ver@logo@khscolor{tuc2019/logo/tuckhs_black}}
+
+\AtBeginDocument{\@ifpackageloaded{hyperref}{\newcommand{\tucc@ver@link}[1]{\href{#1}{#1}}}{\newcommand{\tucc@ver@link}[1]{#1}}}
+
+
+%
+% Abmessungen
+%
+
+\newlength{\tucc@ver@logoheight}   % Logo-Höhe
+\newlength{\tucc@ver@columnindent} % Einzug für die rechte Spalte
+
+\begingroup
+
+% Höhe des Logos aus dem Bild ausmessen.
+\locbox\@tempbox
+\savebox\@tempbox{\includegraphics[width=\tucc@ver@logowidth]{tuc2019/logo/tuc_white}}
+\setlength{\tucc@ver@logoheight}{\ht\@tempbox}
+\global\tucc@ver@logoheight=\tucc@ver@logoheight
+
+% Breite für Kulturhauptstadtlogo anpassen.
+\iftuckhs
+  \savebox\@tempbox{\includegraphics[height=\tucc@ver@logoheight]{tuc2019/logo/tuckhs_white}}
+  \setlength{\tucc@ver@logowidth}{\wd\@tempbox}
+  \global\tucc@ver@logowidth=\tucc@ver@logowidth
+\fi
+
+\endgroup
+
+
+%
+% Hilfsfunktionen
+%
+
+\newenvironment{tucc@ver}%
+{
+  \begingroup
+  \clearpage
+  \thispagestyle{empty}
+  \newgeometry{left=0pt,right=0pt,top=0pt,bottom=0pt,noheadfoot,nomarginpar}
+  \roboto
+}
+{
+  \newpage
+  \restoregeometry
+  \endgroup
+}
+
+
+% Einzüge berechnen.
+\newcommand{\tucc@ver@calc}
+{%
+  % Skalierung der picture-Umgebung einstellen.
+  \setlength{\unitlength}{1pt}%
+%
+  % Höhe des Kopfblocks
+  % = Logohöhe + 3 * Logoschutzraum
+  \setlength{\@tempdima}{\tucc@ver@logoheight}%
+  \addtolength{\@tempdima}{3\tucc@ver@logosep}%
+  \edef\tucc@ver@headheight{\the\@tempdima}%
+}
+
+\newcommand{\tucc@ver@calcfront}
+{%
+  \tucc@ver@calc%
+%
+  % Abstand des Logos zur Unterkante
+  \setlength{\@tempdima}{2\tucc@ver@logosep}%
+  \edef\tucc@ver@headyoffset{\the\@tempdima}%
+%
+  % Einzug der Kopfzeilen
+  % = linker Rand + 2 * Schutzraum + Logobreite
+  \setlength{\@tempdima}{0pt}%
+  \addtolength{\@tempdima}{3\tucc@ver@logosep}%
+  \addtolength{\@tempdima}{\tucc@ver@logowidth}%
+  \edef\tucc@ver@columnindent{\the\@tempdima}%
+%
+  % Länge der Kopfzeilen
+  % = Papierbreite - Einzug - rechter Rand
+  \setlength{\@tempdima}{\paperwidth}%
+  \addtolength{\@tempdima}{-\tucc@ver@columnindent}%
+  \addtolength{\@tempdima}{-\tucc@ver@logosep}%
+  \edef\tucc@ver@columnwidth{\the\@tempdima}%
+%
+  % Höhe des Titelblocks
+  % = 0.85 * Logohöhe + Logoschutzraum
+  \setlength{\@tempdima}{0.85\tucc@ver@logoheight}%
+  \addtolength{\@tempdima}{\tucc@ver@logosep}%
+  \edef\tucc@ver@reporttitleheight{\the\@tempdima}%
+}
+
+
+%
+% Allgemeine Vorderseite
+%
+
+\def\tucc@ver@headline@content{}
+\newcommand{\tucfrontcoverhead}[4]%
+{
+  \def\tucc@ver@headline@content{%
+    \hbox to \hsize{\strut\bfseries\smash{#1}\hfil}\vfil%
+    \hbox to \hsize{\strut\smash{#2}\hfil}\vfil%
+    \hbox to \hsize{\strut\smash{#3}\hfil}\vfil%
+    \hbox to \hsize{\strut\smash{#4}\hfil}%
+  }
+}
+
+\newcommand\tucc@ver@headline@block%
+{%
+  \begin{picture}(\strip@pt\paperwidth, \strip@pt\dimexpr\tucc@ver@headheight)
+  \color{white}%
+  \put(0, 0){%
+    \begingroup%
+    \fboxsep=0pt%
+    \colorbox{tuccolor}{\vbox to \tucc@ver@headheight{\hskip\paperwidth\vfill}}%
+    \endgroup%
+  }
+  \put(\strip@pt\tucc@ver@logosep, \strip@pt\dimexpr\tucc@ver@headyoffset){%
+    \makebox(\strip@pt\tucc@ver@logowidth, \strip@pt\tucc@ver@logoheight){%
+      \includegraphics[width=\tucc@ver@logowidth,height=\tucc@ver@logoheight]{\tucc@ver@frontlogo}%
+    }%
+  }
+  \setlength{\@tempdima}{2\tucc@ver@logosep}
+  \addtolength{\@tempdima}{\tucc@ver@logowidth}
+  \put(\strip@pt\@tempdima, \strip@pt\dimexpr\tucc@ver@headyoffset){%
+    \hbox to 0pt{\hss\rule{\tucc@ver@rulethickness}{\tucc@ver@logoheight}\hss}%
+  }
+  \put(\strip@pt\dimexpr\tucc@ver@columnindent, \strip@pt\dimexpr\tucc@ver@headyoffset){%
+    \makebox(\strip@pt\dimexpr\tucc@ver@columnwidth, \strip@pt\dimexpr\tucc@ver@logoheight)[tl]{%
+      \setlength{\hsize}{\tucc@ver@columnwidth}%
+      \fontsize{\tucc@ver@front@size}{\tucc@ver@front@skip}\selectfont%
+      \vbox to \tucc@ver@logoheight{\tucc@ver@headline@content}%
+    }%
+  }
+  \end{picture}%
+}
+
+
+%
+% Vorderseite für Berichte
+%
+
+% Titelzeilen
+\def\tucc@ver@reporttitle@content{}
+\newcommand{\tucfrontcoverreporttitle}[3]%
+{
+  \def\tucc@ver@reporttitle@content{%
+    \hbox to \hsize{\strut\bfseries\smash{#1}\hfil}\vskip 0pt%
+    \hbox to \hsize{\strut\smash{#2}\hfil}\vskip 0pt%
+    \hbox to \hsize{\strut\smash{#3}\hfil}%
+  }
+}
+
+\newcommand{\tucc@ver@reporttitle@block}%
+{%
+  \begin{picture}(\strip@pt\paperwidth, \strip@pt\dimexpr\tucc@ver@reporttitleheight)
+  \setlength{\@tempdima}{0.85\tucc@ver@logoheight}
+  \edef\tucc@ver@titleheight{\the\@tempdima}
+  \setlength{\@tempdima}{0.5\tucc@ver@logosep}
+  \put(\strip@pt\dimexpr\tucc@ver@columnindent, \strip@pt\@tempdima){%
+    \makebox(\strip@pt\dimexpr\tucc@ver@columnwidth, \strip@pt\dimexpr\tucc@ver@titleheight)[tl]{%
+      \setlength{\hsize}{\tucc@ver@columnwidth}%
+      \fontsize{\tucc@ver@front@size}{\tucc@ver@front@skip}\selectfont%
+      \vbox to 0.85\tucc@ver@logoheight{%
+        \vfill%
+        \tucc@ver@reporttitle@content%
+        \vfill%
+      }%
+    }%
+  }
+  \end{picture}%
+}
+
+\newenvironment{tucfrontcoverreport@content}%
+{%
+  \tucc@ver@calcfront%
+  \begingroup%
+  \setlength{\@tempdima}{\paperheight}%
+  \addtolength{\@tempdima}{-3\tucc@ver@logosep}%
+  \addtolength{\@tempdima}{-\tucc@ver@logoheight}%
+  \addtolength{\@tempdima}{-\tucc@ver@reporttitleheight}%
+  \locbox\@tempbox%
+  \setbox\@tempbox\vbox\bgroup%
+  \hsize=\paperwidth%
+  \vsize=\@tempdima%
+  \ignorespaces%
+}
+{%
+  \egroup%
+  \vbox to \paperheight{%
+    \hsize=\paperwidth%
+    \hbox{\tucc@ver@headline@block}\vskip-1pt%
+    \hbox{\tucc@ver@reporttitle@block}\vskip-1pt%
+    \setlength{\@tempdima}{\paperheight}%
+    \addtolength{\@tempdima}{-3\tucc@ver@logosep}%
+    \addtolength{\@tempdima}{-\tucc@ver@logoheight}%
+    \addtolength{\@tempdima}{-\tucc@ver@reporttitleheight}%
+    \edef\tucc@ver@totalheight{\the\@tempdima}%
+    \hbox{\begin{picture}(\strip@pt\paperwidth, \strip@pt\dimexpr\tucc@ver@totalheight)
+    \put(0, 0){\parbox[b][\tucc@ver@totalheight][t]{\paperwidth}{\unvbox\@tempbox}}%
+    \end{picture}}%
+  }%
+  \endgroup%
+}
+
+\newenvironment{tucfrontcoverreport}%
+{%
+  \tucc@ver%
+  \tucfrontcoverreport@content%
+}
+{%
+  \endtucfrontcoverreport@content%
+  \endtucc@ver%
+}
+
+% \newenvironment{tucfrontcoverreportborder}%
+% {
+%   \setlength{\@tempdima}{\hsize}
+%   \addtolength{\@tempdima}{-2\tucc@ver@logosep}
+%   \setlength{\hsize}{\@tempdima}
+%   \setlength{\@tempdima}{\vsize}
+%   \addtolength{\@tempdima}{-\tucc@ver@logosep}
+%   \setlength{\vsize}{\@tempdima}
+%   \hbox\bgroup%
+%   \hskip\tucc@ver@logosep%
+%   \minipage[t][\vsize][t]{\hsize}
+% }
+% {
+%   \endminipage%
+%   \hskip\tucc@ver@logosep%
+%   \egroup%
+%   \vskip\tucc@ver@logosep
+% }
+
+
+%
+% Vorderseite für Bücher
+%
+
+\newenvironment{tucfrontcoverbook@content}%
+{%
+  \tucc@ver@calcfront%
+  \begingroup%
+  \setlength{\@tempdima}{\paperheight}%
+  \addtolength{\@tempdima}{-3\tucc@ver@logosep}%
+  \addtolength{\@tempdima}{-\tucc@ver@logoheight}%
+  \locbox\@tempbox%
+  \setbox\@tempbox\vbox\bgroup%
+  \hsize=\paperwidth%
+  \vsize=\@tempdima%
+  \ignorespaces%
+}
+{%
+  \egroup%
+  \vbox to \paperheight{%
+    \hsize=\paperwidth%
+    \hbox{\begin{picture}(0, 0)
+    \fboxsep=0pt%
+    \put(0, \strip@pt\dimexpr-\paperheight){%
+      \colorbox{tuccolor}{\makebox(\strip@pt\paperwidth, \strip@pt\paperheight)[t]{\null}}%
+    }%
+    \end{picture}}\vskip-1pt%
+    \hbox{\tucc@ver@headline@block}\vskip-1pt%
+    \setlength{\@tempdima}{\paperheight}%
+    \addtolength{\@tempdima}{-3\tucc@ver@logosep}%
+    \addtolength{\@tempdima}{-\tucc@ver@logoheight}%
+    \edef\tucc@ver@totalheight{\the\@tempdima}%
+    \hbox{\begin{picture}(\strip@pt\paperwidth, \strip@pt\dimexpr\tucc@ver@totalheight)
+    \put(0, 0){\parbox[b][\tucc@ver@totalheight][t]{\paperwidth}{\unvbox\@tempbox}}%
+    \end{picture}}%
+  }%
+  \endgroup%
+}
+
+\newenvironment{tucfrontcoverbook}%
+{%
+  \tucc@ver%
+  \tucfrontcoverbook@content%
+}
+{%
+  \endtucfrontcoverbook@content%
+  \endtucc@ver%
+}
+
+% Titelei
+\newcommand{\tucfrontcoverbooktitle}[2]%
+{
+  \vskip\tucc@ver@logosep
+  \hbox to \hsize{%
+    \hfill%
+    \setlength{\@tempdima}{\hsize}%
+    \addtolength{\@tempdima}{-2\tucc@ver@logosep}%
+    \begin{minipage}{\@tempdima}
+    \color{white}
+    \begin{center}
+    \fontsize{14}{16}\selectfont #1\par\bigskip
+    \fontsize{25}{30}\selectfont #2\par
+    \end{center}
+    \end{minipage}
+    \hfill%
+  }
+  \vfill
+  \vskip\tucc@ver@logosep
+}
+
+
+%
+% Rückseite
+%
+
+\newcommand{\tucc@ver@calcback}
+{%
+  \tucc@ver@calc%
+%
+  % Einzug der rechten Spalte
+  % = linker Rand + Schutzraum + Logobreite
+  \setlength{\@tempdima}{0pt}%
+  \addtolength{\@tempdima}{2\tucc@ver@logosep}%
+  \addtolength{\@tempdima}{\tucc@ver@logowidth}%
+  \edef\tucc@ver@columnindent{\the\@tempdima}%
+%
+  % Breite der rechten Spalte
+  % = Papierbreite - Einzug - rechter Rand
+  \setlength{\@tempdima}{\paperwidth}%
+  \addtolength{\@tempdima}{-\tucc@ver@columnindent}%
+  \addtolength{\@tempdima}{-\tucc@ver@logosep}%
+  \edef\tucc@ver@columnwidth{\the\@tempdima}%
+}
+
+\newenvironment{tucbackcover@content}%
+{%
+  \tucc@ver@calcback%
+  \begingroup%
+  \fontsize{\tucc@ver@back@size}{\tucc@ver@back@skip}\selectfont%
+  \setlength{\@tempdima}{\paperwidth}%
+  \addtolength{\@tempdima}{-2\tucc@ver@logosep}%
+  \edef\tucc@ver@bodywidth{\the\@tempdima}%
+  \setlength{\@tempdima}{\paperheight}%
+  \addtolength{\@tempdima}{-5\tucc@ver@logosep}%
+  \addtolength{\@tempdima}{-\tucc@ver@logoheight}%
+  \edef\tucc@ver@bodyheight{\the\@tempdima}%
+  \locbox\@tempbox%
+  \setbox\@tempbox\vbox\bgroup%
+  \hsize=\tucc@ver@bodywidth\relax%
+  \vsize=\tucc@ver@bodyheight\relax%
+  \ignorespaces%
+}
+{%
+  \egroup%
+  \vbox to \paperheight{%
+    \hsize=\paperwidth%
+    \hbox{%
+      \begingroup%
+      \fboxsep=0pt%
+      \setlength{\@tempdima}{3\tucc@ver@logosep}%
+      \addtolength{\@tempdima}{\tucc@ver@logoheight}%
+      \colorbox{tuccolor}{\vbox to \@tempdima{\hbox to \hsize{\hfill}\vfill}}%
+      \endgroup%
+    }\vskip-1pt%
+    \vskip\tucc@ver@logosep%
+    \hbox to \paperwidth{%
+      \hfill%
+      \parbox[b][\tucc@ver@bodyheight][b]{\tucc@ver@bodywidth}{\unvbox\@tempbox}%
+      \hfill%
+    }%
+    \vskip\tucc@ver@logosep%
+  }%
+  \endgroup%
+}
+
+\newenvironment{tucbackcover}%
+{%
+  \tucc@ver%
+  \tucbackcover@content%
+}
+{%
+  \endtucbackcover@content%
+  \endtucc@ver%
+}
+
+
+\newcommand{\tucbackcoversep}{\nointerlineskip\vspace*{\tucc@ver@logosep}\nointerlineskip\ignorespaces}
+
+\newenvironment{tucbackcoverblock}[1][]
+{%
+  \begingroup%
+  \locbox\@tempbox%
+  \vsize=\tucc@ver@logoheight%
+  \hbox to \hsize\bgroup%
+  \setbox\@tempbox\hbox{%
+    \begin{minipage}[b]{\tucc@ver@logowidth}%
+    #1
+    \end{minipage}%
+  }%
+  \dp\@tempbox=0pt\relax%
+  \usebox\@tempbox%
+  \hfill%
+  \setbox\@tempbox\hbox\bgroup\minipage[b]{\tucc@ver@columnwidth}
+}
+{%
+  \endminipage\egroup%
+  \dp\@tempbox=0pt\relax%
+  \usebox\@tempbox%
+  \egroup%
+  \endgroup%
+}
+
+\newenvironment{tucbackcovercustomlogoblock}[2][width=\hsize]
+{%
+  \begingroup%
+  \def\tucc@ver@backlogo@block{\includegraphics[#1]{#2}}%
+  \tucbackcoverblock[%
+    \hsize=\tucc@ver@logowidth%
+    \centering\tucc@ver@backlogo@block%
+  ]%
+}
+{%
+  \endtucbackcoverblock%
+  \endgroup%
+}
+
+\newenvironment{tucbackcoverlogoblock}
+  {\tucbackcovercustomlogoblock{\tucc@ver@backlogo}}
+  {\endtucbackcovercustomlogoblock}
+
+\newcommand{\tucbackcoverisbn}[2]%
+{
+  \begin{tucbackcoverlogoblock}
+  \begin{minipage}[b][\vsize]{0.45\linewidth}
+  Technische Universität Chemnitz \\
+  09107 Chemnitz \\
+  \tucc@ver@link{https://www.tu-chemnitz.de/}
+  \end{minipage}%
+  \hfill%
+  \begin{minipage}[b][\vsize]{0.45\linewidth}%
+  \EANBarcode[ocrb=false,module_height=0.3\vsize]{#1} \par
+  \vfill
+  Universitätsverlag Chemnitz \\
+  ISBN~#1 \\
+  \EUR{#2}
+  \end{minipage}
+  \end{tucbackcoverlogoblock}
+}
+
+
+\endinput

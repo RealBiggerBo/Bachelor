@@ -26,11 +26,11 @@ sublocale DirectedChannel_IOA < IOA
    (channel_trans),
    {},
    {})"
-  rewrites asig_eq:"asig = channel_asig"
-      and starts_eq:"starts = {start}"
-      and trans_eq:"trans = channel_trans"
-      and wfair_eq:"wfair = {}"
-      and sfair_eq:"sfair = {}"
+  rewrites asig_eq:"asig_of ioa = channel_asig"
+      and starts_eq:"starts_of ioa = {start}"
+      and trans_eq:"trans_of ioa = channel_trans"
+      and wfair_eq:"wfair_of ioa = {}"
+      and sfair_eq:"sfair_of ioa = {}"
   apply (unfold_locales)
 proof -
   let ?ioa = "(channel_asig, {start}, channel_trans, {}, {})"

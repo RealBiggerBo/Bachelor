@@ -12,16 +12,16 @@ begin
 end
 
 sublocale Set_IOA < IOA "set_to_ioa I g"
-  rewrites asig_eq:"asig = family_asig I g"
-    and starts_eq:"starts = {\<sigma>. \<forall>i\<in>I. \<sigma> i \<in> starts_of (g i)}"
-    and trans_eq:"trans = {(\<sigma>, a, \<tau>).
+  rewrites asig_eq:"asig_of ioa = family_asig I g"
+    and starts_eq:"starts_of ioa = {\<sigma>. \<forall>i\<in>I. \<sigma> i \<in> starts_of (g i)}"
+    and trans_eq:"trans_of ioa = {(\<sigma>, a, \<tau>).
       a \<in> family_actions I g \<and>
       (\<forall>i.
          if i \<in> I \<and> a \<in> actions (asig_of (g i))
          then (\<sigma> i, a, \<tau> i) \<in> trans_of (g i)
          else \<tau> i = \<sigma> i)}"
-    and wfair_eq:"wfair = (\<Union>i\<in>I. wfair_of (g i))"
-    and sfair_eq:"sfair = (\<Union>i\<in>I. sfair_of (g i))"
+    and wfair_eq:"wfair_of ioa = (\<Union>i\<in>I. wfair_of (g i))"
+    and sfair_eq:"sfair_of ioa = (\<Union>i\<in>I. sfair_of (g i))"
   apply(unfold_locales)
 proof -
   show "is_asig_of (set_to_ioa I g)"

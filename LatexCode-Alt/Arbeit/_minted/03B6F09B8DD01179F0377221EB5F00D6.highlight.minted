@@ -1,0 +1,67 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{theory}
+\PYG{+w}{  }\PYG{n}{Network}
+\PYG{k+kp}{imports}
+\PYG{+w}{  }\PYG{n}{Main}
+\PYG{k}{begin}
+
+\PYG{k}{datatype}\PYG{+w}{ }\PYG{o}{(}\PYG{n+nType}{\PYGZsq{}proc}\PYG{o}{,}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}msg}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{send}
+\PYG{+w}{  }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Send}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{msg\PYGZus{}recipient}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}proc}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{send\PYGZus{}msg}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}msg}\PYG{o}{)}
+
+\PYG{k}{datatype}\PYG{+w}{ }\PYG{o}{(}\PYG{n+nType}{\PYGZsq{}proc}\PYG{o}{,}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}msg}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{event}
+\PYG{+w}{  }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Start}
+\PYG{+w}{  }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Receive}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{msg\PYGZus{}sender}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}proc}\PYG{o}{)}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{recv\PYGZus{}msg}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}msg}\PYG{o}{)}
+\PYG{+w}{  }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Timeout}
+\PYG{+w}{  }\PYG{o}{|}\PYG{+w}{ }\PYG{n}{Restart}
+
+\PYG{k}{type\PYGZus{}synonym}\PYG{+w}{ }\PYG{o}{(}\PYG{n+nType}{\PYGZsq{}proc}\PYG{o}{,}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}state}\PYG{o}{,}\PYG{+w}{ }\PYG{n+nType}{\PYGZsq{}msg}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{step\PYGZus{}func}\PYG{+w}{ }\PYG{o}{=}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}\PYGZsq{}proc ⇒ \PYGZsq{}state ⇒ (\PYGZsq{}proc, \PYGZsq{}msg) event ⇒ (\PYGZsq{}state × (\PYGZsq{}proc, \PYGZsq{}msg) send set)\PYGZdq{}}
+
+\PYG{k}{fun}\PYG{+w}{ }\PYG{n}{valid\PYGZus{}event}\PYG{+w}{ }\PYG{o}{::}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}proc, \PYGZsq{}msg) event ⇒ \PYGZsq{}proc ⇒}
+\PYG{l+s}{                    (\PYGZsq{}proc × (\PYGZsq{}proc, \PYGZsq{}msg) send) set ⇒ bool\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}valid\PYGZus{}event Start \PYGZus{} \PYGZus{} = True\PYGZdq{}}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}valid\PYGZus{}event (Receive sender msg) proc msgs = ((sender, Send proc msg) ∈ msgs)\PYGZdq{}}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}valid\PYGZus{}event \PYGZus{} \PYGZus{} \PYGZus{} = True\PYGZdq{}}
+
+\PYG{k}{inductive}\PYG{+w}{ }\PYG{n}{execute}\PYG{+w}{ }\PYG{o}{::}
+\PYG{+w}{    }\PYG{l+s}{\PYGZdq{}(\PYGZsq{}proc, \PYGZsq{}state, \PYGZsq{}msg) step\PYGZus{}func ⇒ (\PYGZsq{}proc ⇒ \PYGZsq{}state) ⇒ \PYGZsq{}proc set ⇒}
+\PYG{l+s}{     (\PYGZsq{}proc × (\PYGZsq{}proc, \PYGZsq{}msg) event) list ⇒}
+\PYG{l+s}{     (\PYGZsq{}proc × (\PYGZsq{}proc, \PYGZsq{}msg) send) set ⇒ (\PYGZsq{}proc ⇒ \PYGZsq{}state) ⇒ bool\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}execute step init procs [] \PYGZob{}\PYGZcb{} init\PYGZdq{}}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}⟦execute step init procs events msgs states;}
+\PYG{l+s}{    proc ∈ procs;}
+\PYG{l+s}{    valid\PYGZus{}event event proc msgs;}
+\PYG{l+s}{    step proc (states proc) event = (new\PYGZus{}state, sent);}
+\PYG{l+s}{    events\PYGZsq{} = events @ [(proc, event)];}
+\PYG{l+s}{    msgs\PYGZsq{} = msgs ∪ ((λmsg. (proc, msg)) ` sent);}
+\PYG{l+s}{    states\PYGZsq{} = states (proc := new\PYGZus{}state)}
+\PYG{l+s}{   ⟧ ⟹ execute step init procs events\PYGZsq{} msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+
+\PYG{k+kn}{inductive\PYGZus{}cases}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}indcases}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events msg states\PYGZdq{}}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}init}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs [] msgs states\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs = \PYGZob{}\PYGZcb{} ∧ states = init\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{by}\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{elim}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{execute.cases}\PYG{o}{)}
+
+\PYG{k+kn}{inductive\PYGZus{}cases}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}snocE}\PYG{+w}{ }\PYG{o}{[}\PYG{n}{elim}\PYG{o}{!]:}
+\PYG{+w}{  }\PYG{l+s}{\PYGZdq{}execute step init procs (events @ [(proc, event)]) msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}step}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs (events @ [(proc, event)]) msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃msgs states sent new\PYGZus{}state.}
+\PYG{l+s}{          execute step init procs events msgs states ∧}
+\PYG{l+s}{          proc ∈ procs ∧}
+\PYG{l+s}{          valid\PYGZus{}event event proc msgs ∧}
+\PYG{l+s}{          step proc (states proc) event = (new\PYGZus{}state, sent) ∧}
+\PYG{l+s}{          msgs\PYGZsq{} = msgs ∪ ((λmsg. (proc, msg)) ` sent) ∧}
+\PYG{l+s}{          states\PYGZsq{} = states (proc := new\PYGZus{}state)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}receive}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs (events @ [(recpt, Receive sender msg)]) msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(sender, Send recpt msg) ∈ msgs\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}step}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+
+\PYG{k}{end}
+\end{MintedVerbatim}

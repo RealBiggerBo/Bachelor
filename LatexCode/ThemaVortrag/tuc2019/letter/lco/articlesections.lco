@@ -1,0 +1,20 @@
+\ProvidesFile{articlesections.lco}%
+             [2014/10/21 v0.1 unsupported LCO-file]%
+
+\LoadLetterOption{sections}
+
+%
+% Gliederungsnummerierungen im article-Stil
+%
+
+\renewcommand*{\thesection}{\arabic{section}}
+\renewcommand*{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand*{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+\renewcommand*{\theparagraph}{\thesubsubsection.\arabic{paragraph}}
+\renewcommand*{\p@subsection}{}
+\renewcommand*{\p@subsubsection}{}
+\renewcommand*{\p@paragraph}{}
+\let\size@section\Large
+\let\size@subsection\large
+\let\size@subsubsection\normalsize
+\setcounter{secnumdepth}{3}

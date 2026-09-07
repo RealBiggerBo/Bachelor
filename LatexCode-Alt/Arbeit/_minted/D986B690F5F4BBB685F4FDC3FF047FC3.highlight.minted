@@ -1,0 +1,476 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{theory}\PYG{+w}{ }\PYG{n}{Kleppmann\PYGZus{}ac}
+\PYG{+w}{  }\PYG{k+kp}{imports}\PYG{+w}{ }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}1}\PYG{+w}{ }
+\PYG{+w}{          }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}3}\PYG{+w}{ }
+\PYG{+w}{          }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}procs}\PYG{+w}{ }
+\PYG{+w}{          }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}111}\PYG{+w}{ }
+\PYG{+w}{          }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}212223}
+\PYG{+w}{          }\PYG{n}{Kleppmann\PYGZus{}inv\PYGZus{}41}
+\PYG{k}{begin}
+
+\PYG{k+kn}{theorem}\PYG{+w}{ }\PYG{n}{ac1\PYGZus{}NoCoordinator}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{‹execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs states›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹proc1 ≠ 0 ∧ proc2 ≠ 0›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹states proc1 = Committed a b ∨ states proc1 = Aborted a b›}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹states proc2 = Committed c d ∨ states proc2 = Aborted c d›}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{‹states proc1 = Committed a b ⟷ states proc2 = Committed c d›}
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{rule}\PYG{+w}{ }\PYG{n}{ccontr}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{assume}\PYG{+w}{ }\PYG{n}{asm1}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}¬(states proc1 = Committed a b ⟷ states proc2 = Committed c d)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{inv}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}inv1 msgs states ∧ inv3 msgs states ∧ inv11 msgs states UNIV ∧ inv17 msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariants123}\PYG{+w}{ }\PYG{n}{invariant1}\PYG{+w}{ }\PYG{n}{invariant3}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}False\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{proof}\PYG{o}{(}\PYG{n}{cases}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states proc1 = Committed a b\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{True}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{proc2Abort}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}states proc2 = Aborted c d\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{asm1}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{commitMsg}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{True}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{noAbort}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(∀sender recpt. (sender, Send recpt Abort) ∉ msgs)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv3\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∀p ∈ UNIV. p ≠ 0 ⟶ (∃rcpt. (p, Send rcpt Yes) ∈ msgs))\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv11\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{commitMsg}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃rcpt. (proc2, Send rcpt Yes) ∈ msgs\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀rcpt. (proc2, Send rcpt Yes) ∉ msgs\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{proc2Abort}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{noAbort}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{meson}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv17\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{next}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{False}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{Aborted}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states proc1 = Aborted a b\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states proc2 = Committed c d\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{asm1}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{commitMsg}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{noAbort}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(∀sender recpt. (sender, Send recpt Abort) ∉ msgs)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv3\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∀p ∈ UNIV. p ≠ 0 ⟶ (∃rcpt. (p, Send rcpt Yes) ∈ msgs))\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv11\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{commitMsg}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∃rcpt. (proc1, Send rcpt Yes) ∈ msgs)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∀rcpt. (proc1, Send rcpt Yes) ∉ msgs)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{Aborted}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{noAbort}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{meson}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv17\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{qed}
+\PYG{k}{qed}
+
+\PYG{k+kn}{theorem}\PYG{+w}{ }\PYG{n}{ac1\PYGZus{}OneCoordinator}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{‹execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs states›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹p ≠ 0›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹states 0 = Committed a b ∨ states 0 = Aborted a b›}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹states p = Committed c d ∨ states p = Aborted c d›}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{‹states 0 = Committed a b ⟷ states p = Committed c d›}
+\PYG{k}{proof}
+\PYG{+w}{  }\PYG{k}{assume}\PYG{+w}{ }\PYG{n}{asmCommitted}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}states 0 = Committed a b\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{inv}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}inv11 msgs states UNIV ∧ inv17 msgs states ∧ inv15 msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariants123}\PYG{+w}{ }\PYG{n}{invariant15}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{show}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states p = Committed c d\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{proof}\PYG{o}{(}\PYG{n}{rule}\PYG{+w}{ }\PYG{n}{ccontr}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{assume}\PYG{+w}{ }\PYG{n}{asmAborted}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states p ≠ Committed c d\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{proc2Abort}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}states p = Aborted c d\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∀p ∈ UNIV. p ≠ 0 ⟶ (∃rcpt. (p, Send rcpt Yes) ∈ msgs))\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv11\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{asmCommitted}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃rcpt. (p, Send rcpt Yes) ∈ msgs\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{noAbort}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}∀sender rcpt. (sender, Send rcpt Abort) ∉ msgs\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv15\PYGZus{}def}\PYG{+w}{ }\PYG{n}{asmCommitted}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀rcpt. (p, Send rcpt Yes) ∉ msgs\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{proc2Abort}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{noAbort}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{meson}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv17\PYGZus{}def}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}False\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{    }\PYG{k+kt}{thm}\PYG{+w}{ }\PYG{n}{inv17\PYGZus{}def}
+\PYG{+w}{  }\PYG{k}{qed}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{assume}\PYG{+w}{ }\PYG{n}{asmCommitted}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}states p = Committed c d\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{inv}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}inv1 msgs states ∧ inv111 msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariants123}\PYG{+w}{ }\PYG{n}{invariant1}\PYG{+w}{ }\PYG{n}{invariant111}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{invariant3}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{commitMsg}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(∃sender rcpt. (sender, Send rcpt Commit) ∈ msgs)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{asmCommitted}\PYG{+w}{ }\PYG{n}{inv1\PYGZus{}def}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃all ack. states 0 = Committed all ack ∨ states 0 = Forgotten\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv}\PYG{+w}{ }\PYG{n}{inv111\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states 0 = Committed a b\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{force}
+\PYG{k}{qed}
+
+\PYG{c}{(*all processes that decide must decide on the same value*)}
+\PYG{k+kn}{theorem}\PYG{+w}{ }\PYG{n}{ac1}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{‹execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs states›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹states proc1 = Committed a b ∨ states proc1 = Aborted a b›}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹states proc2 = Committed c d ∨ states proc2 = Aborted c d›}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{‹states proc1 = Committed a b ⟷ states proc2 = Committed c d›}
+\PYG{k}{proof}\PYG{o}{(}\PYG{n}{cases}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}proc1 = proc2\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{True}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{False}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{  }\PYG{k}{proof}\PYG{o}{(}\PYG{n}{cases}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}proc1 = 0 ∨ proc2 = 0\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{True}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{ac1\PYGZus{}OneCoordinator}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{\PYGZhy{}}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{state.distinct}\PYG{o}{(}\PYG{n}{25}\PYG{o}{))}
+\PYG{+w}{  }\PYG{k}{next}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{False}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}proc1 ≠ 0 ∧ proc2 ≠ 0\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{satx}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{ac1\PYGZus{}NoCoordinator}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{qed}
+\PYG{k}{qed}
+
+\PYG{c}{(*once a process decides it cannot change its decision*)}
+\PYG{k+kn}{theorem}\PYG{+w}{ }\PYG{n}{ac2}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{‹execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs states›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{step}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{‹tupac\PYGZus{}step proc (states proc) event = (new\PYGZus{}state, sent)›}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{‹(∃a b. states proc = Committed a b) ⟶ }
+\PYG{l+s}{        (∃c d. new\PYGZus{}state = Committed c d) ∨ (proc = 0 ∧ new\PYGZus{}state = Forgotten)›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹(∃a b. states proc = Aborted a b) ⟶ }
+\PYG{l+s}{        (∃c d. new\PYGZus{}state = Aborted c d) ∨ (proc = 0 ∧ new\PYGZus{}state = Forgotten)›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹states proc = Forgotten ⟶ }
+\PYG{l+s}{        (proc = 0 ∧ new\PYGZus{}state = Forgotten)›}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariant212223}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{n}{inv21\PYGZus{}def}\PYG{+w}{ }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariant212223}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{n}{inv22\PYGZus{}def}\PYG{+w}{ }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariant212223}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{n}{inv23\PYGZus{}def}\PYG{+w}{ }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{done}
+
+\PYG{c}{(*commit only if everyone voted yes*)}
+\PYG{k+kn}{theorem}\PYG{+w}{ }\PYG{n}{ac3}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{‹execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs states›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{‹states 0 = Committed a b›}\PYG{+w}{ }
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{‹∀p ∈ UNIV. p ≠ 0 ⟶ (∃rcpt. (p, Send rcpt Yes) ∈ msgs)›}
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inv11 msgs states UNIV\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{n}{invariants123}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{n}{inv11\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{k}{qed}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}prefix}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events msgs states\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}events = a @ b\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃msgs\PYGZsq{} states\PYGZsq{}. execute step init procs a msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{arbitrary}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{n}{b}\PYG{+w}{ }\PYG{n}{rule}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{execute.induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{1}\PYG{+w}{ }\PYG{n}{step}\PYG{+w}{ }\PYG{n}{init}\PYG{+w}{ }\PYG{n}{procs}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute.intros}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{2}\PYG{+w}{ }\PYG{n}{step}\PYG{+w}{ }\PYG{n}{init}\PYG{+w}{ }\PYG{n}{procs}\PYG{+w}{ }\PYG{n}{events}\PYG{+w}{ }\PYG{n}{msgs}\PYG{+w}{ }\PYG{n}{states}\PYG{+w}{ }\PYG{n}{proc}\PYG{+w}{ }\PYG{n}{event}\PYG{+w}{ }\PYG{n}{new\PYGZus{}state}\PYG{+w}{ }\PYG{n}{sent}\PYG{+w}{ }\PYG{n}{events\PYGZsq{}}\PYG{+w}{ }\PYG{n}{msgs\PYGZsq{}}\PYG{+w}{ }\PYG{n}{states\PYGZsq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k+kp}{apply}\PYG{o}{(}\PYG{n}{cases}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}b = []\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{     }\PYG{k+kp}{apply}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}2.hyps\PYGZdq{}}\PYG{o}{(}\PYG{n}{1}\PYG{o}{,}\PYG{n}{2}\PYG{o}{,}\PYG{n}{3}\PYG{o}{,}\PYG{n}{4}\PYG{o}{,}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}2.prems\PYGZdq{}}\PYG{+w}{ }\PYG{n}{execute.intros}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{self\PYGZus{}append\PYGZus{}conv}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}2.IH\PYGZdq{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}2.hyps\PYGZdq{}}\PYG{o}{(}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}2.prems\PYGZdq{}}\PYG{+w}{ }\PYG{n}{butlast\PYGZus{}append}\PYG{+w}{ }\PYG{n}{butlast\PYGZus{}snoc}\PYG{o}{)}
+\PYG{k}{qed}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}deterministic}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events msgs1 states1\PYGZdq{}}
+\PYG{+w}{      }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events msgs2 states2\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs1 = msgs2 ∧ states1 = states2\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{arbitrary}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{msgs2}\PYG{+w}{ }\PYG{n}{states2}\PYG{+w}{ }\PYG{n}{rule}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{execute.induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{1}\PYG{+w}{ }\PYG{n}{step}\PYG{+w}{ }\PYG{n}{init}\PYG{+w}{ }\PYG{n}{procs}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{elim}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{execute.cases}\PYG{o}{)}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{2}\PYG{+w}{ }\PYG{n}{step}\PYG{+w}{ }\PYG{n}{init}\PYG{+w}{ }\PYG{n}{procs}\PYG{+w}{ }\PYG{n}{events}\PYG{+w}{ }\PYG{n}{msgs}\PYG{+w}{ }\PYG{n}{states}\PYG{+w}{ }\PYG{n}{proc}\PYG{+w}{ }\PYG{n}{event}\PYG{+w}{ }\PYG{n}{new\PYGZus{}state}\PYG{+w}{ }\PYG{n}{sent}\PYG{+w}{ }\PYG{n}{events\PYGZsq{}}\PYG{+w}{ }\PYG{n}{msgs\PYGZsq{}}\PYG{+w}{ }\PYG{n}{states\PYGZsq{}}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{force}
+\PYG{k}{qed}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}msgs\PYGZus{}mono}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}events\PYGZsq{} = events @ [e]\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events\PYGZsq{} msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs ⊆ msgs\PYGZsq{}\PYGZdq{}}
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}
+\PYG{+w}{  }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{p}\PYG{+w}{ }\PYG{n}{sent}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}prev}\PYG{+w}{ }\PYG{n}{states\PYGZus{}prev}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{    }\PYG{l+s}{\PYGZdq{}msgs\PYGZsq{} = msgs\PYGZus{}prev ∪ ((λmsg. (p, msg)) ` sent)\PYGZdq{}}
+\PYG{+w}{    }\PYG{l+s}{\PYGZdq{}execute step init procs events msgs\PYGZus{}prev states\PYGZus{}prev\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{,}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{auto}\PYG{+w}{ }\PYG{n}{elim}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{execute.cases}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{l+s}{\PYGZdq{}msgs = msgs\PYGZus{}prev\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}deterministic}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{l+s}{‹msgs\PYGZsq{} = msgs\PYGZus{}prev ∪ ((λmsg. (p, msg)) ` sent)›}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{k}{qed}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}msgs\PYGZus{}subset}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}events = a @ b\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs a msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs\PYGZsq{} ⊆ msgs\PYGZdq{}}
+\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{proof}\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{b}\PYG{+w}{ }\PYG{n}{arbitrary}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{msgs}\PYG{+w}{ }\PYG{n}{states}\PYG{+w}{ }\PYG{n}{msgs\PYGZsq{}}\PYG{+w}{ }\PYG{n}{states\PYGZsq{}}\PYG{+w}{ }\PYG{n}{events}\PYG{+w}{ }\PYG{n}{rule}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{List.rev\PYGZus{}induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{Nil}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}deterministic}\PYG{+w}{ }\PYG{n}{Nil}\PYG{o}{(}\PYG{n}{1}\PYG{o}{,}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{snoc}\PYG{+w}{ }\PYG{n}{b}\PYG{+w}{ }\PYG{n}{bs}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{events\PYGZsq{}}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}events\PYGZsq{} = a @ bs\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}short}\PYG{+w}{ }\PYG{n}{states\PYGZus{}short}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events\PYGZsq{} msgs\PYGZus{}short states\PYGZus{}short\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc}\PYG{o}{(}\PYG{n}{2}\PYG{o}{,}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}prefix}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{append\PYGZus{}assoc}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs\PYGZus{}short ⊆ msgs\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{‹events\PYGZsq{} = a @ bs›}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}msgs\PYGZus{}mono}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs\PYGZsq{} ⊆ msgs\PYGZus{}short\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc}\PYG{+w}{ }\PYG{l+s}{‹execute step init procs events\PYGZsq{} msgs\PYGZus{}short states\PYGZus{}short›}\PYG{+w}{ }\PYG{l+s}{‹events\PYGZsq{} = a @ bs›}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{order}
+\PYG{k}{qed}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}step\PYGZus{}from\PYGZus{}trace}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}events = a @ [(p,e)] @ b\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs a msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}step p (states p) e = (new\PYGZus{}state, sent)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs (a@[(p,e)]) (msgs ∪ ((λmsg. (p, msg)) ` sent)) (states(p:=new\PYGZus{}state))\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}
+\PYG{+w}{  }\PYG{n}{―}\PYG{+w}{ }\PYG{l+s}{‹1. Show that the prefix (a @ [(p,e)]) is executable›}
+\PYG{+w}{  }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}ae}\PYG{+w}{ }\PYG{n}{states\PYGZus{}ae}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }
+\PYG{+w}{    }\PYG{n}{exec\PYGZus{}ae}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs (a @ [(p,e)]) msgs\PYGZus{}ae states\PYGZus{}ae\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}prefix}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{\PYGZhy{}}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{append\PYGZus{}assoc}\PYG{o}{)}
+\PYG{+w}{  }\PYG{n}{―}\PYG{+w}{ }\PYG{l+s}{‹2. Invert the execution of the prefix to get the properties of the last step›}\PYG{+w}{    }
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}prev}\PYG{+w}{ }\PYG{n}{states\PYGZus{}prev}\PYG{+w}{ }\PYG{n}{ns\PYGZus{}prev}\PYG{+w}{ }\PYG{n}{sent\PYGZus{}prev}\PYG{+w}{ }\PYG{k+kp}{where}
+\PYG{+w}{    }\PYG{n}{exec\PYGZus{}prev}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs a msgs\PYGZus{}prev states\PYGZus{}prev\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{and}
+\PYG{+w}{    }\PYG{n}{p\PYGZus{}in}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}p ∈ procs\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{and}
+\PYG{+w}{    }\PYG{n}{valid}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}valid\PYGZus{}event e p msgs\PYGZus{}prev\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{and}
+\PYG{+w}{    }\PYG{n}{step\PYGZus{}prev}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}step p (states\PYGZus{}prev p) e = (ns\PYGZus{}prev, sent\PYGZus{}prev)\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{and}
+\PYG{+w}{    }\PYG{n}{msgs\PYGZus{}ae\PYGZus{}def}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs\PYGZus{}ae = msgs\PYGZus{}prev ∪ ((λmsg. (p, msg)) ` sent\PYGZus{}prev)\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{and}
+\PYG{+w}{    }\PYG{n}{states\PYGZus{}ae\PYGZus{}def}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZus{}ae = states\PYGZus{}prev(p := ns\PYGZus{}prev)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{n}{―}\PYG{+w}{ }\PYG{l+s}{‹3. Use determinism to show the state \PYGZsq{}a\PYGZsq{} in the trace is exactly the \PYGZsq{}a\PYGZsq{} we assumed›}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs = msgs\PYGZus{}prev\PYGZdq{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states = states\PYGZus{}prev\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}deterministic}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{))+}
+\PYG{+w}{  }\PYG{n}{―}\PYG{+w}{ }\PYG{l+s}{‹4. Substitute our known \PYGZsq{}states\PYGZsq{} and \PYGZsq{}msgs\PYGZsq{} into the transition properties›}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}ns\PYGZus{}prev = new\PYGZus{}state\PYGZdq{}}\PYG{+w}{ }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}sent\PYGZus{}prev = sent\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{step\PYGZus{}prev}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{calculation}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{n}{―}\PYG{+w}{ }\PYG{l+s}{‹5. Reconstruct the execution step using the introduction rule›}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{exec\PYGZus{}ae}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}ae\PYGZus{}def}\PYG{+w}{ }\PYG{n}{states\PYGZus{}ae\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{k}{qed}
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{noStart\PYGZus{}init}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀p. (p, Timeout) ∉ set events ∧ (p, Restart) ∉ set events ∧ (0, Start) ∉ set events\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀p. states p = Initial (init\PYGZus{}val p) UNIV r\PYGZdq{}}
+\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{events}\PYG{+w}{ }\PYG{n}{arbitrary}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{msgs}\PYG{+w}{ }\PYG{n}{states}\PYG{+w}{ }\PYG{n}{rule}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{List.rev\PYGZus{}induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{Nil}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}init}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{k}{next}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{snoc}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{n}{xs}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{proc}\PYG{+w}{ }\PYG{n}{event}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{x\PYGZus{}eq}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}x = (proc, event)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{  }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs\PYGZsq{}}\PYG{+w}{ }\PYG{n}{states\PYGZsq{}}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{ex\PYGZus{}xs}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV xs msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc.prems}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}prefix}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{IH}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀p. states\PYGZsq{} p = Initial (init\PYGZus{}val p) UNIV r\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc.IH}\PYG{o}{[}\PYG{n}{OF}\PYG{+w}{ }\PYG{n}{ex\PYGZus{}xs}\PYG{o}{]}\PYG{+w}{ }\PYG{n}{snoc.prems}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{new\PYGZus{}state}\PYG{+w}{ }\PYG{n}{sent}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{step}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}tupac\PYGZus{}step proc (states\PYGZsq{} proc) event = (new\PYGZus{}state, sent)\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{force}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{ex\PYGZus{}snoc}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV (xs @ [x]) (msgs\PYGZsq{} ∪ Pair proc ` sent) (states\PYGZsq{}(proc := new\PYGZus{}state))\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{ex\PYGZus{}xs}\PYG{+w}{ }\PYG{n}{step}\PYG{+w}{ }\PYG{n}{x\PYGZus{}eq}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}step}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{smt}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{verit}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute.intros}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}deterministic}\PYG{+w}{ }\PYG{n}{snoc.prems}\PYG{o}{(}\PYG{n}{1}\PYG{o}{))}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{states\PYGZus{}eq}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states = states\PYGZsq{}(proc := new\PYGZus{}state)\PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{   }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}eq}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs = msgs\PYGZsq{} ∪ Pair proc ` sent\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc.prems}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{ex\PYGZus{}snoc}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}deterministic}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}\PYG{o}{+}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{coordinatorInit}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}states 0 = Initial (init\PYGZus{}val 0) UNIV r\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{cases}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}proc = 0\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{True}
+\PYG{+w}{    }\PYG{k}{with}\PYG{+w}{ }\PYG{n}{snoc.prems}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{x\PYGZus{}eq}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}event ≠ Timeout ∧ event ≠ Restart ∧ event ≠ Start\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{sender}\PYG{+w}{ }\PYG{n}{msg}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}event = Receive sender msg\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{meson}\PYG{+w}{ }\PYG{n}{event.exhaust}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{with}\PYG{+w}{ }\PYG{n}{True}\PYG{+w}{ }\PYG{n}{step}\PYG{+w}{ }\PYG{n}{IH}\PYG{+w}{ }\PYG{n}{states\PYGZus{}eq}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{next}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{False}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{states\PYGZus{}eq}\PYG{+w}{ }\PYG{n}{IH}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{qed}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}inv41 msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{invariant41}\PYG{+w}{ }\PYG{n}{snoc.prems}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{no\PYGZus{}msgs}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs = \PYGZob{}\PYGZcb{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{unfolding}\PYG{+w}{ }\PYG{n}{inv41\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{noToRsRc}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}event ≠ Timeout ∧ event ≠ Restart ∧ (proc ≠ 0 ⟶ (∀sender msg. event ≠ Receive sender msg))\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc.prems}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{x\PYGZus{}eq}\PYG{+w}{ }\PYG{n}{ex\PYGZus{}snoc}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}eq}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}new\PYGZus{}state = Initial (init\PYGZus{}val proc) UNIV r\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{proof}\PYG{o}{(}\PYG{n}{cases}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}proc = 0\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{True}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{coordinatorInit}\PYG{+w}{ }\PYG{n}{states\PYGZus{}eq}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{  }\PYG{k}{next}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{False}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{IH}\PYG{+w}{ }\PYG{n}{event.exhaust}\PYG{+w}{ }\PYG{n}{local.step}\PYG{+w}{ }\PYG{n}{participant\PYGZus{}step.simps}\PYG{o}{(}\PYG{n}{27}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{prod.inject}\PYG{+w}{ }\PYG{n}{tupac\PYGZus{}step.elims}\PYG{+w}{ }\PYG{n}{noToRsRc}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{qed}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{states\PYGZus{}eq}\PYG{+w}{ }\PYG{n}{IH}\PYG{+w}{ }\PYG{n}{coordinatorInit}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{k}{qed}
+
+
+\PYG{k+kn}{lemma}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}receive\PYGZus{}event}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute step init procs events msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(rcpt, Receive sender msg) ∈ set events\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(sender, Send rcpt msg) ∈ msgs\PYGZdq{}}
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}
+\PYG{+w}{  }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{pevents}\PYG{+w}{ }\PYG{n}{fevents}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{split}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}events = (pevents@[(rcpt, Receive sender msg)])@fevents\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{append.left\PYGZus{}neutral}\PYG{+w}{ }\PYG{n}{append\PYGZus{}Cons}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{in\PYGZus{}set\PYGZus{}conv\PYGZus{}decomp\PYGZus{}first}\PYG{+w}{ }\PYG{n}{append.assoc}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs\PYGZsq{}}\PYG{+w}{ }\PYG{n}{states\PYGZsq{}}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{prefix\PYGZus{}ex}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}execute step init procs (pevents@[(rcpt, Receive sender msg)]) msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}prefix}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{append.assoc}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{))}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(sender, Send rcpt msg) ∈ msgs\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}receive}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{  }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}msgs\PYGZsq{} ⊆ msgs\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{split}\PYG{+w}{ }\PYG{n}{prefix\PYGZus{}ex}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}msgs\PYGZus{}subset}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{meson}
+\PYG{+w}{  }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{    }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fast}
+\PYG{k}{qed}
+
+\PYG{k+kn}{lemma}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV beforeStart msgs states\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀p. states p = Initial (init\PYGZus{}val p) UNIV r\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV (beforeStart@[(0,Start)]@beforePrepare) msgs\PYGZsq{} states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀p. (p, Timeout) ∉ set beforePrepare ∧ (p, Restart) ∉ set beforePrepare ∧ (p, Receive 0 (Prepare (init\PYGZus{}val 0))) ∉ set beforePrepare\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}p ≠ 0\PYGZdq{}}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZsq{} p = Initial (init\PYGZus{}val p) UNIV r\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{induction}\PYG{+w}{ }\PYG{n}{beforePrepare}\PYG{+w}{ }\PYG{n}{arbitrary}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{msgs\PYGZsq{}}\PYG{+w}{ }\PYG{n}{states\PYGZsq{}}\PYG{+w}{ }\PYG{n}{rule}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{List.rev\PYGZus{}induct}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{Nil}
+\PYG{+w}{    }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs1}\PYG{+w}{ }\PYG{n}{states1}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{exNil}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV (beforeStart@[(0,Start)]) msgs1 states1\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}prefix}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{append\PYGZus{}assoc}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}tupac\PYGZus{}step 0 (states 0) Start = (Collecting (init\PYGZus{}val 0) UNIV \PYGZob{}0\PYGZcb{} r, \PYGZob{}Send p (Prepare (init\PYGZus{}val 0)) | p. p ∈ UNIV\PYGZcb{})\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{,}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) }
+\PYG{l+s}{                                    UNIV }
+\PYG{l+s}{                                    (beforeStart@[(0,Start)]) }
+\PYG{l+s}{                                    (msgs ∪ ((λmsg. (0, msg)) ` \PYGZob{}Send p (Prepare (init\PYGZus{}val 0)) | p. p ∈ UNIV\PYGZcb{})) }
+\PYG{l+s}{                                    (states(0:=Collecting (init\PYGZus{}val 0) UNIV \PYGZob{}0\PYGZcb{} r))\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{calculation}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{1}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{simp}\PYG{+w}{ }\PYG{n}{add}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}step\PYGZus{}from\PYGZus{}trace}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states1 p = Initial (init\PYGZus{}val p) UNIV r\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{mono\PYGZus{}tags}\PYG{o}{,}\PYG{+w}{ }\PYG{n}{lifting}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{fun\PYGZus{}upd\PYGZus{}apply}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}deterministic}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states1 = states\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{Nil}\PYG{+w}{ }\PYG{n}{exNil}\PYG{+w}{ }\PYG{n}{assms}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}deterministic}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{append.right\PYGZus{}neutral}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{  }\PYG{k}{next}
+\PYG{+w}{    }\PYG{k}{case}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{snoc}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{n}{xs}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{proc}\PYG{+w}{ }\PYG{n}{event}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}x = (proc, event)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{    }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{invariants}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}inv42 msgs\PYGZsq{} ∧ inv43 msgs\PYGZsq{} (init\PYGZus{}val 0)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{g+gr}{sorry}
+\PYG{+w}{    }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{noPrep}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}∀proc t. (p, Receive proc (Prepare t)) ∉ set (xs @ [x])\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{proof}\PYG{o}{(}\PYG{n}{rule}\PYG{+w}{ }\PYG{n}{ccontr}\PYG{o}{)}
+\PYG{+w}{      }\PYG{k}{assume}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}¬(∀proc t. (p, Receive proc (Prepare t)) ∉ set (xs @ [x]))\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∃proc t. (p, Receive proc (Prepare t)) ∈ set (xs @ [x])\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{proc}\PYG{+w}{ }\PYG{n}{t}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{ev\PYGZus{}props}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(p, Receive proc (Prepare t)) ∈ set (xs @ [x])\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(proc, Send p (Prepare t)) ∈ msgs\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}receive\PYGZus{}event}\PYG{+w}{ }\PYG{n}{snoc}\PYG{o}{(}\PYG{n}{4}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{execute\PYGZus{}prefix}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{      }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{from}\PYG{+w}{ }\PYG{n}{this}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(0, Send p (Prepare (init\PYGZus{}val 0))) ∈ msgs\PYGZsq{}\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{inv42\PYGZus{}def}\PYG{+w}{ }\PYG{n}{inv43\PYGZus{}def}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{invariants}\PYG{o}{)}
+\PYG{+w}{      }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}False\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{  }\PYG{n}{inv42\PYGZus{}def}\PYG{+w}{ }\PYG{n}{inv43\PYGZus{}def}\PYG{+w}{ }\PYG{n}{invariants}\PYG{+w}{ }\PYG{n}{snoc}\PYG{o}{(}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{n}{ev\PYGZus{}props}\PYG{o}{)}
+\PYG{+w}{    }\PYG{k}{qed}
+\PYG{c}{(*Thus such an Receive Prepare event cannot occur. }
+\PYG{c}{  Furthermore there are no Timeouts nor restarts. }
+\PYG{c}{  Thus the state of p does not change}
+\PYG{c}{  Since it was Initial ... before it is also now*)}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{k}{case}
+\PYG{+w}{    }\PYG{k}{proof}\PYG{o}{(}\PYG{n}{cases}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}proc = p\PYGZdq{}}\PYG{o}{)}
+\PYG{+w}{      }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{True}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∀proc t. event ≠ Receive proc (Prepare t)) ∧ event ≠ Timeout ∧ event ≠ Restart\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc}\PYG{o}{(}\PYG{n}{5}\PYG{o}{)}\PYG{+w}{ }\PYG{l+s}{‹x = (proc, event)›}\PYG{+w}{ }\PYG{n}{noPrep}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{fastforce}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZsq{} p = Initial (init\PYGZus{}val p) UNIV r\PYGZdq{}}
+\PYG{+w}{        }\PYG{g+gr}{sorry}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{        }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{presburger}
+\PYG{+w}{    }\PYG{k}{next}
+\PYG{+w}{      }\PYG{k}{case}\PYG{+w}{ }\PYG{n}{False}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZsq{} p = states p\PYGZdq{}}
+\PYG{+w}{        }\PYG{g+gr}{sorry}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{snoc}\PYG{o}{(}\PYG{n}{3}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{presburger}
+\PYG{+w}{    }\PYG{k}{qed}
+\PYG{k}{qed}
+
+\PYG{c}{(*if no failures and all processes vote yes then commit*)}
+\PYG{k+kn}{theorem}\PYG{+w}{ }\PYG{n}{ac4}\PYG{o}{:}
+\PYG{+w}{  }\PYG{k+kp}{assumes}\PYG{+w}{ }\PYG{n}{valid\PYGZus{}exec}\PYG{o}{:}\PYG{l+s}{‹execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV events msgs states›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{initiated}\PYG{o}{:}\PYG{l+s}{‹(0,Start) ∈ set events›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{no\PYGZus{}fail}\PYG{o}{:}\PYG{l+s}{‹∀p. (p, Timeout) ∉ set events ∧ (p, Restart) ∉ set events›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{all\PYGZus{}yes}\PYG{o}{:}\PYG{l+s}{‹∀p ∈ UNIV. p ≠ 0 ⟶ (∃rcpt. (p, Send rcpt Yes) ∈ msgs)›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{participant\PYGZus{}exists}\PYG{o}{:}\PYG{l+s}{‹∃p. p ∈ UNIV ∧ p ≠ 0›}
+\PYG{+w}{    }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{delivery}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{‹∀pevents fevents proc event. events = pevents@[(proc, event)]@fevents ⟶ }
+\PYG{l+s}{      (∃msgs states new\PYGZus{}state sent. }
+\PYG{l+s}{        tupac\PYGZus{}step proc (states proc) event = (new\PYGZus{}state, sent) ∧}
+\PYG{l+s}{        execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV pevents msgs states ∧ }
+\PYG{l+s}{        (∀rcpt msg. }
+\PYG{l+s}{        (Send rcpt msg) ∈ sent ⟶ }
+\PYG{l+s}{        (rcpt, Receive proc msg) ∈ set fevents))›}
+\PYG{+w}{  }\PYG{k+kp}{shows}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀sender rcpt. (sender, Send rcpt Abort) ∉ msgs\PYGZdq{}}\PYG{+w}{ }\PYG{c}{(*What better to show here?*)}
+\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}
+\PYG{+w}{  }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{beforeStart}\PYG{+w}{ }\PYG{n}{afterStart}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{split}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}events = beforeStart@[(0, Start)]@afterStart\PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{                                  }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{noStart}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(0, Start) ∉ set beforeStart\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{assms}\PYG{o}{(}\PYG{n}{2}\PYG{o}{)}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{append\PYGZus{}Cons}\PYG{+w}{ }\PYG{n}{append\PYGZus{}Nil}\PYG{+w}{ }\PYG{n}{split\PYGZus{}list\PYGZus{}first}\PYG{o}{)}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{all\PYGZus{}receives}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}∀p ∈ UNIV. p ≠ 0 ⟶ ((p, Receive 0 (Prepare (init\PYGZus{}val 0))) ∈ set afterStart)\PYGZdq{}}
+\PYG{+w}{  }\PYG{k}{proof}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}
+\PYG{+w}{    }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}bs}\PYG{+w}{ }\PYG{n}{states\PYGZus{}bs}\PYG{+w}{ }\PYG{n}{preparing}\PYG{+w}{ }\PYG{n}{prepareMsgs}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{val\PYGZus{}ex\PYGZus{}bs}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV beforeStart msgs\PYGZus{}bs states\PYGZus{}bs\PYGZdq{}}
+\PYG{+w}{                                                      }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{step\PYGZus{}start}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}tupac\PYGZus{}step 0 (states\PYGZus{}bs 0) Start = (preparing, prepareMsgs)\PYGZdq{}}
+\PYG{+w}{                                                      }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{deliver}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(∀rcpt msg. (Send rcpt msg) ∈ prepareMsgs ⟶ }
+\PYG{l+s}{                                                              (rcpt, Receive 0 msg) ∈ set afterStart)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{split}\PYG{+w}{ }\PYG{n}{delivery}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{metis}
+\PYG{+w}{    }\PYG{k}{moreover}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{‹∀p. (p, Timeout) ∉ set beforeStart ∧ (p, Restart) ∉ set beforeStart›}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{split}\PYG{+w}{ }\PYG{n}{no\PYGZus{}fail}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{    }\PYG{k}{ultimately}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZus{}bs 0 = Initial (init\PYGZus{}val 0) UNIV r\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{noStart}\PYG{+w}{ }\PYG{n}{noStart\PYGZus{}init}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}tupac\PYGZus{}step 0 (states\PYGZus{}bs 0) Start = (Collecting (init\PYGZus{}val 0) UNIV \PYGZob{}0\PYGZcb{} r, \PYGZob{}Send p (Prepare (init\PYGZus{}val 0)) | p. p ∈ UNIV\PYGZcb{})\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∀rcpt msg. (Send rcpt msg) ∈ \PYGZob{}Send p (Prepare (init\PYGZus{}val 0)) | p. p ∈ UNIV\PYGZcb{} ⟶ (rcpt, Receive 0 msg) ∈ set afterStart)\PYGZdq{}}
+\PYG{+w}{      }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{deliver}\PYG{+w}{ }\PYG{n}{step\PYGZus{}start}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{    }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{      }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{blast}
+\PYG{+w}{  }\PYG{k}{qed}
+\PYG{+w}{  }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{all\PYGZus{}send\PYGZus{}yes}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}∀p. p ∈ UNIV ∧ p ≠ 0 ⟶ (0, Receive p Yes) ∈ set afterStart\PYGZdq{}}\PYG{+w}{ }\PYG{c}{(* Replace sent\PYGZus{}by\PYGZus{}p with your actual msg set logic *)}
+\PYG{+w}{  }\PYG{k}{proof}
+\PYG{+w}{    }\PYG{k}{fix}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{::}\PYG{n+nType}{\PYGZsq{}a}
+\PYG{+w}{    }\PYG{k}{show}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}p ∈ UNIV ∧ p ≠ 0 ⟶ (0, Receive p Yes) ∈ set afterStart\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{proof}
+\PYG{+w}{      }\PYG{k}{assume}\PYG{+w}{ }\PYG{n}{participant}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}p ∈ UNIV ∧ p ≠ 0\PYGZdq{}}
+\PYG{+w}{        }\PYG{c}{(* Since this p must have received the Prepare message... *)}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(p, Receive 0 (Prepare (init\PYGZus{}val 0))) ∈ set afterStart\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{all\PYGZus{}receives}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{beforePrepare}\PYG{+w}{ }\PYG{n}{afterPrepare}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{splitPrep}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}afterStart = beforePrepare@[(p, Receive 0 (Prepare (init\PYGZus{}val 0)))]@afterPrepare\PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{                                  }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{noPrepare}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(p, Receive 0 (Prepare (init\PYGZus{}val 0))) ∉ set beforePrepare\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{by}\PYG{+w}{ }\PYG{o}{(}\PYG{n}{metis}\PYG{+w}{ }\PYG{n}{append.left\PYGZus{}neutral}\PYG{+w}{ }\PYG{n}{append\PYGZus{}Cons}\PYG{+w}{ }\PYG{n}{split\PYGZus{}list\PYGZus{}first}\PYG{o}{)}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{n}{eventSplit}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}events = beforeStart@[(0,Start)]@beforePrepare@[(p, Receive 0 (Prepare (init\PYGZus{}val 0)))]@afterPrepare\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{split}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{simp}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∃msgs states new\PYGZus{}state sent.}
+\PYG{l+s}{           tupac\PYGZus{}step p (states p) (Receive 0 (Prepare (init\PYGZus{}val 0))) = (new\PYGZus{}state, sent) ∧}
+\PYG{l+s}{           execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV (beforeStart@[(0,Start)]@beforePrepare) msgs states ∧}
+\PYG{l+s}{           (∀rcpt msg. Send rcpt msg ∈ sent ⟶ (rcpt, Receive p msg) ∈ set afterPrepare))\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{delivery}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{obtain}\PYG{+w}{ }\PYG{n}{msgs\PYGZus{}bp}\PYG{+w}{ }\PYG{n}{states\PYGZus{}bp}\PYG{+w}{ }\PYG{n}{prepared}\PYG{+w}{ }\PYG{n}{yesMsgs}\PYG{+w}{ }\PYG{k+kp}{where}\PYG{+w}{ }\PYG{n}{val\PYGZus{}ex\PYGZus{}bs}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}execute tupac\PYGZus{}step (λp. Initial (init\PYGZus{}val p) UNIV r) UNIV (beforeStart@[(0,Start)]@beforePrepare) msgs\PYGZus{}bp states\PYGZus{}bp\PYGZdq{}}
+\PYG{+w}{                                                      }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{step\PYGZus{}prepare}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}tupac\PYGZus{}step p (states\PYGZus{}bp p) (Receive 0 (Prepare (init\PYGZus{}val 0))) = (prepared, yesMsgs)\PYGZdq{}}
+\PYG{+w}{                                                      }\PYG{k+kp}{and}\PYG{+w}{ }\PYG{n}{deliver}\PYG{o}{:}\PYG{l+s}{\PYGZdq{}(∀rcpt msg. (Send rcpt msg) ∈ yesMsgs ⟶ }
+\PYG{l+s}{                                                              (rcpt, Receive p msg) ∈ set afterStart)\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{delivery}\PYG{+w}{ }\PYG{n}{participant}\PYG{+w}{ }\PYG{n}{splitPrep}\PYG{+w}{ }\PYG{k}{by}\PYG{+w}{ }\PYG{n}{auto}
+
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}states\PYGZus{}bp p = Initial (init\PYGZus{}val 0) UNIV r\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{noPrepare}\PYG{+w}{ }\PYG{n}{val\PYGZus{}ex\PYGZus{}bs}\PYG{+w}{ }\PYG{g+gr}{sorry}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}tupac\PYGZus{}step p (states\PYGZus{}bp p) (Receive 0 (Prepare (init\PYGZus{}val 0))) = (Prepared, \PYGZob{}Send 0 Yes\PYGZcb{})\PYGZdq{}}
+\PYG{+w}{        }\PYG{g+gr}{sorry}
+\PYG{+w}{      }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{have}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(∀rcpt msg. (Send rcpt msg) ∈ \PYGZob{}Send 0 Yes\PYGZcb{} ⟶ (rcpt, Receive p msg) ∈ set afterStart)\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{deliver}\PYG{+w}{ }\PYG{n}{step\PYGZus{}prepare}\PYG{+w}{ }\PYG{g+gr}{sorry}
+\PYG{+w}{      }\PYG{k}{show}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}(0, Receive p Yes) ∈ set afterStart\PYGZdq{}}
+\PYG{+w}{        }\PYG{k}{using}\PYG{+w}{ }\PYG{n}{splitPrep}\PYG{+w}{ }\PYG{n}{deliver}\PYG{+w}{ }\PYG{g+gr}{sorry}
+\PYG{+w}{    }\PYG{k}{qed}
+\PYG{+w}{  }\PYG{k}{qed}
+\PYG{+w}{  }\PYG{k}{then}\PYG{+w}{ }\PYG{k}{show}\PYG{+w}{ }\PYG{o}{?}\PYG{n}{thesis}
+\PYG{+w}{    }\PYG{g+gr}{sorry}
+\PYG{+w}{  }\PYG{c}{(* 5. Now that everyone sent Yes, use the delivery assumption to show the Coordinator receives them \PYGZhy{} DONE*)}
+\PYG{+w}{  }\PYG{c}{(* ... Then split the trace again to find when the coordinator receives the LAST Yes ... *)}
+\PYG{+w}{  }\PYG{c}{(* Show that the coordinator is in Committed after processing every Yes event \PYGZlt{}\PYGZhy{}\PYGZhy{} ! ! !*)}
+\PYG{k}{qed}
+
+\PYG{k}{end}
+\end{MintedVerbatim}

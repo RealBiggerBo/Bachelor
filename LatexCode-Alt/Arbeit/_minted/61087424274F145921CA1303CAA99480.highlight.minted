@@ -1,0 +1,6 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{+w}{	}\PYG{k}{case}\PYG{+w}{ }\PYG{n}{t}\PYG{+w}{ }\PYG{n}{of}
+\PYG{+w}{	}\PYG{n}{A}\PYG{+w}{ }\PYG{o}{=}\PYG{n}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{B}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{	}\PYG{n}{C}\PYG{+w}{ }\PYG{o}{=}\PYG{n}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{D}\PYG{+w}{ }\PYG{o}{|}
+\PYG{+w}{	}\PYG{o}{\PYGZus{}}\PYG{+w}{ }\PYG{o}{=}\PYG{n}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{E}
+\end{MintedVerbatim}
