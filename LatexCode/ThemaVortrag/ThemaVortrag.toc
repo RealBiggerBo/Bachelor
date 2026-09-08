@@ -1,4 +1,7 @@
 \beamer@sectionintoc {1}{Methoden zur Sicherstellung von Codequalität}{5}{0}{1}
-\beamer@sectionintoc {2}{Passende Ansätze}{6}{0}{2}
-\beamer@sectionintoc {3}{Mein Ansatz}{7}{0}{3}
-\beamer@sectionintoc {4}{Fazit}{9}{0}{4}
+\beamer@sectionintoc {2}{Verbindung Formalisierung - Implementation}{6}{0}{2}
+\beamer@sectionintoc {3}{Forschungsziel}{7}{0}{3}
+\beamer@subsectionintoc {3}{1}{SQuIRRL-Stack}{8}{0}{3}
+\beamer@subsectionintoc {3}{2}{Zu beweisende Eigenschaft}{9}{0}{3}
+\beamer@subsectionintoc {3}{3}{Isabelle Ansatz}{10}{0}{3}
+\beamer@subsectionintoc {3}{4}{Zusammenfassung}{13}{0}{3}

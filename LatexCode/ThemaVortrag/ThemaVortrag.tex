@@ -51,24 +51,24 @@
 
 \begin{document}
 	\begin{frame}
-	
-	\begin{columns}[c]
-		\column{0.4\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{Bilder/ariane.jpeg}
+		\begin{columns}[c]
+			\column{0.4\textwidth}
+			\centering
+			\includegraphics[width=\textwidth]{Bilder/ariane.jpeg}
 		
-		\column{0.25\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{Bilder/therac.png}
-	\end{columns}
-	
-	\vspace{0.2cm}
-	
-	\begin{center}
-		\includegraphics[width=0.7\textwidth]{Bilder/bugcost.jpg}
-	\end{center}
-	
-\end{frame}
+			\column{0.22\textwidth}
+			\centering
+			\includegraphics[width=\textwidth]{Bilder/therac.png}
+		\end{columns}
+		\begin{center}
+			\begin{figure}
+				\centering
+				\renewcommand{\figurename}{Abb.}
+				\includegraphics[width=.7\textwidth]{Bilder/bugcost.jpg}	
+				\caption{\url{https://testomat.io/blog/software-bug-cost/}}
+			\end{figure}
+		\end{center}
+	\end{frame}
 	
 	
 	\begingroup
@@ -190,7 +190,7 @@
 	%- computer gestützt?
 	%\end{frame}
 	
-	\section{Passende Ansätze}
+	\section{Verbindung Formalisierung - Implementation}
 	\begin{frame}
 	\begin{center}
 		\begin{tikzpicture}[every node/.style={inner sep=0pt}]
@@ -249,7 +249,51 @@
 	\end{center}	
 	\end{frame}
 	
-	\section{Mein Ansatz}
+	\section{Forschungsziel}
+	\begin{frame}
+		\centering
+		\begin{columns}[c]
+			\begin{column}{0.3\textwidth}
+				\centering
+				\includegraphics[width=\textwidth]{Bilder/squirrl.png}
+			\end{column}
+			\begin{column}{0.7\textwidth}
+				\begin{figure}
+				\centering
+				\renewcommand{\figurename}{Abb.}
+				\includegraphics[width=\textwidth]{Bilder/crimestatistics.jpg}	
+				\caption{\url{https://www.it-cisq.org/wp-content/uploads/sites/6/2022/11/CPSQ-Report-Nov-22-2.pdf}}
+				\end{figure}
+			\end{column}
+		\end{columns}
+		
+	\end{frame}
+	
+	\subsection{SQuIRRL-Stack}
+	\begin{frame}{Beispielhaftes QKD-Netzwerk}
+		\centering
+		\includegraphics[width=\textwidth]{Bilder/squirrlstack.png}
+	\end{frame}
+	
+	\subsection{Zu beweisende Eigenschaft}
+	\begin{frame}		
+	    \begin{block}{Konsistenz der Schlüssel}
+	Für alle Anwendungen $\mathrm{App}_1$ und $\mathrm{App}_2$ gilt:
+	\[
+	\bigl(
+	\mathrm{App}_1 \text{ besitzt } k_1
+	\;\land\;
+	\mathrm{App}_2 \text{ besitzt } k_2
+	\;\land\;
+	k_1.\mathrm{id} = k_2.\mathrm{id}
+	\bigr)
+	\;\Longrightarrow\;
+	k_1.\mathrm{value} = k_2.\mathrm{value}.
+	\]
+		\end{block}
+	\end{frame}
+
+	\subsection{Isabelle Ansatz}
 	\begin{frame}
 		\begin{figure}
 			\centering
@@ -262,8 +306,6 @@
 		\includegraphics[height=\textheight]{Bilder/hswrapper}
 	\end{figure}
 	\end{frame}
-	
-	\section{Fazit}
 	\begin{frame}
 		\begin{itemize}
 			\item[\textcolor{green!50!black}{+}]
@@ -282,12 +324,33 @@
 		\end{itemize}
 	\end{frame}
 	
+	\subsection{Zusammenfassung}
+	\begin{frame}
+		\begin{block}{Forschungsziel}
+			Formale Verifikation und Implementierung des
+			SQuIRRL-Stacks:
+			
+			\begin{enumerate}
+				\item Formale Modellierung des Stacks in Isabelle (IOA + Übergangsfkt.)
+				\item Nachweis der Eigenschaften auf Ebene
+				der IO-Automaten
+				\item Nachweis der Eigenschaftserhaltung zwischen
+				IOA und Übergangsfkt.
+				\item Generierung einer Implementierung
+				aus dem formalen Übergangsfunktionen
+				\item Ausführbarer Haskell-Wrapper für jedes Modul
+			\end{enumerate}
+		\end{block}
+	\end{frame}
+	
 	\section*{Quellen}
 	\begin{frame}
 		\begin{itemize}
 			\item \url{https://www.dlr.de/de/ar/themen-missionen/raumfahrttechnologien/traegersysteme/ariane-5} (3.9.26)
 			\item \url{https://testomat.io/blog/software-bug-cost/} (3.9.26)
 			\item \url{https://en.wikipedia.org/wiki/Therac-25} (3.9.26)
+			\item \url{https://osm.hpi.de/squirrl/} (8.9.26)
+			\item \url{https://www.it-cisq.org/wp-content/uploads/sites/6/2022/11/CPSQ-Report-Nov-22-2.pdf (8.9.26)}
 		\end{itemize}
 	\end{frame}
 \end{document}
