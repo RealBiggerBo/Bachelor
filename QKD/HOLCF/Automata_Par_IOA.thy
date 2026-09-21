@@ -23,10 +23,8 @@ abbreviation par_trans where
           (if a \<in> act B then (snd s, a, snd t) \<in> trans_of B
            else snd t = snd s)}\<close>
 
-end
-
-sublocale Par_IOA < IOA "A \<parallel> B"
-  rewrites asig_eq:"asig_of ioa = asig_comp (asig_of A) (asig_of B)"
+sublocale IOA "A \<parallel> B"
+  (*rewrites asig_eq:"asig_of ioa = asig_comp (asig_of A) (asig_of B)"
      and inp_eq:"inp ioa = (inp A \<union> inp B) - (out A \<union> out B)"
      and out_eq:"out ioa = out A \<union> out B"
      and int_eq:"int ioa = int A \<union> int B"
@@ -34,7 +32,7 @@ sublocale Par_IOA < IOA "A \<parallel> B"
      and starts_eq:"starts_of ioa = {p. fst p \<in> starts_of A \<and> snd p \<in> starts_of B}"
      and trans_eq:"trans_of ioa = par_trans"
      and wfair_eq:"wfair_of ioa = wfair_of A \<union> wfair_of B"
-     and sfair_eq:"sfair_of ioa = sfair_of A \<union> sfair_of B"
+     and sfair_eq:"sfair_of ioa = sfair_of A \<union> sfair_of B"*)
   apply (unfold_locales)
 proof -
   let ?ioa = "A \<parallel> B"
@@ -61,7 +59,7 @@ proof -
     using A.is_trans_of B.is_trans_of trans_of_par by simp
   show "input_enabled ?ioa"
     using compatible A.input_enabled B.input_enabled input_enabled_par by blast
-  show "asig_of ?ioa = asig_comp (asig_of A) (asig_of B)"
+  (*show "asig_of ?ioa = asig_comp (asig_of A) (asig_of B)"
     unfolding asig_of_def par_def by simp
   show "starts_of ?ioa = {p. fst p \<in> starts_of A \<and> snd p \<in> starts_of B}"
     unfolding starts_of_def par_def by simp
@@ -79,7 +77,9 @@ proof -
   show "wfair_of ?ioa = wfair_of A \<union> wfair_of B"
     unfolding par_def wfair_of_def by simp
   show "sfair_of ?ioa = sfair_of A \<union> sfair_of B"
-    unfolding par_def sfair_of_def by simp
+    unfolding par_def sfair_of_def by simp*)
 qed
+
+end
 
 end

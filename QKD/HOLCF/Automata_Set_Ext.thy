@@ -67,6 +67,21 @@ lemma asig_of_set_ioa [simp]:
 "asig_of (set_to_ioa I g) = family_asig I g"
   by (simp add: set_to_ioa_def ioa_projections)
 
+lemma inputs_of_set_ioa:
+"inp (set_to_ioa I g) = (\<Union>i\<in>I. inp (g i)) - (\<Union>i\<in>I. out (g i))"
+  unfolding asig_of_set_ioa
+  unfolding family_asig_def asig_inputs_def family by force
+
+lemma outputs_of_set_ioa:
+"out (set_to_ioa I g) = (\<Union>i\<in>I. out (g i))"
+  unfolding asig_of_set_ioa
+  unfolding family_asig_def asig_outputs_def family by auto
+
+lemma internals_of_set_ioa:
+"int (set_to_ioa I g) = (\<Union>i\<in>I. int (g i))"
+  unfolding asig_of_set_ioa
+  unfolding family_asig_def asig_internals_def family by auto
+
 lemma starts_of_set_ioa [simp]:
 "starts_of (set_to_ioa I g) = {\<sigma>. \<forall>i\<in>I. \<sigma> i \<in> starts_of (g i)}"
   by (simp add: set_to_ioa_def ioa_projections)

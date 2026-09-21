@@ -9,10 +9,8 @@ locale Set_IOA =
       and valid_components: "\<And>i. i \<in> I \<Longrightarrow> Automata.IOA (g i)"
 begin
 
-end
-
-sublocale Set_IOA < IOA "set_to_ioa I g"
-  rewrites asig_eq:"asig_of ioa = family_asig I g"
+sublocale IOA "set_to_ioa I g"
+  (*rewrites asig_eq:"asig_of ioa = family_asig I g"
     and starts_eq:"starts_of ioa = {\<sigma>. \<forall>i\<in>I. \<sigma> i \<in> starts_of (g i)}"
     and trans_eq:"trans_of ioa = {(\<sigma>, a, \<tau>).
       a \<in> family_actions I g \<and>
@@ -21,7 +19,7 @@ sublocale Set_IOA < IOA "set_to_ioa I g"
          then (\<sigma> i, a, \<tau> i) \<in> trans_of (g i)
          else \<tau> i = \<sigma> i)}"
     and wfair_eq:"wfair_of ioa = (\<Union>i\<in>I. wfair_of (g i))"
-    and sfair_eq:"sfair_of ioa = (\<Union>i\<in>I. sfair_of (g i))"
+    and sfair_eq:"sfair_of ioa = (\<Union>i\<in>I. sfair_of (g i))"*)
   apply(unfold_locales)
 proof -
   show "is_asig_of (set_to_ioa I g)"
@@ -71,7 +69,7 @@ next
         unfolding actions_def asig_projections by auto
     qed
   qed
-  show "asig_of (set_to_ioa I g) = family_asig I g"
+  (*show "asig_of (set_to_ioa I g) = family_asig I g"
     by simp
   show "starts_of (set_to_ioa I g) = {\<sigma>. \<forall>i\<in>I. \<sigma> i \<in> starts_of (g i)} "
     by simp
@@ -80,7 +78,9 @@ next
   show "sfair_of (set_to_ioa I g) = (\<Union>i\<in>I. sfair_of (g i))"
     by simp
   show "trans_of (set_to_ioa I g) = {(\<sigma>, a, \<tau>). a \<in> family_actions I g \<and> (\<forall>i. if i \<in> I \<and> a \<in> act (g i) then \<sigma> i \<midarrow>a\<midarrow>g i\<rightarrow> \<tau> i else \<tau> i = \<sigma> i)}"
-    by simp
+    by simp*)
 qed
+
+end
 
 end

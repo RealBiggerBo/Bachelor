@@ -58,4 +58,13 @@ lemma Par_Sfair_Assoc:
   shows "sfair_of ((a \<parallel> b) \<parallel> c) = sfair_of (a \<parallel> (b \<parallel> c))"
   by (simp add: Un_commute sfair_of_def par_def; blast)
 
+section ProofTactics
+
+lemma starts_of_par_split[case_names "startsA" "startsB"]:
+  assumes startsA: "starts_of A = {a}"
+  assumes startsB: "starts_of B = {b}"
+  shows "starts_of (A \<parallel> B) = {(a,b)}"
+  unfolding starts_of_par
+  using assms by fastforce
+
 end

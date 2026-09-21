@@ -4,19 +4,35 @@ begin
 
 datatype ('state, 'msg) ioa_state = IoaState (IoaState_curState: 'state) (IoaState_msgBuffer: "'msg set")
 
-datatype ('keyId, 'keyVal, 'proc) msg = 
-  GetKeyFor (GetKeyFor_Target: 'proc) |
-  GetKeyWith (GetKeyWith_KeyId: 'keyId) |
-  GetKeyId |
-  KeyResponse (KeyResponse_KeyId: 'keyId) (Key_Response_KeyVal: 'keyVal) |
-  KeyRelay (KeyRelay_KeyId: 'keyId) (KeyRelay_KeyVal: 'keyVal) (KeyRelay_Target: 'proc) |
-  Error
+datatype ('keyID, 'keyVal, 'proc) msg = 
+  GetKey (GetKey_host: 'proc) (GetKey_slaveSaeID: 'proc) |
+  GetKeyWithID (GetKeyWithID_host: 'proc) (GetKeyWithID_masterSaeID: 'proc) (GetKeyWithID_keyID: 'keyID) |
+  KeyResponse (KeyResponse_keyID: 'keyID) (Key_Response_keyVal: 'keyVal) |
+  BridgeIDRelay (BridgeIDRelay_keyID: 'keyID) |
+  KMPost (KMPost_kmePartner: 'proc) (KMPost_keyID: 'keyID) (KMPost_keyVal: 'keyVal) |
+  KMPut (KMPut_ownKmeID: 'proc) (KMPut_keyID: 'keyID) (KMPut_reservedOption: "'proc option") |
+  KMGet (KMGet_masterSaeID: 'proc) (KMGet_keyID: 'keyID) (KMGet_encryptionKeyID: 'keyID) (KMGet_slaveSaeID: 'proc)|
+  AppIDRelay (AppIDRelay_keyID: 'keyID) |
+  OK
 
 datatype ('proc, 'msg) action = 
-  RequestKey (RequestKey_Target: 'proc)| 
-  Send (Send_Sender: 'proc) (Send_Rcpt: 'proc) (Send_Msg: 'msg) | 
-  Receive (Receive_Sender: 'proc) (Receive_Rcpt: 'proc) (Receive_Msg: 'msg)
+  RequestKey (RequestKey_target: 'proc) |
+  TimerTick (TimerTick_target: 'proc) |
+  Send (Send_sender: 'proc) (Send_rcpt: 'proc) (Send_msg: 'msg) | 
+  Receive (Receive_sender: 'proc) (Receive_rcpt: 'proc) (Receive_msg: 'msg)
 
-datatype 'proc sstate = Count (Count_clientIDs: "'proc set") (Count_curCounter: nat)
-datatype 'proc cstate = Count (Count_server: 'proc) (Count_curCount: nat)
+type_synonym ('keyID, 'keyVal, 'proc) key_store = "'keyID \<rightharpoonup> ('keyVal option \<times> 'proc \<times> bool \<times> 'proc option)"
+
+datatype ('keyID, 'keyVal, 'proc) app_state = 
+  App (App_isMaster: bool) (App_otherSaeID: 'proc) (App_kmeID: 'proc) (App_keys: "('keyID \<times> 'keyVal) set")
+datatype ('keyID, 'keyVal, 'proc) kme_state = 
+  Kme (Kme_keyStore: "('keyID, 'keyVal, 'proc) key_store") (Kme_routeFunc: "'proc \<Rightarrow> 'proc") (Kme_saeToKme: "'proc \<Rightarrow> 'proc") |
+  KmeWaitReserve (KmeWaitReseve_keyID: 'keyID) (KmeWaitReseve_saeID: 'proc)  (KmeWaitReseve_keyStore: "('keyID, 'keyVal, 'proc) key_store") (KmeWaitReseve_routeFunc: "'proc \<Rightarrow> 'proc") (KmeWaitReseve_saeToKme: "'proc \<Rightarrow> 'proc") |
+  KmeWaitHop (KmeWaitHop_masterSae: 'proc) (KmeWaitHop_slaveSae: 'proc) (KmeWaitHop_nextKme: 'proc) (KmeWaitHop_keyID: 'keyID) (KmeWaitHop_encryptionKeyID: 'keyID) (KmeWaitHop_keyStore: "('keyID, 'keyVal, 'proc) key_store") (KmeWaitHop_routeFunc: "'proc \<Rightarrow> 'proc") (KmeWaitHop_saeToKme: "'proc \<Rightarrow> 'proc") |
+  KmeWaitHopRec (KmeWaitHopRec_encryptionKey: 'keyID) (KmeWaitHopRec_masterSae: 'proc) (KmeWaitHopRec_slaveSae: 'proc) (KmeWaitHopRec_nextKme: 'proc) (KmeWaitHopRec_keyID: 'keyID) (KmeWaitHopRec_encryptionKeyID: 'keyID) (KmeWaitHopRec_keyStore: "('keyID, 'keyVal, 'proc) key_store") (KmeWaitHop_routeFunc: "'proc \<Rightarrow> 'proc") (KmeWaitHopRec_saeToKme: "'proc \<Rightarrow> 'proc")
+datatype 'proc bridge_state = 
+  Bridge (Bridge_isMaster: bool) (Bridge_otherBridgeID: 'proc) (Bridge_otherKmeID: 'proc) (Bridge_qkdID: 'proc) (Bridge_kmeID: 'proc)
+datatype ('keyID, 'keyVal, 'proc) qkd_layer_state = 
+  QKD (QKD_generatedKeys: "('proc \<times> 'keyID \<times> 'keyVal) set") (QKD_sentKeys: "('keyID \<times> 'keyVal) set")
+
 end
