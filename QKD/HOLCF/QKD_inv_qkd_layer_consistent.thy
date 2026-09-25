@@ -17,9 +17,15 @@ proof (induction rule: invariantI)
 next
   case (2 s t a)
   then show ?case
-  proof(induction rule: TEST)
-    unfolding trans_of_def
-    sorry
+  proof (induction rule: test2)
+    case (App_Master_GetKey tn qkd net tn' pid n app_state kme_state bridges app'_state sae kme keys msgs)
+    then show ?case
+      using 2 unfolding qkd_layer_consistent_def by simp
+  next
+    case (Master_KeyResponse tn qkd net tn' pid n app_state kme_state bridges app'_state sae kme keys msgs sender keyID keyVal)
+    then show ?case
+      using 2 unfolding qkd_layer_consistent_def by simp
+  qed
 qed
 
 end

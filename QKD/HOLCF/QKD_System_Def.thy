@@ -23,6 +23,8 @@ Future assume: b \<in> \<Union>(bridgeID  nodes) \<Longrightarrow> bridgeOtherBr
 *)
 
 locale QKD_Network =
+  fixes dummy :: "'keyID \<Rightarrow> 'keyVal \<Rightarrow> bool"
+  assumes a : "\<And>id val. dummy id val = True"
   fixes nodes :: "'nodeID set"
     and appID :: "'nodeID \<Rightarrow> 'proc"
     and kmeID :: "'nodeID \<Rightarrow> 'proc"

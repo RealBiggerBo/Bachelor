@@ -16,7 +16,14 @@ inductive qkd_layer_step :: "'proc set \<Rightarrow> ('keyID, 'keyVal, 'proc) qk
    qkd_layer_step qkdIDs
                   (QKD gen sent)
                   (Send sender rcpt (KeyResponse keyID keyVal))
-                  (QKD (gen - {(rcpt, keyID, keyVal)}) (sent \<union> {(keyID, keyVal)}))\<close>
+                  (QKD (gen - {(rcpt, keyID, keyVal)}) (sent \<union> {(keyID, keyVal)}))\<close> |
+  GetKeyWithID_Reserve: (*NOT YET IN PLANTUML*)
+  \<open>rcpt \<in> qkdIDs \<Longrightarrow>
+   (keyID, keyVal) \<in> sent \<Longrightarrow>
+   qkd_layer_step qkdIDs
+                  (QKD gen sent)
+                  (Receive sender rcpt (GetKeyWithID rcpt target keyID))
+                  (QKD (gen \<union> {(sender, keyID, keyVal)}) (sent - {(keyID, keyVal)}))\<close>
 
 locale QKD_Layer_locale =
   fixes qkdIDs :: "'proc set"

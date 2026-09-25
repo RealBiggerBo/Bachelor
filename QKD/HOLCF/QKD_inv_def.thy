@@ -11,11 +11,13 @@ abbreviation kme where
 abbreviation bridge where
   \<open>bridge s n bridgeID \<equiv> (snd (snd (fst s))) n bridgeID\<close>
 
-abbreviation qkd_layer where
+abbreviation qkd_layer:: "('a \<times>('keyID, 'keyVal, 'proc) qkd_layer_state \<times> 'b) \<Rightarrow> ('keyID, 'keyVal, 'proc) qkd_layer_state" where
   \<open>qkd_layer s \<equiv> fst (snd s)\<close>
 
-abbreviation network where
+abbreviation network:: "('a \<times>('keyID, 'keyVal, 'proc) qkd_layer_state \<times> 'b) \<Rightarrow> 'b" where
   \<open>network s \<equiv> snd (snd s)\<close>
+
+
 
 definition key_consistent where
   \<open>key_consistent nodes s \<longleftrightarrow>

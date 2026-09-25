@@ -67,4 +67,75 @@ lemma starts_of_par_split[case_names "startsA" "startsB"]:
   unfolding starts_of_par
   using assms by fastforce
 
+lemma trans_par_inductL:
+  assumes "a \<in> act A"
+    and "(s1, a, t1) \<in> trans_of A"
+    and "a \<notin> act B"
+  shows "((s1,s2),a,(t1,s2)) \<in> trans_of (A \<parallel> B)"
+  apply(subst trans_of_par)
+  using assms by force
+
+lemma trans_par_inductFst:
+  assumes "a \<in> act A"
+    and "(fst s, a, fst t) \<in> trans_of A"
+    and "a \<notin> act B"
+    and "snd s = snd t"
+  shows "(s,a,t) \<in> trans_of (A \<parallel> B)"
+  apply(subst trans_of_par)
+  using assms by simp
+
+lemma trans_par_inductFst_Gen:
+  assumes "a \<in> act A"
+    and "(fst s, a, fst t) \<in> trans_of A"
+    and "a \<in> act B \<longrightarrow> snd s \<midarrow>a\<midarrow>B\<rightarrow> snd t"
+    and "a \<notin> act B \<longrightarrow> snd s = snd t"
+  shows "(s,a,t) \<in> trans_of (A \<parallel> B)"
+  apply(subst trans_of_par)
+  using assms by simp
+
+lemma trans_par_inductR:
+  assumes "a \<notin> act A"
+    and "a \<in> act B"
+    and "(s2, a, t2) \<in> trans_of B"
+  shows "((s1,s2),a,(s1,t2)) \<in> trans_of (A \<parallel> B)"
+  apply(subst trans_of_par)
+  using assms by force
+
+lemma trans_par_inductSnd:
+  assumes "a \<notin> act A"
+    and "a \<in> act B"
+    and "(snd s, a, snd t) \<in> trans_of B"
+    and "fst s = fst t"
+  shows "(s, a, t) \<in> trans_of (A \<parallel> B)"
+  apply(subst trans_of_par)
+  using assms by simp
+
+lemma trans_par_inductSnd_Gen:
+  assumes "a \<notin> act A \<longrightarrow> fst s = fst t"
+    and "a \<in> act A \<longrightarrow> fst s \<midarrow>a\<midarrow>A\<rightarrow> fst t"
+    and "a \<in> act B"
+    and "(snd s, a, snd t) \<in> trans_of B"
+  shows "(s,a,t) \<in> trans_of (A \<parallel> B)"
+  apply(subst trans_of_par)
+  using assms by simp
+
+lemma no_par_act:
+  assumes "a \<notin> act A"
+    and "a \<notin> act B"
+  shows "a \<notin> act (A \<parallel> B)"
+  unfolding actions_of_par
+  using assms by simp
+
+lemma par_actL:
+  assumes "a \<in> act A"
+  shows "a \<in> act (A \<parallel> B)"
+  unfolding actions_of_par
+  using assms by simp
+
+lemma par_actR:
+  assumes "a \<in> act B"
+  shows "a \<in> act (A \<parallel> B)"
+  unfolding actions_of_par
+  using assms by simp
+
 end

@@ -22,7 +22,7 @@ inductive app_step :: "('keyID, 'keyVal, 'proc) app_state \<Rightarrow> ('proc, 
   \<open>app_step (App False sae kme keys)
             (Receive sender rcpt (KeyResponse keyID keyVal))
             (App False sae kme (keys \<union> {(keyID, keyVal)}))
-            {}\<close>  
+            {}\<close>
 
 locale App_locale =
   fixes appID :: 'proc

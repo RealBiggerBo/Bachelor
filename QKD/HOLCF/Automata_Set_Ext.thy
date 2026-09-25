@@ -82,6 +82,11 @@ lemma internals_of_set_ioa:
   unfolding asig_of_set_ioa
   unfolding family_asig_def asig_internals_def family by auto
 
+lemma actions_of_set_ioa:
+"act (set_to_ioa I g) = (\<Union>i\<in>I. act (g i))"
+  unfolding asig_of_set_ioa
+  unfolding family_asig_def family actions_def asig_projections by auto
+
 lemma starts_of_set_ioa [simp]:
 "starts_of (set_to_ioa I g) = {\<sigma>. \<forall>i\<in>I. \<sigma> i \<in> starts_of (g i)}"
   by (simp add: set_to_ioa_def ioa_projections)
@@ -135,5 +140,34 @@ lemma set_trans_dest:
   using assms
   unfolding trans_of_def set_to_ioa_def apply simp
   by (simp add: family_actions_def)
+
+lemma trans_set_ioa_induct:
+  assumes "k \<in> I"
+    and "a \<in> act (g k)"
+    and "(\<sigma> k, a, t_k) \<in> trans_of (g k)"
+    and "\<forall>i \<in> I. i \<noteq> k \<longrightarrow> a \<notin> act (g i)"
+    and "\<tau> = \<sigma>(k := t_k)"
+  shows "(\<sigma>, a, \<tau>) \<in> trans_of (set_to_ioa I g)"
+  unfolding trans_of_set_ioa family_actions_def
+  using assms by auto
+
+lemma no_set_ioa_act:
+  assumes "\<forall>i \<in> I. a \<notin> act (g i)"
+  shows "a \<notin> act (set_to_ioa I g)"
+  unfolding actions_of_set_ioa
+  using assms by simp
+
+lemma set_ioa_actI:
+  assumes "k \<in> I"
+    and "a \<in> act (g k)"
+  shows "a \<in> act (set_to_ioa I g)"
+  unfolding actions_of_set_ioa
+  using assms by auto
+
+lemma set_ioa_actInverse:
+  assumes "a \<in> act (set_to_ioa I g)"
+  shows "\<exists>k \<in> I. a \<in> act (g k)"
+  using assms
+  unfolding actions_of_set_ioa by blast
 
 end
