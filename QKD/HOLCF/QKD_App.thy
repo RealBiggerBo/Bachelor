@@ -5,7 +5,7 @@ begin
 inductive app_step :: "('keyID, 'keyVal, 'proc) app_state \<Rightarrow> ('proc, ('keyID, 'keyVal, 'proc) msg) action \<Rightarrow> ('keyID, 'keyVal, 'proc) app_state \<Rightarrow> ('proc \<times> ('keyID, 'keyVal, 'proc) msg) set \<Rightarrow> bool" where
   Master_GetKey:
   \<open>app_step (App True sae kme keys)
-            (RequestKey pid)
+            (RequestKey pid)              
             (App True sae kme keys)
             {(kme, GetKey kme sae)}\<close> |
   Master_KeyResponse:

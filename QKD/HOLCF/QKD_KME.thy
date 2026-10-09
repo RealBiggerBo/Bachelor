@@ -81,7 +81,7 @@ inductive kme_step :: "'keyVal cipher_function \<Rightarrow> 'keyVal cipher_func
             (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme) 
             {(nextKme, KMGet masterSae keyID keyID2 slaveSae)}\<close> |
   KMGetKeyWithID_IDFound:
-  \<open>store keyID = Some (Some val, saeToKme masterSae, True, Some sender) \<Longrightarrow>
+  \<open>store keyID = Some (Some val, saeToKme masterSae, True, None) \<Longrightarrow>
    store keyID2 = Some (Some val2, sender, True, Some sender) \<Longrightarrow>
    kme_step enc dec
             (Kme store route saeToKme) 
@@ -109,16 +109,16 @@ inductive kme_step :: "'keyVal cipher_function \<Rightarrow> 'keyVal cipher_func
    store keyID3 = Some (Some val3, nextKme, True, None) \<Longrightarrow>
    kme_step enc dec
             (KmeWaitHopRec keyID3 masterSae sender nextKme keyID keyID2 store route saeToKme)
-            (Receive nextKme rcpt (KeyResponse keyID' keyVal'))
-            (Kme store route saeToKme) 
+            (Receive nextKme rcpt (KeyResponse keyID keyVal'))
+            (Kme (keyStore_remove (keyStore_remove store keyID2) keyID3) route saeToKme) 
             {(sender, KeyResponse keyID (enc (dec keyVal' val3) val2))}\<close> |
   GetKeyWithID_IDNotFound_Return:
-  \<open>store keyID3 = Some (Some val3, nextKme, True, None) \<Longrightarrow>
+  \<open>store keyID2 = Some (Some val2, nextKme, True, None) \<Longrightarrow>
    kme_step enc dec
             (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme)
-            (Receive nextKme rcpt (KeyResponse keyID' keyVal'))
-            (Kme store route saeToKme) 
-            {(sender, KeyResponse keyID (dec keyVal' val3))}\<close>
+            (Receive nextKme rcpt (KeyResponse keyID keyVal'))
+            (Kme (keyStore_remove store keyID2) route saeToKme) 
+            {(sender, KeyResponse keyID (dec keyVal' val2))}\<close>
 
 locale Kme_locale =
   fixes kmeID :: 'proc

@@ -23,8 +23,6 @@ Future assume: b \<in> \<Union>(bridgeID  nodes) \<Longrightarrow> bridgeOtherBr
 *)
 
 locale QKD_Network =
-  fixes dummy :: "'keyID \<Rightarrow> 'keyVal \<Rightarrow> bool"
-  assumes a : "\<And>id val. dummy id val = True"
   fixes nodes :: "'nodeID set"
     and appID :: "'nodeID \<Rightarrow> 'proc"
     and kmeID :: "'nodeID \<Rightarrow> 'proc"
@@ -102,103 +100,46 @@ sublocale bridge: ETSI_Bridge_locale "bridgeID" "isMaster bridgeID" "bridgeOther
 
 sublocale qkd_layer: QKD_Layer_locale "qkdID ` (\<Union>(bridgeIDs ` nodes))" .
 
-sublocale network: Lossy_Reorder_SetChannel "(appID ` nodes) \<union> (kmeID ` nodes) \<union> (\<Union>(bridgeIDs ` nodes)) \<union> (qkdID ` (\<Union>(bridgeIDs ` nodes)))" .
+sublocale network: Lossy_Reorder_SetChannel .
 
-section Compositions
+section Set_Compositions
+
+sublocale apps: Set_IOA
+  "nodes"
+  "\<lambda>nodeID. app.ioa nodeID"
+proof
+  show "pairwise_compatible nodes app.ioa"
+    unfolding pairwise_compatible_def compatible_def asig_projections asig_of_def
+    using inj_app 
+    unfolding inj_on_def by (simp;fast)
+  show "\<And>i. i \<in> nodes \<Longrightarrow> Automata.IOA (app.ioa i)"
+    using app.is_ioa by fast
+qed
+
+sublocale kmes: Set_IOA
+  "nodes"
+  "\<lambda>nodeID. kme.ioa nodeID"
+proof
+  show "pairwise_compatible nodes kme.ioa"
+    unfolding pairwise_compatible_def compatible_def asig_projections asig_of_def
+    using inj_kme 
+    unfolding inj_on_def by (simp;fast)
+  show "\<And>i. i \<in> nodes \<Longrightarrow> Automata.IOA (kme.ioa i)"
+    using kme.is_ioa by fast
+qed
 
 sublocale bridges: Set_IOA
-  "bridgeIDs n"
-  "\<lambda>bridgeID. bridge.ioa bridgeID n"
-  for n
+  "Sigma nodes bridgeIDs"
+  "\<lambda>(nodeID, bridgeID). bridge.ioa bridgeID nodeID"
 proof
-  show "pairwise_compatible (bridgeIDs n) (\<lambda>bridgeID. bridge.ioa bridgeID n)"
-    unfolding pairwise_compatible_def compatible_def asig_projections asig_of_def by auto
-  show "\<And>i. i \<in> bridgeIDs n \<Longrightarrow> Automata.IOA (bridge.ioa i n)"
-    using bridge.is_ioa by blast
+  show "pairwise_compatible (Sigma nodes bridgeIDs) (\<lambda>(nodeID, bridgeID). bridge.ioa bridgeID nodeID)"
+    unfolding pairwise_compatible_def compatible_def asig_projections asig_of_def apply auto
+    using disjoint_node_bridges unfolding disjnt_iff by metis
+  show "\<And>i. i \<in> Sigma nodes bridgeIDs \<Longrightarrow> Automata.IOA (case i of (nodeID, bridgeID) \<Rightarrow> bridge.ioa bridgeID nodeID)"
+    using bridge.is_ioa by fast
 qed
 
-lemma out_bridges:
-  shows "\<And>n. out (bridges.ioa n) = \<Union>{out (bridge.ioa bridgeID n) | bridgeID. bridgeID \<in> bridgeIDs n}"
-  unfolding outputs_of_set_ioa by blast
-
-lemma int_bridges:
-  shows "\<And>n. int (bridges.ioa n) = {}"
-  unfolding asig_of_set_ioa
-  unfolding family asig_internals_def asig_of_def by auto
-
-sublocale kme_bridges: Par_IOA 
-  "kme.ioa n"
-  "bridges.ioa n"
-  for n
-proof
-  show "compatible (kme.ioa n) (bridges.ioa n)"
-    unfolding compatible_def 
-    unfolding int_bridges out_bridges 
-    unfolding asig_projections asig_of_def apply auto 
-    using kme_neq_bridge by blast
-qed
-
-lemma out_kme_bridges:
-  shows "\<And>n. out (kme_bridges.ioa n) = out (kme.ioa n) \<union> \<Union> {out (bridge.ioa bridgeID n) |bridgeID. bridgeID \<in> bridgeIDs n}"
-  unfolding outputs_of_par out_bridges by fastforce
-
-lemma int_kme_bridges:
-  shows "\<And>n. int (kme_bridges.ioa n) = {}"
-  unfolding internals_of_par int_bridges
-  unfolding family asig_internals_def asig_of_def by auto
-
-sublocale trusted_node: Par_IOA
-  "app.ioa n"
-  "kme_bridges.ioa n"
-  for n
-proof
-  show "compatible (app.ioa n) (kme_bridges.ioa n)"
-    unfolding compatible_def
-    unfolding out_kme_bridges int_kme_bridges
-    unfolding asig_projections asig_of_def apply auto
-     apply (metis disjnt_iff disjoint_ids rangeI)
-    using app_neq_bridge by auto
-qed
-
-lemma out_trusted_node:
-  shows "\<And>n. out (trusted_node.ioa n) = out (app.ioa n) \<union> out (kme.ioa n) \<union> \<Union>{out (bridge.ioa bridgeID n) |bridgeID. bridgeID \<in> bridgeIDs n}"
-  unfolding outputs_of_par out_bridges by fast
-
-lemma int_trusted_node:
-  shows "\<And>n. int (trusted_node.ioa n) = {}"
-  apply(subst internals_of_par)
-  unfolding int_kme_bridges
-  unfolding asig_projections asig_of_def by force
-
-sublocale trusted_nodes: Set_IOA
-  nodes
-  "\<lambda>nodeID. trusted_node.ioa nodeID"
-proof
-  show "pairwise_compatible nodes trusted_node.ioa"
-    unfolding pairwise_compatible_def compatible_def
-    unfolding int_trusted_node Int_empty_left out_trusted_node
-    unfolding asig_projections asig_of_def
-    apply auto
-            apply (metis inj_app inj_on_contraD)
-           apply (metis disjnt_iff disjoint_ids rangeI)
-          apply (metis disjnt_iff disjoint_ids rangeI)
-         apply (meson inj_kme inj_onD)
-    using app_neq_bridge apply auto[1]
-    using kme_neq_bridge apply auto[1]
-    using app_neq_bridge apply auto[1]
-    using kme_neq_bridge apply auto[1]
-    using bridge_determines_node by auto
-  show "\<And>i. i \<in> nodes \<Longrightarrow> Automata.IOA (trusted_node.ioa i)"
-    using trusted_node.is_ioa by fast
-qed
-
-lemma out_trusted_nodes:
-  "out trusted_nodes.ioa = \<Union>{out (app.ioa n) \<union> out (kme.ioa n) \<union> \<Union>{out (bridge.ioa bridgeID n) |bridgeID. bridgeID \<in> bridgeIDs n} | n. n \<in> nodes}"
-  unfolding outputs_of_set_ioa out_trusted_node by blast
-
-lemma int_trusted_nodes:
-  shows "int trusted_nodes.ioa = {}"
-  unfolding internals_of_set_ioa int_trusted_node by blast
+section ParCompositions
 
 sublocale qkd_layer_network: Par_IOA
   "qkd_layer.ioa"
@@ -208,19 +149,46 @@ proof
     unfolding compatible_def asig_projections asig_of_def QKD_Layer_locale.asig by auto
 qed
 
-sublocale System: Par_IOA
-  "trusted_nodes.ioa"
+sublocale bridges_qkd_layer_network: Par_IOA
+  "bridges.ioa"
   "qkd_layer_network.ioa"
 proof
-  show "compatible trusted_nodes.ioa qkd_layer_network.ioa"
-    unfolding compatible_def out_trusted_nodes int_trusted_nodes Int_empty_left
-    unfolding internals_of_par outputs_of_par
-    unfolding asig_projections asig_of_def QKD_Layer_locale.asig apply (simp only: o_apply)
-    apply (simp only: prod.sel)
+  show "compatible bridges.ioa qkd_layer_network.ioa"
+    apply (subst compatibleParR)
+    unfolding compatible_def
+    unfolding outputs_of_set_ioa internals_of_set_ioa actions_of_set_ioa inputs_of_set_ioa
+    unfolding asig_projections asig_of_def qkd_layer.asig apply (simp split: if_splits)
+    apply auto
+    by (meson UnionI disjnt_iff disjoint_ids rangeI)
+qed
+
+sublocale kmes_bridges_qkd_layer_network: Par_IOA
+  "kmes.ioa"
+  "bridges_qkd_layer_network.ioa"
+proof
+  show "compatible kmes.ioa bridges_qkd_layer_network.ioa"
+    apply (subst compatibleParR)+
+    unfolding compatible_def
+    unfolding outputs_of_set_ioa internals_of_set_ioa actions_of_set_ioa inputs_of_set_ioa
+    unfolding asig_projections asig_of_def qkd_layer.asig apply (simp split: if_splits)
+    apply auto
+    using kme_neq_bridge apply auto[1]
+    by (metis disjnt_iff disjoint_ids rangeI)
+qed
+
+sublocale System: Par_IOA
+  "apps.ioa"
+  "kmes_bridges_qkd_layer_network.ioa"
+proof
+  show "compatible apps.ioa kmes_bridges_qkd_layer_network.ioa"
+    apply (subst compatibleParR)+
+    unfolding compatible_def
+    unfolding outputs_of_set_ioa internals_of_set_ioa actions_of_set_ioa inputs_of_set_ioa
+    unfolding asig_projections asig_of_def qkd_layer.asig apply (simp split: if_splits)
     apply auto
       apply (metis disjnt_iff disjoint_ids rangeI)
-     apply (metis disjnt_iff disjoint_ids rangeI)
-    by (meson UnionI disjnt_iff disjoint_ids rangeI)
+    using app_neq_bridge apply auto[1]
+    by (metis disjnt_iff disjoint_ids rangeI)
 qed
 
 end

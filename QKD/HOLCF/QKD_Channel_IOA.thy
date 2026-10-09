@@ -2,11 +2,10 @@ theory QKD_Channel_IOA
   imports Automata_IOA QKD_Datatypes
 begin
 
-section Set_Channel
+section Channel
 
-locale Set_Channel =
-  fixes pids:: "'proc set"
-    and start:: 'state
+locale Channel =
+  fixes start:: 'state
     and add_msg:: "'state \<Rightarrow> 'proc \<Rightarrow> 'proc \<Rightarrow> ('keyID, 'keyVal, 'proc) msg \<Rightarrow> 'state"
     and rmv_msg:: "'state \<Rightarrow> 'proc \<Rightarrow> 'proc \<Rightarrow> ('keyID, 'keyVal, 'proc) msg \<Rightarrow> 'state"
     and can_send_msg:: "'state \<Rightarrow> 'proc \<Rightarrow> 'proc \<Rightarrow> ('keyID, 'keyVal, 'proc) msg \<Rightarrow> bool"
@@ -14,16 +13,14 @@ begin
 
 abbreviation channel_asig where 
 "channel_asig \<equiv> 
-   ({Send pid_a pid_b m | pid_a pid_b m. pid_a \<in> pids \<and> pid_b \<in> pids} \<union> {Send pid_b pid_a m | pid_a pid_b m. pid_a \<in> pids \<and> pid_b \<in> pids},
-   {Receive pid_a pid_b m | pid_a pid_b m. pid_a \<in> pids \<and> pid_b \<in> pids} \<union> {Receive pid_b pid_a m | pid_a pid_b m. pid_a \<in> pids \<and> pid_b \<in> pids},
+   ({Send pid_a pid_b m | pid_a pid_b m. True},
+   {Receive pid_a pid_b m | pid_a pid_b m. True},
    {})"
 
 abbreviation channel_trans where
 "channel_trans \<equiv> 
-    {(state, Send pid_a pid_b m, add_msg state pid_a pid_b m) | state pid_a pid_b m. pid_a \<in> pids \<and> pid_b \<in> pids}
-  \<union> {(state, Send pid_b pid_a m, add_msg state pid_b pid_a m) | state pid_a pid_b m. pid_a \<in> pids \<and> pid_b \<in> pids}
-  \<union> {(state, Receive pid_a pid_b m, rmv_msg state pid_a pid_b m) | state pid_a pid_b m. pid_a \<in> pids \<and> pid_b \<in> pids \<and> can_send_msg state pid_a pid_b m}
-  \<union> {(state, Receive pid_b pid_a m, rmv_msg state pid_b pid_a m) | state pid_a pid_b m. pid_a \<in> pids \<and> pid_b \<in> pids \<and> can_send_msg state pid_b pid_a m}"
+    {(state, Send pid_a pid_b m, add_msg state pid_a pid_b m) | state pid_a pid_b m. True}
+  \<union> {(state, Receive pid_a pid_b m, rmv_msg state pid_a pid_b m) | state pid_a pid_b m. can_send_msg state pid_a pid_b m}"
 
 sublocale IOA 
   "(channel_asig,

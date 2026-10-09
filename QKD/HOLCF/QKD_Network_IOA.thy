@@ -3,7 +3,7 @@ theory QKD_Network_IOA
 begin
 
 locale Network_IOA = 
-    fixes pid:: 'proc
+  fixes pid:: 'proc
     and ins:: "('proc, ('keyID, 'keyVal, 'proc) msg) action set"
     and start:: "'state"
     and step_rel:: "'state \<Rightarrow> ('proc, ('keyID, 'keyVal, 'proc) msg) action \<Rightarrow> 'state \<Rightarrow> ('proc \<times> ('keyID, 'keyVal, 'proc) msg) set \<Rightarrow> bool"

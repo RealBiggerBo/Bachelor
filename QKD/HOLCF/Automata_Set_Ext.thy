@@ -170,4 +170,10 @@ lemma set_ioa_actInverse:
   using assms
   unfolding actions_of_set_ioa by blast
 
+lemma set_ioa_trans_elim [elim]:
+  assumes "s \<midarrow>a\<midarrow>set_to_ioa I g\<rightarrow> t"
+  shows "(a \<in> act (g i) \<and> i \<in> I \<longrightarrow> s i \<midarrow>a\<midarrow>g i\<rightarrow> t i) \<and>
+         (a \<notin> act (g i) \<or> i \<notin> I \<longrightarrow> s i = t i)"
+  using assms by auto
+
 end

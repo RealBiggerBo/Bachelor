@@ -60,6 +60,14 @@ lemma Par_Sfair_Assoc:
 
 section ProofTactics
 
+lemma compatibleParR:
+  shows "compatible A (B \<parallel> C) \<longleftrightarrow> compatible A B \<and> compatible A C"
+  unfolding compatible_def outputs_of_par internals_of_par actions_of_par by auto
+
+lemma compatibleParL:
+  shows "compatible (A \<parallel> B) C \<longleftrightarrow> compatible A C \<and> compatible B C"
+  unfolding compatible_def outputs_of_par internals_of_par actions_of_par by auto
+
 lemma starts_of_par_split[case_names "startsA" "startsB"]:
   assumes startsA: "starts_of A = {a}"
   assumes startsB: "starts_of B = {b}"
@@ -137,5 +145,13 @@ lemma par_actR:
   shows "a \<in> act (A \<parallel> B)"
   unfolding actions_of_par
   using assms by simp
+
+lemma par_trans_elim:
+  assumes "s \<midarrow>a\<midarrow>(A \<parallel> B)\<rightarrow> t"
+  shows "(a \<in> act A \<longrightarrow> fst s \<midarrow>a\<midarrow>A\<rightarrow> fst t) \<and>
+         (a \<notin> act A \<longrightarrow> fst s = fst t) \<and>
+         (a \<in> act B \<longrightarrow> snd s \<midarrow>a\<midarrow>B\<rightarrow> snd t) \<and>
+         (a \<notin> act B \<longrightarrow> snd s = snd t)"
+  using assms unfolding trans_of_par by simp
 
 end

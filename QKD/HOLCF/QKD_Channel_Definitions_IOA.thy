@@ -4,12 +4,10 @@ begin
 
 section Set_Channels
 
-locale Lossy_Reorder_SetChannel = 
-  fixes pids :: "'proc set"
+locale Lossy_Reorder_SetChannel
 begin
 
-sublocale Set_Channel
-  pids
+sublocale Channel
   "{}"
   "\<lambda>s sender rcpt m. s \<union> {(sender, rcpt, m)}"
   "\<lambda>s _ _ _. s"

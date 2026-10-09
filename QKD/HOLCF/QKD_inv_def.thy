@@ -3,19 +3,19 @@ theory QKD_inv_def
 begin
 
 abbreviation app where
-  \<open>app s n \<equiv> (fst (fst (fst s))) n\<close>
+  \<open>app s n \<equiv> (fst s) n\<close>
 
 abbreviation kme where
-  \<open>kme s n \<equiv> (fst (snd (fst s))) n\<close>
+  \<open>kme s n \<equiv> (fst (snd s)) n\<close>
 
 abbreviation bridge where
-  \<open>bridge s n bridgeID \<equiv> (snd (snd (fst s))) n bridgeID\<close>
+  \<open>bridge s n bridgeID \<equiv> (fst (snd (snd s))) (n, bridgeID)\<close>
 
-abbreviation qkd_layer:: "('a \<times>('keyID, 'keyVal, 'proc) qkd_layer_state \<times> 'b) \<Rightarrow> ('keyID, 'keyVal, 'proc) qkd_layer_state" where
-  \<open>qkd_layer s \<equiv> fst (snd s)\<close>
+abbreviation qkd_layer where
+  \<open>qkd_layer s \<equiv> fst (snd (snd (snd s)))\<close>
 
-abbreviation network:: "('a \<times>('keyID, 'keyVal, 'proc) qkd_layer_state \<times> 'b) \<Rightarrow> 'b" where
-  \<open>network s \<equiv> snd (snd s)\<close>
+abbreviation network where
+  \<open>network s \<equiv> snd (snd (snd (snd s)))\<close>
 
 
 

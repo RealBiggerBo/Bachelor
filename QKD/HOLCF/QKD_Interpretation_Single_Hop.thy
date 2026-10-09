@@ -52,15 +52,11 @@ definition c_saeToKme :: "concrete_proc \<Rightarrow> concrete_proc" where
 definition c_enc :: "int \<Rightarrow> int \<Rightarrow> int" where "c_enc x y = x + y"
 definition c_dec :: "int \<Rightarrow> int \<Rightarrow> int" where "c_dec x y = x - y"
 
-definition dummy :: "nat \<Rightarrow> int \<Rightarrow> bool" where "dummy k v = True"
-
-interpretation SingleHop: QKD_Network dummy
+interpretation SingleHop: QKD_Network
   c_nodes c_appID c_kmeID c_bridgeIDs c_qkdID c_isMaster 
   c_appOtherSae c_bridgeOtherBridge c_bridgeOtherKme c_route c_saeToKme 
   c_enc c_dec
 proof
-  show "\<And>id val. dummy id val = True"
-    unfolding dummy_def by simp
   show "\<And>val v1 v2. (c_dec (c_enc val v1) v2 = val) = (v1 = v2)"
     unfolding c_dec_def c_enc_def by fastforce
   show "\<And>n. n \<in> c_nodes \<Longrightarrow> c_bridgeIDs n \<noteq> {}"
@@ -84,13 +80,14 @@ proof
     unfolding c_nodes_def disjnt_def c_bridgeIDs_def by blast
 qed
 
-definition bridge where
-  \<open>bridge node bridge_state = 
-    (\<lambda>_. undefined)(BridgeProc node := bridge_state)\<close>
+definition apps where
+  \<open>apps app1 app2 = (\<lambda>_. undefined)(Node1 := app1, Node2 := app2)\<close>
 
-definition tn where
-  \<open>tn app1 kme1 app2 kme2 bridge1 bridge2 = 
-    (\<lambda>_. undefined)(Node1 := (app1, kme1, bridge Node1 bridge1), Node2 := (app2, kme2, bridge Node2 bridge2))\<close>
+definition kmes where
+  \<open>kmes kme1 kme2 = (\<lambda>_. undefined)(Node1 := kme1, Node2 := kme2)\<close>
+
+definition bridges where
+  \<open>bridges bridge1 bridge2 = (\<lambda>_. undefined)((Node1, BridgeProc Node1) := bridge1, (Node2, BridgeProc Node2) := bridge2)\<close>
 
 definition keyStore_init ::"nat \<rightharpoonup> (int option \<times> concrete_proc \<times> bool \<times> concrete_proc option)"where
   \<open>keyStore_init kid = None\<close>
@@ -102,15 +99,24 @@ lemma SingleHop_Starts:
     and "kme2 = IoaState (Kme keyStore_init (c_route Node2) c_saeToKme) {}"
     and "bridge1 = IoaState (Bridge True (BridgeProc Node2) (KmeProc Node2) (QkdProc Node1) (KmeProc Node1)) {}"
     and "bridge2 = IoaState (Bridge False (BridgeProc Node1) (KmeProc Node1) (QkdProc Node2) (KmeProc Node2)) {}"
-  shows "(tn app1 kme1 app2 kme2 bridge1 bridge2,QKD {} {},{}) \<in> starts_of SingleHop.System.ioa"
+  shows "(apps app1 app2, kmes kme1 kme2, bridges bridge1 bridge2, QKD {} {}, {}) \<in> starts_of SingleHop.System.ioa"
 proof -
-  have "tn app1 kme1 app2 kme2 bridge1 bridge2 \<in> starts_of SingleHop.trusted_nodes.ioa"
-    unfolding starts_of_set_ioa starts_of_par apply simp
-    unfolding tn_def c_nodes_def starts_of_def apply simp
-    unfolding c_isMaster_def c_bridgeIDs_def apply simp
-    unfolding bridge_def c_bridgeOtherBridge_def c_bridgeOtherKme_def apply simp
-    unfolding c_qkdID_def c_kmeID_def c_appOtherSae_def c_appID_def apply simp
-    using assms unfolding keyStore_init_def by auto
+  have "apps app1 app2 \<in> starts_of SingleHop.apps.ioa"
+    unfolding starts_of_set_ioa apps_def c_nodes_def
+    unfolding starts_of_def apply simp
+    apply(subst assms(1,2))+
+    unfolding c_isMaster_def c_appID_def c_appOtherSae_def c_kmeID_def by simp
+  moreover have "kmes kme1 kme2 \<in> starts_of SingleHop.kmes.ioa"
+    unfolding starts_of_set_ioa kmes_def c_nodes_def
+    unfolding starts_of_def apply simp
+    apply(subst assms(3,4))+
+    unfolding keyStore_init_def by simp
+  moreover have "bridges bridge1 bridge2 \<in> starts_of SingleHop.bridges.ioa"
+    unfolding starts_of_set_ioa bridges_def c_nodes_def
+    unfolding starts_of_def apply simp
+    apply(subst assms(5,6))+
+    unfolding c_bridgeIDs_def c_isMaster_def c_bridgeOtherBridge_def 
+    unfolding c_bridgeOtherKme_def c_qkdID_def c_kmeID_def by simp
   moreover have "QKD {} {} \<in> starts_of SingleHop.qkd_layer.ioa"
     unfolding starts_of_def by simp
   moreover have "{} \<in> starts_of SingleHop.network.ioa"

@@ -18,13 +18,11 @@ next
   case (2 s t a)
   then show ?case
   proof (induction rule: test2)
-    case (App_Master_GetKey tn qkd net tn' pid n app_state kme_state bridges app'_state sae kme keys msgs)
-    then show ?case
-      using 2 unfolding qkd_layer_consistent_def by simp
+    case (App_Master_GetKey apps kmes bridges qkd net apps' pid n sae kme keys msgs)
+    then show ?case sorry
   next
-    case (Master_KeyResponse tn qkd net tn' pid n app_state kme_state bridges app'_state sae kme keys msgs sender keyID keyVal)
-    then show ?case
-      using 2 unfolding qkd_layer_consistent_def by simp
+    case (Master_KeyResponse apps kmes bridges qkd net apps' pid n sae kme keys msgs sender keyID keyVal)
+    then show ?case sorry
   qed
 qed
 
