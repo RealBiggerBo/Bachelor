@@ -51,17 +51,7 @@ proof -
         using a_act_kme Line4Hop.actsDisj_kme_bridge assms(5) apply fast
         apply (rule no_par_act)
         using a_act_kme Line4Hop.actsDisj_kme_qkd assms(5) apply fast
-      proof
-        assume "a \<in> act Line4Hop.network.ioa"
-        then have "a \<in> act (Line4Hop.kme.ioa i) \<inter> act Line4Hop.network.ioa"
-          using a_act_kme by simp
-        then have "\<And>all. all = c_appID ` c_nodes \<union> c_kmeID ` c_nodes \<union> \<Union> (c_bridgeIDs ` c_nodes) \<union> c_qkdID ` \<Union> (c_bridgeIDs ` c_nodes) \<Longrightarrow>
-                        a \<in> {Send (c_kmeID i) rcpt msg |rcpt msg. rcpt \<in> all} \<union> 
-                            {Receive sender (c_kmeID i) msg |sender msg. sender \<in> all}"
-          using assms(5) Line4Hop.acts_kme_netw by blast
-        then show False
-          using assms(1,2) by fastforce
-      qed
+        using assms(1,2) unfolding actions_def asig_projections asig_of_def by simp
       show "snd (snd s) = snd (snd t)"
         by(subst assms(3,4); simp)+
     qed

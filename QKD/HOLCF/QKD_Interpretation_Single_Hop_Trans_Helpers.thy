@@ -43,17 +43,7 @@ proof -
       apply(rule no_par_act)
       unfolding actions_of_set_ioa
       using a_act_app assms(5) SingleHop.actsDisj_app_qkd apply fast
-    proof
-      assume "a \<in> act SingleHop.network.ioa"
-      then have "a \<in> act (SingleHop.app.ioa i) \<inter> act SingleHop.network.ioa"
-        using a_act_app by simp
-      then have "\<And>all. all = c_appID ` c_nodes \<union> c_kmeID ` c_nodes \<union> \<Union> (c_bridgeIDs ` c_nodes) \<union> c_qkdID ` \<Union> (c_bridgeIDs ` c_nodes) \<Longrightarrow>
-                        a \<in> {Send (c_appID i) rcpt msg |rcpt msg. rcpt \<in> all} \<union> 
-                            {Receive sender (c_appID i) msg |sender msg. sender \<in> all}"
-        using assms(5) SingleHop.acts_app_netw by blast
-      then show False
-        using assms(1,2) by fastforce
-    qed
+      using assms(1,2) unfolding actions_def asig_projections asig_of_def by simp
     show "snd s = snd t"
       by(subst assms(3,4); auto)+
   qed
@@ -105,17 +95,7 @@ proof -
         using a_act_kme SingleHop.actsDisj_kme_bridge assms(5) apply fast
         apply (rule no_par_act)
         using a_act_kme SingleHop.actsDisj_kme_qkd assms(5) apply fast
-      proof
-        assume "a \<in> act SingleHop.network.ioa"
-        then have "a \<in> act (SingleHop.kme.ioa i) \<inter> act SingleHop.network.ioa"
-          using a_act_kme by simp
-        then have "\<And>all. all = c_appID ` c_nodes \<union> c_kmeID ` c_nodes \<union> \<Union> (c_bridgeIDs ` c_nodes) \<union> c_qkdID ` \<Union> (c_bridgeIDs ` c_nodes) \<Longrightarrow>
-                        a \<in> {Send (c_kmeID i) rcpt msg |rcpt msg. rcpt \<in> all} \<union> 
-                            {Receive sender (c_kmeID i) msg |sender msg. sender \<in> all}"
-          using assms(5) SingleHop.acts_kme_netw by blast
-        then show False
-          using assms(1,2) by fastforce
-      qed
+        using assms(1,2) unfolding actions_def asig_projections asig_of_def by simp
       show "snd (snd s) = snd (snd t)"
         by(subst assms(3,4); simp)+
     qed
@@ -203,7 +183,8 @@ proof -
           then have "\<And>all. all = c_appID ` c_nodes \<union> c_kmeID ` c_nodes \<union> \<Union> (c_bridgeIDs ` c_nodes) \<union> c_qkdID ` \<Union> (c_bridgeIDs ` c_nodes) \<Longrightarrow>
                           a \<in> {Send b rcpt msg |rcpt msg. rcpt \<in> all} \<union> 
                               {Receive sender b msg |sender msg. sender \<in> all}"
-            using assms(5,6) SingleHop.acts_bridge_netw by blast
+            using assms(5,6) SingleHop.acts_bridge_netw
+            using assms(1,2) unfolding actions_def asig_projections asig_of_def by simp
           then show False
             using assms(1,2) by fastforce
         qed

@@ -11,6 +11,15 @@ inductive_cases kme_step_KMPutE:
 inductive_cases kme_step_GetKeyE:
   "kme_step enc dec (Kme store route saeToKme)
      (Receive sender rcpt (GetKey host slaveSae)) st' sent"
+inductive_cases kme_step_KMPutReserveE:
+  "kme_step enc dec (Kme store route saeToKme)
+     (Receive sender rcpt (KMPut otherKme keyID (Some slaveSae))) st' sent"
+inductive_cases kme_step_GetKeyWithIDE:
+  "kme_step enc dec (Kme store route saeToKme)
+     (Receive sender rcpt (GetKeyWithID host masterSae keyID)) st' sent"
+inductive_cases kme_step_GetKeyWithID_RecE:
+  "kme_step enc dec (Kme store route saeToKme)
+     (Receive sender rcpt (KMGet masterSae keyID keyID2 slaveSae)) st' sent"
 
 context QKD_Network
 begin
@@ -54,10 +63,10 @@ GetKeyWithID_IDNotFound_Return
           (msgs \<union> {(kmeID n, sender, OK)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender host slaveSae store route saeToKme msgs keyID val.
          \<lbrakk>a = Receive sender (kmeID n) (GetKey host slaveSae); net = net';
-          store keyID = Some (Some val, saeToKme slaveSae, True, None);
+          store keyID = Some (Some val, route slaveSae, True, None);
           kmes n = IoaState (Kme store route saeToKme) msgs;
           kmes' = kmes(n := IoaState (KmeWaitReserve keyID sender store route saeToKme) 
-          (msgs \<union> {(kmeID n, saeToKme slaveSae, KMPut (kmeID n) keyID (Some slaveSae))}))\<rbrakk> \<Longrightarrow> P t"
+          (msgs \<union> {(kmeID n, route slaveSae, KMPut (kmeID n) keyID (Some slaveSae))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender otherKme slaveSae store route saeToKme msgs keyID.
          \<lbrakk>a = Receive sender (kmeID n) (KMPut otherKme keyID (Some slaveSae)); net = net';
           kmes n = IoaState (Kme store route saeToKme) msgs;
@@ -69,8 +78,8 @@ GetKeyWithID_IDNotFound_Return
           kmes n = IoaState (KmeWaitReserve keyID saeID store route saeToKme) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID) route saeToKme) 
           (msgs \<union> {(kmeID n, saeID, KeyResponse keyID val)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>sender store keyID val saeToKme masterSae route saeToKme msgs.
-         \<lbrakk>a = Receive sender (kmeID n) OK; net = net';
+    and "\<And>sender host store keyID val saeToKme masterSae route saeToKme msgs.
+         \<lbrakk>a = Receive sender (kmeID n) (GetKeyWithID host masterSae keyID); net = net';
           store keyID = Some (Some val, saeToKme masterSae, True, Some sender);
           kmes n = IoaState (Kme store route saeToKme) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID) route saeToKme) 
@@ -96,7 +105,7 @@ GetKeyWithID_IDNotFound_Return
           kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme) 
           (msgs \<union> {(kmeID n, sender, KeyResponse keyID (enc val val2))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme masterSae keyID keyID2 slaveSae store val2 sender route keyID3 val3 saeToKme msgs.
-         \<lbrakk>a = Receive nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae); net = net';
+         \<lbrakk>a = Receive sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae); net = net';
           store keyID = None;
           store keyID2 = Some (Some val2, sender, True, Some sender);
           route masterSae = nextKme;
@@ -196,13 +205,13 @@ proof
               then obtain host slaveSae where msg_split:"msg = GetKey host slaveSae"
                 by blast
               then show ?thesis
-              proof (cases "\<exists>keyID val. store keyID = Some (Some val, saeToKme slaveSae, True, None)")
+              proof (cases "\<exists>keyID val. store keyID = Some (Some val, route slaveSae, True, None)")
                 case True
-                then obtain keyID0 val0 where prem0: "store keyID0 = Some (Some val0, saeToKme slaveSae, True, None)"
+                then obtain keyID0 val0 where prem0: "store keyID0 = Some (Some val0, route slaveSae, True, None)"
                   by blast
-                then obtain keyID val where prem: "store keyID = Some (Some val, saeToKme slaveSae, True, None)"
+                then obtain keyID val where prem: "store keyID = Some (Some val, route slaveSae, True, None)"
                                       and kn: "kmes' n = IoaState (KmeWaitReserve keyID sender store route saeToKme)
-                                      (msgs \<union> {(kmeID n, saeToKme slaveSae, KMPut (kmeID n) keyID (Some slaveSae))})"
+                                      (msgs \<union> {(kmeID n, route slaveSae, KMPut (kmeID n) keyID (Some slaveSae))})"
                   using kme_node_trans Kme msg_split a_split IoaState unfolding trans_of_def apply auto
                   apply (smt (verit) Un_commute image_empty image_insert insert_is_Un ioa_state.inject kme_step_GetKeyE)
                   by (meson GetKey)
@@ -220,7 +229,194 @@ proof
             next
               case False
               then show ?thesis
-                sorry
+              proof (cases "\<exists>otherKme keyID slaveSae. msg = KMPut otherKme keyID (Some slaveSae)")
+                case True
+                then obtain otherKme keyID slaveSae where msg_split:"msg = KMPut otherKme keyID (Some slaveSae)"
+                  by blast
+                then have "kmes' n = IoaState (Kme (keyStore_reserve store keyID slaveSae) route saeToKme)
+                                              (msgs \<union> {(kmeID n, otherKme, OK)})"
+                  using a_split assms(4) kme_node_trans IoaState Kme unfolding trans_of_def apply simp
+                  unfolding actions_def asig_projections asig_of_def apply simp
+                  apply (auto elim: kme_step_KMPutReserveE)
+                  using KMPut_Reserve by fast+
+                then show ?thesis
+                  using assms(10)[OF _ net_eq] IoaState kmes' msg_split a_split Kme by presburger
+              next
+                case False
+                then show ?thesis
+                proof (cases "\<exists>host masterSae keyID. msg = GetKeyWithID host masterSae keyID")
+                  case True
+                  then obtain host masterSae keyID where msg_split: "msg = GetKeyWithID host masterSae keyID"
+                    by blast
+                  then show ?thesis
+                  proof (cases "\<exists>val. store keyID = Some (Some val, saeToKme masterSae, True, Some sender)")
+                    case True
+                    then obtain val where store_keyID: "store keyID = Some (Some val, saeToKme masterSae, True, Some sender)"
+                      by blast
+                    then have "kmes' n = IoaState (Kme (keyStore_remove store keyID) route saeToKme)
+                                                  (msgs \<union> {(kmeID n, sender, KeyResponse keyID val)})"
+                      using a_split assms(4) kme_node_trans IoaState Kme msg_split unfolding trans_of_def apply simp
+                      unfolding actions_def asig_projections asig_of_def apply simp
+                      apply (auto elim: kme_step_GetKeyWithIDE)
+                      using GetKeyWithID_IDFound by fast+
+                    then show ?thesis
+                      using assms(12)[OF _ net_eq] IoaState kmes' msg_split a_split Kme store_keyID by presburger
+                  next
+                    case False
+                    then show ?thesis
+                    proof (cases "store keyID = None")
+                      case True
+                      obtain nextKme where nxtKme: "nextKme = route masterSae"
+                        by simp
+                      then show ?thesis
+                      proof (cases "\<exists>keyID2 val2. store keyID2 = Some (Some val2, nextKme, True, None)")
+                        case True
+                        then obtain keyID20 val20 where prem0: "store keyID20 = Some (Some val20, nextKme, True, None)"
+                          by blast
+                        then obtain keyID2 val2 where prem: "store keyID2 = Some (Some val2, nextKme, True, None)"
+                                                and kn: "kmes' n = IoaState (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme)
+                                                        (msgs \<union> {(kmeID n, nextKme, KMPut (kmeID n) keyID2 (Some (kmeID n)))})"
+                          using kme_node_trans Kme msg_split a_split IoaState nxtKme \<open>store keyID = None\<close> unfolding trans_of_def apply auto
+                          using Un_commute image_empty image_insert insert_is_Un ioa_state.inject kme_step_GetKeyWithIDE
+                           apply (smt (verit, ccfv_SIG) not_None_eq)
+                          by (meson GetKeyWithID_IDNotFound)
+                        show ?thesis
+                          using assms(13)[OF _ net_eq] IoaState kmes' kn msg_split a_split Kme prem nxtKme \<open>store keyID = None\<close>
+                          by metis
+                      next
+                        case False
+                        then have "kmes' n = kmes n"
+                          using kme_node_trans Kme msg_split a_split IoaState nxtKme \<open>store keyID = None\<close> 
+                          unfolding trans_of_def apply auto
+                          by (smt (verit) kme_step_GetKeyWithIDE option.discI)+
+                        then show ?thesis
+                          using kmes' assms(2,5,6) net_eq by force
+                      qed
+                    next
+                      case False
+                      then have "kmes' n = kmes n"
+                        apply(cases "\<exists>st' sent. kme_step enc dec (Kme store route saeToKme) (Receive sender (kmeID n) (GetKeyWithID host masterSae keyID)) st' sent")
+                        using kme_node_trans Kme msg_split a_split IoaState 
+                        using \<open>\<nexists>val. store keyID = Some (Some val, saeToKme masterSae, True, Some sender)\<close>
+                        unfolding trans_of_def apply auto
+                        using kme_step_GetKeyWithIDE[of enc dec store route saeToKme sender "kmeID n" host masterSae keyID]
+                        by auto
+                      then show ?thesis
+                        using kmes' assms(2,5,6) net_eq by force
+                    qed
+                  qed
+                next
+                  case False
+                  then show ?thesis
+                  proof (cases "\<exists>masterSae keyID keyID2 slaveSae. msg = KMGet masterSae keyID keyID2 slaveSae")
+                    case True
+                    (*COPY PASTE*)
+                    then obtain masterSae keyID keyID2 slaveSae where msg_split: "msg = KMGet masterSae keyID keyID2 slaveSae"
+                      by blast
+                    then show ?thesis
+                    proof (cases "\<exists>val. store keyID = Some (Some val, saeToKme masterSae, True, None)")
+                      case True
+                      then obtain val where store_keyID: "store keyID = Some (Some val, saeToKme masterSae, True, None)"
+                        by blast
+                      then show ?thesis
+                      proof (cases "\<exists>val2. store keyID2 = Some (Some val2, sender, True, Some sender)")
+                        case True
+                        then obtain val2 where store_keyID2: "store keyID2 = Some (Some val2, sender, True, Some sender)"
+                          by blast
+                        then have "kmes' n = IoaState (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme)
+                                                  (msgs \<union> {(kmeID n, sender, KeyResponse keyID (enc val val2))})"
+                          using a_split assms(4) kme_node_trans IoaState Kme msg_split store_keyID unfolding trans_of_def apply simp
+                          unfolding actions_def asig_projections asig_of_def apply simp
+                          apply (auto elim: kme_step_GetKeyWithID_RecE)
+                          using KMGetKeyWithID_IDFound by meson+
+                        then show ?thesis
+                          using assms(15)[OF _ net_eq] IoaState kmes' msg_split a_split Kme store_keyID store_keyID2
+                          by metis
+                      next
+                        case False
+                        then have "kmes' n = kmes n"
+                          using kme_node_trans Kme msg_split a_split IoaState 
+                          unfolding trans_of_def apply auto
+                          by (smt (verit) kme_step_GetKeyWithID_RecE option.discI)+
+                        then show ?thesis
+                          using kmes' assms(2,5,6) net_eq by force
+                      qed
+                    next
+                      case False
+                      then show ?thesis
+                      proof (cases "store keyID = None")
+                        case True
+                        obtain nextKme where nxtKme: "nextKme = route masterSae"
+                          by simp
+                        then show ?thesis
+                        proof (cases "\<exists>val2. store keyID2 = Some (Some val2, sender, True, Some sender)")
+                          case True
+                          then obtain val2 where val2_split:"store keyID2 = Some (Some val2, sender, True, Some sender)"
+                            by blast
+                          then show ?thesis
+                          proof (cases "\<exists>keyID3 val3. store keyID3 = Some (Some val3, nextKme, True, None)")
+                            case True
+                            then obtain keyID30 val30 where prem:"store keyID30 = Some (Some val30, nextKme, True, None)"
+                              by blast
+                            then obtain keyID3 val3 where prem: "store keyID3 = Some (Some val3, nextKme, True, None)"
+                                                and kn: "kmes' n = IoaState (KmeWaitHopRec keyID3 masterSae sender nextKme keyID keyID2 store route saeToKme)
+                                                        (msgs \<union> {(kmeID n, nextKme, KMPut (kmeID n) keyID3 (Some (kmeID n)))})"
+                              using kme_node_trans Kme msg_split a_split IoaState nxtKme val2_split \<open>store keyID = None\<close> 
+                              unfolding trans_of_def apply auto
+                              using Un_commute image_empty image_insert insert_is_Un ioa_state.inject kme_step_GetKeyWithID_RecE
+                               apply (smt (verit, ccfv_SIG) not_None_eq)
+                              using KMGetKeyWithID_IDNotFound by meson
+                            then show ?thesis
+                              using assms(16)[OF _ net_eq] IoaState kmes' kn msg_split a_split Kme prem nxtKme val2_split \<open>store keyID = None\<close>
+                              by force
+                          next
+                            case False
+                            then have "kmes' n = kmes n"
+                              using kme_node_trans Kme msg_split a_split IoaState nxtKme \<open>store keyID = None\<close> 
+                              unfolding trans_of_def apply auto
+                              by (smt (verit) kme_step_GetKeyWithID_RecE option.discI)+
+                            then show ?thesis
+                              using kmes' assms(2,5,6) net_eq by force
+                          qed
+                        next
+                          case False
+                          then have "kmes' n = kmes n"
+                            using kme_node_trans Kme msg_split a_split IoaState 
+                            unfolding trans_of_def apply auto
+                            by (smt (verit) kme_step_GetKeyWithID_RecE option.discI)+
+                          then show ?thesis
+                            using kmes' assms(2,5,6) net_eq by force
+                        qed
+                      next
+                        case False
+                        then have "kmes' n = kmes n"
+                          using kme_node_trans Kme msg_split a_split IoaState
+                          unfolding trans_of_def apply auto
+                          using False \<open>\<nexists>val. store keyID = Some (Some val, saeToKme masterSae, True, None)\<close> kme_step_GetKeyWithID_RecE 
+                           by (fastforce,meson)
+                        then show ?thesis
+                          using kmes' assms(2,5,6) net_eq by force
+                      qed
+                    qed
+                  next
+                    case False
+                    have "\<forall>st' sent. \<not>kme_step enc dec state a st' sent"
+                      using a_split kme_step.cases Kme
+                        \<open>\<nexists>otherKme keyID keyVal. msg = KMPost otherKme keyID keyVal\<close>
+                        \<open>\<nexists>otherKme keyID. msg = KMPut otherKme keyID None\<close>
+                        \<open>\<nexists>host slaveSae. msg = GetKey host slaveSae\<close>
+                        \<open>\<nexists>otherKme keyID slaveSae. msg = KMPut otherKme keyID (Some slaveSae)\<close>
+                        \<open>\<nexists>host masterSae keyID. msg = GetKeyWithID host masterSae keyID\<close>
+                        \<open>\<nexists>masterSae keyID keyID2 slaveSae. msg = KMGet masterSae keyID keyID2 slaveSae\<close>
+                      apply auto
+                      by (cases rule: kme_step.cases) auto
+                    then have "kmes' n = kmes n"
+                      using kme_node_trans Kme a_split IoaState unfolding trans_of_def by simp
+                    then show ?thesis
+                      using kmes' assms(2,5,6) net_eq by force
+                  qed
+                qed
+              qed
             qed
           qed
         qed

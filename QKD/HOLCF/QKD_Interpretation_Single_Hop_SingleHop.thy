@@ -78,7 +78,7 @@ proof (rule trans_in_qkd_netw, goal_cases)
     using assms by blast
   case 4
   then show ?case
-    using GetKey_Gen[of "QkdProc Node1" "c_qkdID ` (c_bridgeIDs Node1 \<union> c_bridgeIDs Node2)" keyID "{}" "{}" "BridgeProc Node1" "KmeProc Node2" keyVal]
+    using GetKey_Gen[of keyID "{}" "{}" "BridgeProc Node1" "QkdProc Node1" "KmeProc Node2" keyVal]
     apply(simp only: assms  trans_of_def SingleHop.qkd_layer.layer_trans; simp)
     by(simp only: c_qkdID_def c_bridgeIDs_def c_nodes_def; simp)
   case 5
@@ -113,15 +113,14 @@ next
 next
   case 4
   then show ?case
-    using Send[of "QkdProc Node1" "c_qkdID ` (c_bridgeIDs Node1 \<union> c_bridgeIDs Node2)" "BridgeProc Node1" keyID keyVal "{(BridgeProc Node1, keyID, keyVal)}" "{}"]
+    using Send[of "BridgeProc Node1" keyID keyVal "{(BridgeProc Node1, keyID, keyVal)}" "{}" "QkdProc Node1"]
     apply(simp only: assms trans_of_def SingleHop.qkd_layer.layer_trans; simp)
     by(simp only: c_qkdID_def c_bridgeIDs_def c_nodes_def; simp)
 next
   case 5
   then show ?case
     apply(simp only: assms snd_conv)
-    apply(simp only: assms trans_of_def SingleHop.qkd_layer.layer_trans; simp)
-    unfolding c_qkdID_def c_bridgeIDs_def c_nodes_def c_appID_def c_kmeID_def by simp
+    by(simp only: assms trans_of_def SingleHop.qkd_layer.layer_trans; simp)
 qed
 
 
@@ -234,7 +233,7 @@ proof (rule trans_in_qkd_netw, goal_cases)
     using assms by blast
   case 4
   then show ?case
-    using GetKeyWithID_Reserve[of "QkdProc Node2" "c_qkdID ` (c_bridgeIDs Node1 \<union> c_bridgeIDs Node2)" keyID keyVal "{(keyID, keyVal)}" "{}" "BridgeProc Node2" "KmeProc Node1"]
+    using GetKeyWithID_Reserve[of keyID keyVal "{(keyID, keyVal)}" "{}" "BridgeProc Node2" "QkdProc Node2" "KmeProc Node1"]
     apply(simp only: assms trans_of_def SingleHop.qkd_layer.layer_trans; simp)
     by(simp only: c_qkdID_def c_bridgeIDs_def c_nodes_def; simp)
   case 5
@@ -265,14 +264,12 @@ proof (rule trans_in_qkd_netw, goal_cases)
     using assms by blast
   case 4
   then show ?case
-    using Send[of "QkdProc Node2" "c_qkdID ` (c_bridgeIDs Node1 \<union> c_bridgeIDs Node2)" "BridgeProc Node2" keyID keyVal "{(BridgeProc Node2, keyID, keyVal)}" "{}"]
+    using Send[of "BridgeProc Node2" keyID keyVal "{(BridgeProc Node2, keyID, keyVal)}" "{}" "QkdProc Node2"]
     apply(simp only: assms trans_of_def SingleHop.qkd_layer.layer_trans; simp)
     by(simp only: c_qkdID_def c_bridgeIDs_def c_nodes_def; simp)
   case 5
   then show ?case
-    apply(simp only: assms trans_of_def SingleHop.qkd_layer.layer_trans; simp)
-    unfolding c_qkdID_def c_bridgeIDs_def c_nodes_def c_appID_def c_kmeID_def 
-    using assms by simp
+    by(simp only: assms trans_of_def SingleHop.qkd_layer.layer_trans; simp)
 qed
 
 
@@ -496,9 +493,9 @@ qed
 
 (*kme receives GetKey from App; sends reserve to otherKme*)
 lemma
-  assumes "kme1 = IoaState (Kme store route c_saeToKme) {}"
-    and "kme1' = IoaState (KmeWaitReserve keyID sender store route c_saeToKme) 
-        {(rcpt, c_saeToKme (AppProc Node2), KMPut rcpt keyID (Some (AppProc Node2)))}"
+  assumes "kme1 = IoaState (Kme store (c_route Node1) c_saeToKme) {}"
+    and "kme1' = IoaState (KmeWaitReserve keyID sender store (c_route Node1) c_saeToKme) 
+        {(rcpt, KmeProc Node2, KMPut rcpt keyID (Some (AppProc Node2)))}"
     and "store_init = (\<lambda>id. None)"
     and "store = keyStore_confirm (keyStore_add store_init keyID (Some keyVal) (KmeProc Node2)) keyID (KmeProc Node2)"
     and "sender = AppProc Node1"
@@ -526,9 +523,9 @@ proof (rule trans_in_kme_netw, goal_cases)
   then show "kme s Node1 \<midarrow>a\<midarrow>SingleHop.kme.ioa Node1\<rightarrow> kme t Node1"
     apply(simp only: assms kmes_def fst_conv snd_conv fun_upd_apply; simp)
     unfolding c_bridgeOtherKme_def c_qkdID_def c_kmeID_def trans_of_def apply simp
-    using GetKey[of store keyID keyVal c_saeToKme "AppProc Node2" c_enc c_dec route sender rcpt "KmeProc Node1"]
+    using GetKey[of store keyID keyVal "c_route Node1" "AppProc Node2" c_enc c_dec c_saeToKme sender rcpt "KmeProc Node1"]
     using assms apply simp
-    unfolding c_saeToKme_def by auto
+    unfolding c_route_def c_saeToKme_def by auto
   case 6
   then show ?case 
     apply(simp only: assms kmes_def fst_conv snd_conv c_isMaster_def; simp)

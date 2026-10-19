@@ -39,12 +39,12 @@ inductive kme_step :: "'keyVal cipher_function \<Rightarrow> 'keyVal cipher_func
             (Kme (keyStore_confirm store keyID otherKme) route saeToKme) 
             {(sender, OK)}\<close> |
   GetKey:
-  \<open>store keyID = Some (Some val, saeToKme slaveSae, True, None) \<Longrightarrow> 
+  \<open>store keyID = Some (Some val, route slaveSae, True, None) \<Longrightarrow> 
    kme_step enc dec
             (Kme store route saeToKme) 
             (Receive sender rcpt (GetKey host slaveSae))
             (KmeWaitReserve keyID sender store route saeToKme) 
-            {(saeToKme slaveSae, KMPut rcpt keyID (Some slaveSae))}\<close> |
+            {(route slaveSae, KMPut rcpt keyID (Some slaveSae))}\<close> |
   KMPut_Reserve:
   \<open>kme_step enc dec
             (Kme store route saeToKme)

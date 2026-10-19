@@ -43,11 +43,11 @@ definition c_bridgeOtherBridge :: "concrete_proc \<Rightarrow> concrete_proc" wh
 definition c_bridgeOtherKme :: "concrete_proc \<Rightarrow> concrete_proc" where
   "c_bridgeOtherKme p = (if p = BridgeProc Node1 then KmeProc Node2 else KmeProc Node1)"
 
-definition c_route :: "concrete_node \<Rightarrow> concrete_proc \<Rightarrow> concrete_proc" where
-  "c_route src dst = dst"  \<comment> \<open>Direct routing for 2 nodes\<close>
-
 definition c_saeToKme :: "concrete_proc \<Rightarrow> concrete_proc" where
   "c_saeToKme p = (case p of AppProc n \<Rightarrow> KmeProc n | BridgeProc n \<Rightarrow> KmeProc n | _ \<Rightarrow> p)"
+
+definition c_route :: "concrete_node \<Rightarrow> concrete_proc \<Rightarrow> concrete_proc" where
+  "c_route src dst = c_saeToKme dst"  \<comment> \<open>Direct routing for 2 nodes\<close>
 
 definition c_enc :: "int \<Rightarrow> int \<Rightarrow> int" where "c_enc x y = x + y"
 definition c_dec :: "int \<Rightarrow> int \<Rightarrow> int" where "c_dec x y = x - y"

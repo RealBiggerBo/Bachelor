@@ -21,7 +21,16 @@ next
     case (App_Master_GetKey apps kmes bridges qkd net apps' pid n sae kme keys msgs)
     then show ?case sorry
   next
-    case (Master_KeyResponse apps kmes bridges qkd net apps' pid n sae kme keys msgs sender keyID keyVal)
+    case (App_Master_KeyResponse apps kmes bridges qkd net apps' pid n sae kme keys msgs sender keyID keyVal)
+    then show ?case sorry
+  next
+    case (App_Slave_GetKey apps kmes bridges qkd net apps' pid n sae kme keys msgs sender keyID)
+    then show ?case sorry
+  next
+    case (App_Slave_KeyResponse apps kmes bridges qkd net apps' pid n sae kme keys msgs sender keyID keyVal)
+    then show ?case sorry
+  next
+    case (App_Send apps kmes bridges qkd net apps' net' pid n msgs rcpt msg appState)
     then show ?case sorry
   qed
 qed
