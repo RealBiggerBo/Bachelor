@@ -35,13 +35,12 @@ definition key_consistent where
       \<longrightarrow> keyVal1 = keyVal2)\<close>
 
 definition app_key_sent where
-  \<open>app_key_sent nodes s \<longleftrightarrow>
+  \<open>app_key_sent nodes kmeID appID s \<longleftrightarrow>
     (\<forall>n master oSae kme store keyID keyVal.
       n \<in> nodes \<and>
       app s n = IoaState (App master oSae kme store) \<and>
       (keyID, keyVal) \<in> store
-      \<longrightarrow> (\<exists>sender rcpt. (sender, rcpt, KeyResponse keyID keyVal) \<in> network s))\<close>
-(*Sender is kmeID n; rcpt is appID n*)
+      \<longrightarrow> (kmeID n, appID n, KeyResponse keyID keyVal) \<in> network s)\<close>
 
 definition app_kme_network_consistent where
   \<open>app_kme_network_consistent s \<longleftrightarrow>

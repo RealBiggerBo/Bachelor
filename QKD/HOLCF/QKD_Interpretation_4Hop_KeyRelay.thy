@@ -161,7 +161,7 @@ qed
 ( Rule: KMGetKeyWithID_IDNotFound *)
 lemma
   assumes "kme3 = IoaState (Kme store (c_route Node3) c_saeToKme) {}"
-  assumes "kme3' = IoaState (KmeWaitHopRec id3_4 (AppProc Node4) sender (KmeProc Node4) keyID id2_3 store (c_route Node3) c_saeToKme) 
+  assumes "kme3' = IoaState (KmeWaitHopRec id3_4 (AppProc Node4) (AppProc Node2) sender (KmeProc Node4) keyID id2_3 store (c_route Node3) c_saeToKme) 
         {(KmeProc Node3, KmeProc Node4, KMPut rcpt id3_4 (Some rcpt))}"
     and "store_init = (\<lambda>id. None)(id2_3 := Some (Some val2_3, KmeProc Node2, True, None), id3_4 := Some (Some val3_4, KmeProc Node4, True, None))"
     and "store = keyStore_reserve store_init id2_3 (KmeProc Node2)"
@@ -200,7 +200,7 @@ proof (rule trans_in_kme_netw, goal_cases)
     apply(simp only: assms kmes_def fst_conv snd_conv fun_upd_apply; simp)
     unfolding c_bridgeOtherKme_def c_qkdID_def c_kmeID_def trans_of_def apply simp
     using KMGetKeyWithID_IDNotFound[of store keyID id2_3 val2_3 sender "c_route Node3" "AppProc Node4" "KmeProc Node4" id3_4 val3_4 c_enc c_dec c_saeToKme rcpt "AppProc Node2"] assms
-    unfolding c_saeToKme_def apply simp
+    unfolding c_saeToKme_def c_route_def apply simp
     by auto
   case 6
   then show "network s \<midarrow>a\<midarrow>Line4Hop.network.ioa\<rightarrow> network t" 
@@ -270,8 +270,8 @@ qed
 (* KME3 receives OK from KME4; sends KMGet to KME4 requesting keyID via reserved hop-key keyID3 )
 ( Rule: KMGetKeyWithID_IDNotFound_Reserved *)
 lemma
-  assumes "kme3 = IoaState (KmeWaitHopRec id3_4 (AppProc Node4) (KmeProc Node2) (KmeProc Node4) keyID id2_3 store (c_route Node3) c_saeToKme) {}"
-  assumes "kme3' = IoaState (KmeWaitHopRec id3_4 (AppProc Node4) (KmeProc Node2) (KmeProc Node4) keyID id2_3 store (c_route Node3) c_saeToKme) 
+  assumes "kme3 = IoaState (KmeWaitHopRec id3_4 (AppProc Node4) (AppProc Node2) (KmeProc Node2) (KmeProc Node4) keyID id2_3 store (c_route Node3) c_saeToKme) {}"
+  assumes "kme3' = IoaState (KmeWaitHopRec id3_4 (AppProc Node4) (AppProc Node2) (KmeProc Node2) (KmeProc Node4) keyID id2_3 store (c_route Node3) c_saeToKme) 
         {(KmeProc Node3, KmeProc Node4, KMGet (AppProc Node4) keyID id3_4 (AppProc Node2))}"
     and "store_init = (\<lambda>id. None)(id2_3 := Some (Some val2_3, KmeProc Node2, True, None), id3_4 := Some (Some val3_4, KmeProc Node4, True, None))"
     and "store = keyStore_reserve store_init id2_3 (KmeProc Node2)"
@@ -301,7 +301,7 @@ proof (rule trans_in_kme_netw, goal_cases)
   then show "kme s Node3 \<midarrow>a\<midarrow>Line4Hop.kme.ioa Node3\<rightarrow> kme t Node3"
     apply(simp only: assms kmes_def fst_conv snd_conv fun_upd_apply; simp)
     unfolding c_bridgeOtherKme_def c_qkdID_def c_kmeID_def trans_of_def apply simp
-    using KMGetKeyWithID_IDNotFound_Reserved[of c_enc c_dec id3_4 "AppProc Node4" "KmeProc Node2" "KmeProc Node4" keyID id2_3 store "c_route Node3" c_saeToKme rcpt "AppProc Node2"] assms
+    using KMGetKeyWithID_IDNotFound_Reserved[of c_enc c_dec id3_4 "AppProc Node4" "AppProc Node2" "KmeProc Node2" "KmeProc Node4" keyID id2_3 store "c_route Node3" c_saeToKme rcpt ] assms
     unfolding c_saeToKme_def apply simp
     by auto
   case 6
@@ -324,7 +324,7 @@ lemma
   assumes "kme4 = IoaState (Kme store (c_route Node4) c_saeToKme) {}"
   assumes "kme4' = IoaState (Kme store' (c_route Node4) c_saeToKme) 
         {(KmeProc Node4, sender, KeyResponse keyID (c_enc val val3_4))}"
-    and "store_init = (\<lambda>id. None)(id3_4 := Some (Some val3_4, KmeProc Node3, True, None), keyID := Some (Some val, c_saeToKme (AppProc Node4), True, None))"
+    and "store_init = (\<lambda>id. None)(id3_4 := Some (Some val3_4, KmeProc Node3, True, None), keyID := Some (Some val, c_saeToKme (AppProc Node4), True, Some (AppProc Node2)))"
     and "store = keyStore_reserve store_init id3_4 sender"
     and "store' = keyStore_remove (keyStore_remove store keyID) id3_4"
     and "id3_4 \<noteq> keyID"
@@ -350,16 +350,15 @@ proof (rule trans_in_kme_netw, goal_cases)
   then show "Node4 \<in> c_nodes" 
     using c_nodes_def by blast
   case 5
-  have "store keyID = Some (Some val, c_saeToKme (AppProc Node4), True, None)"
+  have "store keyID = Some (Some val, c_saeToKme (AppProc Node4), True, Some (AppProc Node2))"
     using assms by auto
   moreover have "store id3_4 = Some (Some val3_4, KmeProc Node3, True, Some (KmeProc Node3))"
     using assms by auto
   ultimately show "kme s Node4 \<midarrow>a\<midarrow>Line4Hop.kme.ioa Node4\<rightarrow> kme t Node4"
     apply(simp only: assms kmes_def fst_conv snd_conv fun_upd_apply; simp)
     unfolding c_bridgeOtherKme_def c_qkdID_def c_kmeID_def trans_of_def apply simp
-    using KMGetKeyWithID_IDFound[of store keyID val c_saeToKme "AppProc Node4" id3_4 val3_4 sender c_enc c_dec "c_route Node4" rcpt "AppProc Node2"] assms
-    unfolding c_saeToKme_def apply simp
-    by auto
+    using KMGetKeyWithID_IDFound[of store keyID val c_saeToKme "AppProc Node4" "AppProc Node2" id3_4 val3_4 sender c_enc c_dec "c_route Node4" rcpt] assms
+    unfolding c_saeToKme_def c_route_def by auto
   case 6
   then show "network s \<midarrow>a\<midarrow>Line4Hop.network.ioa\<rightarrow> network t" 
     apply(simp only: assms kmes_def fst_conv snd_conv c_isMaster_def; simp)
@@ -376,7 +375,7 @@ qed
 (* KME3 receives KeyResponse from KME4; decrypts payload with hop-key val3, re-encrypts val with hop-key val2, cleans up store, and sends KeyResponse (enc val val2) to KME2 )
 ( Rule: KMGetKeyWithID_IDNotFound_Return *)
 lemma
-  assumes "kme3 = IoaState (KmeWaitHopRec id3_4 (AppProc Node4) original_sender (KmeProc Node4) keyID id2_3 store (c_route Node3) c_saeToKme) {}"
+  assumes "kme3 = IoaState (KmeWaitHopRec id3_4 (AppProc Node4) (AppProc Node2) original_sender (KmeProc Node4) keyID id2_3 store (c_route Node3) c_saeToKme) {}"
   assumes "kme3' = IoaState (Kme store' (c_route Node3) c_saeToKme) 
         {(KmeProc Node3, original_sender, KeyResponse keyID (c_enc (c_dec (c_enc val val3_4) val3_4) val2_3))}"
     and "store_init = (\<lambda>id. None)(id2_3 := Some (Some val2_3, KmeProc Node2, True, None), id3_4 := Some (Some val3_4, KmeProc Node4, True, None))"
@@ -415,7 +414,7 @@ proof (rule trans_in_kme_netw, goal_cases)
   ultimately show "kme s Node3 \<midarrow>a\<midarrow>Line4Hop.kme.ioa Node3\<rightarrow> kme t Node3"
     apply(simp only: assms kmes_def fst_conv snd_conv fun_upd_apply; simp)
     unfolding c_bridgeOtherKme_def c_qkdID_def c_kmeID_def trans_of_def apply simp
-    using KMGetKeyWithID_IDNotFound_Return[of store id2_3 val2_3 original_sender id3_4 val3_4 sender c_enc c_dec "AppProc Node4" keyID "c_route Node3" c_saeToKme rcpt "c_enc val val3_4"] assms
+    using KMGetKeyWithID_IDNotFound_Return[of store id2_3 val2_3 "KmeProc Node2" id3_4 val3_4 "KmeProc Node4" c_enc c_dec "AppProc Node4" "AppProc Node2" keyID "c_route Node3" c_saeToKme rcpt "c_enc val val3_4"] assms
     unfolding c_saeToKme_def apply simp
     by auto
   case 6

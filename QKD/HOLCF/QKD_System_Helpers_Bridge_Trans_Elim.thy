@@ -11,7 +11,7 @@ lemma bridges_trans_elim [elim]:
          (a \<notin> act (bridge.ioa b n) \<or> n \<notin> nodes \<or> b \<notin> bridgeIDs n \<longrightarrow> bridges (n,b) = bridges' (n,b))"
   using set_ioa_trans_elim[OF assms] by fast
 
-lemma bridge_invariant_step[consumes 5, case_names 
+lemma bridge_invariant_step[consumes 7, case_names 
     Tick_GetKey
     Master_KeyResponse
     Slave_GetKeyWithID

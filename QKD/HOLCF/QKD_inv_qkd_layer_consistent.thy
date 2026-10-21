@@ -17,22 +17,24 @@ proof (induction rule: invariantI)
 next
   case (2 s t a)
   then show ?case
-  proof (induction rule: test2)
-    case (App_Master_GetKey apps kmes bridges qkd net apps' pid n sae kme keys msgs)
-    then show ?case sorry
+  proof (induction rule: System_step_induct)
+    case (Qkd_GetKey_Gen apps kmes bridges qkd net qkd' pid gen sent sender target keyID keyVal)
+    then show ?case
+      using 2(2) unfolding qkd_layer_consistent_def
+      by (smt (verit, best) Un_empty_right Un_iff Un_insert_right image_insert insertCI insertE
+          insert_image qkd_layer_state.inject split_pairs)
   next
-    case (App_Master_KeyResponse apps kmes bridges qkd net apps' pid n sae kme keys msgs sender keyID keyVal)
-    then show ?case sorry
+    case (Qkd_GetKeyWithID_Reserve apps kmes bridges qkd net qkd' pid gen sent sender target keyID keyVal)
+    then show ?case
+      using 2(2) unfolding qkd_layer_consistent_def by auto
   next
-    case (App_Slave_GetKey apps kmes bridges qkd net apps' pid n sae kme keys msgs sender keyID)
-    then show ?case sorry
-  next
-    case (App_Slave_KeyResponse apps kmes bridges qkd net apps' pid n sae kme keys msgs sender keyID keyVal)
-    then show ?case sorry
-  next
-    case (App_Send apps kmes bridges qkd net apps' net' pid n msgs rcpt msg appState)
-    then show ?case sorry
-  qed
+    case (Qkd_Send apps kmes bridges qkd net qkd' net' pid gen sent rcpt keyID keyVal)
+    then show ?case
+      using 2(2) unfolding qkd_layer_consistent_def
+      by (smt (verit, ccfv_SIG) Un_empty_right Un_insert_right Un_left_commute image_insert
+          insert_Diff qkd_layer_state.inject split_pairs)
+  qed 
+  (use 2(2) in \<open>simp_all add: qkd_layer_consistent_def\<close>)
 qed
 
 end

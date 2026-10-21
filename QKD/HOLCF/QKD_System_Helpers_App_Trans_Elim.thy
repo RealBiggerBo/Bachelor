@@ -11,7 +11,7 @@ lemma apps_trans_elim [elim]:
          (a \<notin> act (app.ioa n) \<or> n \<notin> nodes \<longrightarrow> apps n = apps' n)"
   using set_ioa_trans_elim[OF assms] by blast
 
-lemma app_invariant_step[consumes 4, case_names 
+lemma app_invariant_step[consumes 6, case_names 
     Master_RequestKey
     Master_KeyResponse
     Slave_AppIDRelay

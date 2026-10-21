@@ -5,7 +5,7 @@ begin
 context QKD_Network
 begin
 
-lemma qkd_invariant_step[consumes 4, case_names 
+lemma qkd_invariant_step[consumes 5, case_names 
     GetKey_Gen
     GetKeyWithID_Reserve
     Send]:

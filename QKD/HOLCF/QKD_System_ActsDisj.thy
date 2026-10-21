@@ -205,6 +205,67 @@ proof -
     unfolding actions_def by blast
 qed
 
+lemma acts_qkd_netw:
+  shows "act qkd_layer.ioa \<inter> act network.ioa = {Send sender rcpt msg | sender rcpt msg. sender \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))} \<union> {Receive sender rcpt msg | sender rcpt msg. rcpt \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))}"
+proof -
+  let ?A = "inp (qkd_layer.ioa)"
+  let ?B = "out (qkd_layer.ioa)"
+  let ?C = "int (qkd_layer.ioa)"
+  let ?D = "inp network.ioa"
+  let ?E = "out network.ioa"
+  let ?F = "int network.ioa"
+  have "?C = {} \<and> ?F = {}"
+    unfolding asig_projections asig_of_def qkd_layer.asig by auto
+  then have "(?A \<union> ?B \<union> ?C) \<inter> (?D \<union> ?E \<union> ?F) = (?A \<union> ?B) \<inter> (?D \<union> ?E)"
+    by blast
+  moreover have "... = ((?A \<union> ?B) \<inter> ?D) \<union> ((?A \<union> ?B) \<inter> ?E)"
+    by blast
+  ultimately have "(?A \<union> ?B \<union> ?C) \<inter> (?D \<union> ?E \<union> ?F) = ((?A \<inter> ?D) \<union> (?B \<inter> ?D)) \<union> ((?A \<inter> ?E) \<union> (?B \<inter> ?E))"
+    by blast
+  moreover have "?B \<inter> ?E = {}"
+    unfolding asig_projections asig_of_def qkd_layer.asig by auto
+  moreover have "?A \<inter> ?D = {}"
+    unfolding asig_projections asig_of_def qkd_layer.asig by auto
+  ultimately have I:"(?A \<union> ?B \<union> ?C) \<inter> (?D \<union> ?E \<union> ?F) = (?B \<inter> ?D) \<union> (?A \<inter> ?E)"
+    by blast
+  have "?B \<inter> ?D = {Send sender rcpt msg | sender rcpt msg. sender \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))}"
+    unfolding asig_projections asig_of_def qkd_layer.asig by auto
+  moreover have "?A \<inter> ?E = {Receive sender rcpt msg | sender rcpt msg. rcpt \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))}"
+    unfolding asig_projections asig_of_def qkd_layer.asig by auto
+  ultimately have II:"(?B \<inter> ?D) \<union> (?A \<inter> ?E) = {Send sender rcpt msg | sender rcpt msg. sender \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))} \<union> {Receive sender rcpt msg | sender rcpt msg. rcpt \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))}"
+    by metis
+  have "(?A \<union> ?B \<union> ?C) \<inter> (?D \<union> ?E \<union> ?F) = {Send sender rcpt msg | sender rcpt msg. sender \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))} \<union> {Receive sender rcpt msg | sender rcpt msg. rcpt \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))}"
+    apply(subst I)
+    using II . 
+  then show ?thesis
+    unfolding actions_def by blast
+qed
+
+lemma acts_only_netw:
+  assumes "all = (appID ` nodes) \<union> (kmeID ` nodes) \<union> \<Union>(bridgeIDs ` nodes) \<union> qkdID ` (\<Union>(bridgeIDs ` nodes))"
+    and "a \<in> act System.ioa"
+    and "a \<notin> act apps.ioa"
+    and "a \<notin> act kmes.ioa"
+    and "a \<notin> act bridges.ioa"
+    and "a \<notin> act qkd_layer.ioa"
+  shows "a \<in> {Send sender rcpt msg | sender rcpt msg. sender \<notin> all} \<union>
+             {Receive sender rcpt msg | sender rcpt msg. rcpt \<notin> all}"
+proof -
+  have step: "a \<in> act network.ioa - act apps.ioa - act kmes.ioa - act bridges.ioa - act qkd_layer.ioa"
+    using assms(2-6) unfolding actions_of_par by fast
+  have eq: "act network.ioa - act apps.ioa - act kmes.ioa - act bridges.ioa - act qkd_layer.ioa = 
+            {Send sender rcpt msg | sender rcpt msg. sender \<notin> all} \<union>
+            {Receive sender rcpt msg | sender rcpt msg. rcpt \<notin> all}"
+    using assms(1) apply simp
+    unfolding actions_def asig_projections asig_of_def family qkd_layer.asig apply simp
+    apply (rule set_eqI)
+    apply (simp only: Un_iff Diff_iff mem_Collect_eq UN_iff image_iff)
+    apply (case_tac x)
+    apply (simp_all)
+    by blast+
+  from step eq show ?thesis by blast
+qed
+
 end
 
 end

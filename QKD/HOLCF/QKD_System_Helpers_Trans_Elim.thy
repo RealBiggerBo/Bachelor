@@ -109,6 +109,12 @@ proof -
     by blast
 qed
 
+lemma System_trans_act_elim [elim]:
+  assumes "s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t"
+  shows "a \<in> act apps.ioa \<or> a \<in> act kmes.ioa \<or> a \<in> act bridges.ioa \<or> a \<in> act qkd_layer.ioa \<or> a \<in> act network.ioa"
+  using assms
+  unfolding trans_of_par actions_of_par by simp
+
 end
 
 end

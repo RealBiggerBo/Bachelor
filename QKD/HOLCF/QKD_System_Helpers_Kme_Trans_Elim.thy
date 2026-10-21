@@ -21,6 +21,24 @@ inductive_cases kme_step_GetKeyWithID_RecE:
   "kme_step enc dec (Kme store route saeToKme)
      (Receive sender rcpt (KMGet masterSae keyID keyID2 slaveSae)) st' sent"
 
+inductive_cases kme_step_GetKey_ReservedE:
+  "kme_step enc dec (KmeWaitReserve keyID saeID store route saeToKme)
+      (Receive sender rcpt OK) st' sent"
+
+inductive_cases kme_step_GetKeyWithID_IDNotFound_ReservedE:
+  "kme_step enc dec (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme)
+      (Receive sender rcpt OK) st' sent"
+inductive_cases kme_step_GetKeyWithID_IDNotFound_ReturnE:
+  "kme_step enc dec (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme)
+      (Receive sender rcpt (KeyResponse keyID keyVal')) st' sent"
+
+inductive_cases kme_step_KMGetKeyWithID_IDNotFound_ReservedE:
+  "kme_step enc dec (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme)
+      (Receive sender rcpt OK) st' sent"
+inductive_cases kme_step_KMGetKeyWithID_IDNotFound_ReturnE:
+  "kme_step enc dec (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme)
+      (Receive sender rcpt (KeyResponse keyID keyVal')) st' sent"
+
 context QKD_Network
 begin
 
@@ -30,20 +48,20 @@ lemma kmes_trans_elim [elim]:
          (a \<notin> act (kme.ioa n) \<or> n \<notin> nodes \<longrightarrow> kmes n = kmes' n)"
   using set_ioa_trans_elim[OF assms] by blast
 
-lemma kme_invariant_step[consumes 4, case_names 
+lemma kme_invariant_step[consumes 6, case_names 
     KMPost_NewKeyVal
     KMPut_Confirm
     GetKey
     KMPut_Reserve
     GetKey_Reserved
-GetKeyWithID_IDFound
-GetKeyWithID_IDNotFound
-GetKeyWithID_IDNotFound_Reserved
-KMGetKeyWithID_IDFound
-KMGetKeyWithID_IDNotFound
-KMGetKeyWithID_IDNotFound_Reserved
-KMGetKeyWithID_IDNotFound_Return
-GetKeyWithID_IDNotFound_Return
+    GetKeyWithID_IDFound
+    GetKeyWithID_IDNotFound
+    GetKeyWithID_IDNotFound_Reserved
+    KMGetKeyWithID_IDFound
+    KMGetKeyWithID_IDNotFound
+    KMGetKeyWithID_IDNotFound_Reserved
+    KMGetKeyWithID_IDNotFound_Return
+    GetKeyWithID_IDNotFound_Return
     Send]:
   assumes "reachable System.ioa s"
     and "P s"
@@ -99,7 +117,7 @@ GetKeyWithID_IDNotFound_Return
           (msgs \<union> {(kmeID n, nextKme, KMGet masterSae keyID keyID2 slaveSae)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme masterSae keyID keyID2 slaveSae store route saeToKme msgs sender val val2.
          \<lbrakk>a = Receive nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae); net = net';
-          store keyID = Some (Some val, saeToKme masterSae, True, None);
+          store keyID = Some (Some val, saeToKme masterSae, True, Some slaveSae);
           store keyID2 = Some (Some val2, sender, True, Some sender);
           kmes n = IoaState (Kme store route saeToKme) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme) 
@@ -111,20 +129,20 @@ GetKeyWithID_IDNotFound_Return
           route masterSae = nextKme;
           store keyID3 = Some (Some val3, nextKme, True, None);
           kmes n = IoaState (Kme store route saeToKme) msgs;
-          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae sender nextKme keyID keyID2 store route saeToKme) 
+          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae slaveSae sender nextKme keyID keyID2 store route saeToKme) 
           (msgs \<union> {(kmeID n, nextKme, KMPut (kmeID n) keyID3 (Some (kmeID n)))}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>nextKme masterSae keyID keyID2 slaveSae store sender route keyID3 saeToKme msgs.
-         \<lbrakk>a = Receive nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae); net = net';
-          kmes n = IoaState (KmeWaitHopRec keyID3 masterSae sender nextKme keyID keyID2 store route saeToKme) msgs;
-          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae sender nextKme keyID keyID2 store route saeToKme) 
+    and "\<And>nextKme prevKme masterSae keyID keyID2 slaveSae store sender route keyID3 saeToKme msgs.
+         \<lbrakk>a = Receive nextKme (kmeID n) OK; net = net';
+          kmes n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme) msgs;
+          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme) 
           (msgs \<union> {(kmeID n, nextKme, KMGet masterSae keyID keyID3 slaveSae)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>nextKme keyID keyVal' store keyID2 val2 sender keyID3 val3 masterSae route saeToKme msgs slaveSae.
+    and "\<And>nextKme prevKme keyID keyVal' store keyID2 val2 sender keyID3 val3 masterSae route saeToKme msgs slaveSae.
          \<lbrakk>a = Receive nextKme (kmeID n) (KeyResponse keyID keyVal'); net = net';
           store keyID2 = Some (Some val2, sender, True, Some sender);
           store keyID3 = Some (Some val3, nextKme, True, None);
-          kmes n = IoaState (KmeWaitHopRec keyID3 masterSae sender nextKme keyID keyID2 store route saeToKme) msgs;
-          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae sender nextKme keyID keyID2 store route saeToKme) 
-          (msgs \<union> {(kmeID n, sender, KeyResponse keyID (enc (dec keyVal' val3) val2))}))\<rbrakk> \<Longrightarrow> P t"
+          kmes n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID2) keyID3) route saeToKme) 
+          (msgs \<union> {(kmeID n, prevKme, KeyResponse keyID (enc (dec keyVal' val3) val2))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme keyID keyVal' store keyID2 val2 masterSae sender keyID3 val3 masterSae route saeToKme msgs slaveSae.
          \<lbrakk>a = Receive nextKme (kmeID n) (KeyResponse keyID keyVal'); net = net';
           store keyID2 = Some (Some val2, nextKme, True, None);
@@ -310,13 +328,12 @@ proof
                   then show ?thesis
                   proof (cases "\<exists>masterSae keyID keyID2 slaveSae. msg = KMGet masterSae keyID keyID2 slaveSae")
                     case True
-                    (*COPY PASTE*)
                     then obtain masterSae keyID keyID2 slaveSae where msg_split: "msg = KMGet masterSae keyID keyID2 slaveSae"
                       by blast
                     then show ?thesis
-                    proof (cases "\<exists>val. store keyID = Some (Some val, saeToKme masterSae, True, None)")
+                    proof (cases "\<exists>val. store keyID = Some (Some val, saeToKme masterSae, True, Some slaveSae)")
                       case True
-                      then obtain val where store_keyID: "store keyID = Some (Some val, saeToKme masterSae, True, None)"
+                      then obtain val where store_keyID: "store keyID = Some (Some val, saeToKme masterSae, True, Some slaveSae)"
                         by blast
                       then show ?thesis
                       proof (cases "\<exists>val2. store keyID2 = Some (Some val2, sender, True, Some sender)")
@@ -359,7 +376,7 @@ proof
                             then obtain keyID30 val30 where prem:"store keyID30 = Some (Some val30, nextKme, True, None)"
                               by blast
                             then obtain keyID3 val3 where prem: "store keyID3 = Some (Some val3, nextKme, True, None)"
-                                                and kn: "kmes' n = IoaState (KmeWaitHopRec keyID3 masterSae sender nextKme keyID keyID2 store route saeToKme)
+                                                and kn: "kmes' n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae sender nextKme keyID keyID2 store route saeToKme)
                                                         (msgs \<union> {(kmeID n, nextKme, KMPut (kmeID n) keyID3 (Some (kmeID n)))})"
                               using kme_node_trans Kme msg_split a_split IoaState nxtKme val2_split \<open>store keyID = None\<close> 
                               unfolding trans_of_def apply auto
@@ -392,7 +409,7 @@ proof
                         then have "kmes' n = kmes n"
                           using kme_node_trans Kme msg_split a_split IoaState
                           unfolding trans_of_def apply auto
-                          using False \<open>\<nexists>val. store keyID = Some (Some val, saeToKme masterSae, True, None)\<close> kme_step_GetKeyWithID_RecE 
+                          using False \<open>\<nexists>val. store keyID = Some (Some val, saeToKme masterSae, True, Some slaveSae)\<close> kme_step_GetKeyWithID_RecE 
                            by (fastforce,meson)
                         then show ?thesis
                           using kmes' assms(2,5,6) net_eq by force
@@ -422,13 +439,220 @@ proof
         qed
       next
         case (KmeWaitReserve keyID saeID store route saeToKme)
-        then show ?thesis sorry
+        then show ?thesis
+        proof (cases "msg = OK")
+          case True
+          then show ?thesis
+          proof(cases "\<exists>val conf res. store keyID = Some (Some val, sender, conf, res)")
+            case True
+            then obtain val conf res where store_keyID: "store keyID = Some (Some val, sender, conf, res)"
+              by blast
+            then have "kmes' n = IoaState (Kme (keyStore_remove store keyID) route saeToKme)
+                                          (msgs \<union> {(kmeID n, saeID, KeyResponse keyID val)})"
+              using a_split assms(4) kme_node_trans IoaState KmeWaitReserve \<open>msg = OK\<close> store_keyID unfolding trans_of_def apply simp
+              unfolding actions_def asig_projections asig_of_def apply simp
+              apply (auto elim: kme_step_GetKey_ReservedE)
+              using GetKey_Reserved by meson+
+            then show ?thesis
+              using assms(11)[OF _ net_eq] IoaState kmes' \<open>msg = OK\<close> a_split KmeWaitReserve store_keyID store_keyID
+              by metis
+          next
+            case False
+            then have "kmes' n = kmes n"
+              using kme_node_trans KmeWaitReserve \<open>msg = OK\<close> a_split IoaState
+              unfolding trans_of_def apply auto
+              using False kme_step_GetKey_ReservedE
+              by meson+
+            then show ?thesis
+              using kmes' assms(2,5,6) net_eq by force
+          qed
+        next
+          case False
+          have "\<forall>st' sent. \<not>kme_step enc dec state a st' sent"
+            using a_split kme_step.cases KmeWaitReserve \<open>\<not>msg = OK\<close>
+            apply auto
+            apply (cases rule: kme_step.cases) 
+            by force+
+          then have "kmes' n = kmes n"
+            using kme_node_trans KmeWaitReserve a_split IoaState unfolding trans_of_def by simp
+          then show ?thesis
+            using kmes' assms(2,5,6) net_eq by force
+        qed
       next
         case (KmeWaitHop masterSae slaveSae nextKme keyID encryptionKeyID store route saeToKme)
-        then show ?thesis sorry
+        then show ?thesis
+        proof(cases "msg = OK")
+          case True
+          then show ?thesis
+          proof(cases "sender = nextKme")
+            case True
+            then have "kmes' n = IoaState (KmeWaitHop masterSae slaveSae nextKme keyID encryptionKeyID store route saeToKme)
+                                          (msgs \<union> {(kmeID n, nextKme, KMGet masterSae keyID encryptionKeyID slaveSae)})"
+              using a_split assms(4) kme_node_trans IoaState KmeWaitHop \<open>msg = OK\<close> unfolding trans_of_def apply simp
+              unfolding actions_def asig_projections asig_of_def apply simp
+              apply (auto elim: kme_step_GetKeyWithID_IDNotFound_ReservedE)
+              using GetKeyWithID_IDNotFound_Reserved by fast
+            then show ?thesis
+              using assms(14)[OF _ net_eq] IoaState kmes' \<open>msg = OK\<close> \<open>sender = nextKme\<close> a_split KmeWaitHop
+              by force
+          next
+            case False
+            then have "kmes' n = kmes n"
+              using kme_node_trans KmeWaitHop \<open>msg = OK\<close> a_split IoaState
+              unfolding trans_of_def apply auto
+              using False kme_step_GetKeyWithID_IDNotFound_ReservedE
+              by meson+
+            then show ?thesis
+              using kmes' assms(2,5,6) net_eq by force
+          qed
+        next
+          case False
+          then show ?thesis
+          proof(cases "\<exists>keyVal'. msg = KeyResponse keyID keyVal'")
+            case True
+            then obtain keyVal' where msg_split: "msg = KeyResponse keyID keyVal'"
+              by blast
+            then show ?thesis
+            proof(cases "\<exists>val2. store encryptionKeyID = Some (Some val2, nextKme, True, None)")
+              case True
+              then obtain val2 where store:"store encryptionKeyID = Some (Some val2, nextKme, True, None)"
+                by blast
+              then show ?thesis
+              proof(cases "sender = nextKme")
+                case True
+                then have "kmes' n = IoaState (Kme (keyStore_remove store encryptionKeyID) route saeToKme)
+                                              (msgs \<union> {(kmeID n, slaveSae, KeyResponse keyID (dec keyVal' val2))})"
+                  using a_split assms(4) kme_node_trans IoaState KmeWaitHop msg_split store unfolding trans_of_def apply simp
+                  unfolding actions_def asig_projections asig_of_def apply simp
+                  apply (auto elim: kme_step_GetKeyWithID_IDNotFound_ReturnE)
+                  using GetKeyWithID_IDNotFound_Return by fast
+                then show ?thesis
+                  using assms(19)[OF _ net_eq] IoaState kmes' msg_split store \<open>sender = nextKme\<close> a_split KmeWaitHop
+                  by force
+              next
+                case False
+                then have "kmes' n = kmes n"
+                  using kme_node_trans KmeWaitHop msg_split a_split IoaState
+                  unfolding trans_of_def apply auto
+                  using False kme_step_GetKeyWithID_IDNotFound_ReturnE
+                  by meson+
+                then show ?thesis
+                  using kmes' assms(2,5,6) net_eq by force
+              qed
+            next
+              case False
+              then have "kmes' n = kmes n"
+                using kme_node_trans KmeWaitHop msg_split a_split IoaState
+                unfolding trans_of_def apply auto
+                using False kme_step_GetKeyWithID_IDNotFound_ReturnE
+                by meson+
+              then show ?thesis
+                using kmes' assms(2,5,6) net_eq by force
+            qed
+          next
+            case False
+            have "\<forall>st' sent. \<not>kme_step enc dec state a st' sent"
+              using a_split kme_step.cases KmeWaitHop \<open>\<not>msg = OK\<close>
+                    \<open>\<nexists>keyVal'. msg = KeyResponse keyID keyVal'\<close>
+              apply auto
+              by (cases rule: kme_step.cases) auto
+            then have "kmes' n = kmes n"
+              using kme_node_trans KmeWaitHop a_split IoaState unfolding trans_of_def by simp
+            then show ?thesis
+              using kmes' assms(2,5,6) net_eq by force
+          qed
+        qed
       next
-        case (KmeWaitHopRec recEncryptionKeyID masterSae slaveSae nextKme keyID encryptionKeyID store route saeToKme)
-        then show ?thesis sorry
+        case (KmeWaitHopRec recEncryptionKeyID masterSae slaveSae prevKme nextKme keyID encryptionKeyID store route saeToKme)
+        then show ?thesis
+        proof (cases "sender = nextKme")
+          case True
+          then show ?thesis
+          proof (cases "msg = OK")
+            case True
+            then have "kmes' n = IoaState (KmeWaitHopRec recEncryptionKeyID masterSae slaveSae prevKme nextKme keyID encryptionKeyID store route saeToKme)
+                                          (msgs \<union> {(kmeID n, nextKme, KMGet masterSae keyID recEncryptionKeyID slaveSae)})"
+              using a_split assms(4) kme_node_trans IoaState KmeWaitHopRec \<open>msg = OK\<close> \<open>sender = nextKme\<close> unfolding trans_of_def apply simp
+              unfolding actions_def asig_projections asig_of_def apply simp
+              apply (auto elim: kme_step_KMGetKeyWithID_IDNotFound_ReservedE)
+              using KMGetKeyWithID_IDNotFound_Reserved by fast
+            then show ?thesis
+              using assms(17)[OF _ net_eq] IoaState kmes' \<open>msg = OK\<close> \<open>sender = nextKme\<close> a_split KmeWaitHopRec
+              by force
+          next
+            case False
+            then show ?thesis
+            proof(cases "\<exists>keyVal'. msg = KeyResponse keyID keyVal'")
+              case True
+              then obtain keyVal' where msg_split: "msg = KeyResponse keyID keyVal'"
+                by blast
+              then show ?thesis
+              proof(cases "\<exists>val2. store encryptionKeyID = Some (Some val2, prevKme, True, Some prevKme)")
+                case True
+                then obtain val2 where store_val2:"store encryptionKeyID = Some (Some val2, prevKme, True, Some prevKme)"
+                  by blast
+                then show ?thesis
+                proof(cases "\<exists>val3. store recEncryptionKeyID = Some (Some val3, nextKme, True, None)")
+                  case True
+                  then obtain val3 where store_val3:"store recEncryptionKeyID = Some (Some val3, nextKme, True, None)"
+                    by blast
+                  then have "kmes' n = IoaState (Kme (keyStore_remove (keyStore_remove store encryptionKeyID) recEncryptionKeyID) route saeToKme)
+                                                (msgs \<union> {(kmeID n, prevKme, KeyResponse keyID (enc (dec keyVal' val3) val2))})"
+                    using a_split assms(4) kme_node_trans IoaState KmeWaitHopRec msg_split \<open>sender = nextKme\<close> store_val2 store_val3
+                    unfolding trans_of_def apply simp
+                    unfolding actions_def asig_projections asig_of_def apply simp
+                    apply (auto elim: kme_step_KMGetKeyWithID_IDNotFound_ReturnE)
+                    using KMGetKeyWithID_IDNotFound_Return by meson
+                  then show ?thesis 
+                  using assms(18)[OF _ net_eq] IoaState kmes' msg_split store_val2 store_val3 \<open>sender = nextKme\<close> a_split KmeWaitHopRec
+                  by force
+                next
+                  case False
+                  then have "\<forall>st' sent. \<not>kme_step enc dec state a st' sent"
+                    using a_split kme_step.cases KmeWaitHopRec \<open>\<not>msg = OK\<close>
+                    apply auto
+                    by (cases rule: kme_step.cases) auto
+                  then have "kmes' n = kmes n"
+                    using kme_node_trans KmeWaitHopRec a_split IoaState unfolding trans_of_def by simp
+                  then show ?thesis
+                    using kmes' assms(2,5,6) net_eq by force
+                qed
+              next
+                case False
+                then have "\<forall>st' sent. \<not>kme_step enc dec state a st' sent"
+                  using a_split kme_step.cases KmeWaitHopRec \<open>\<not>msg = OK\<close>
+                  apply auto
+                  by (cases rule: kme_step.cases) auto
+                then have "kmes' n = kmes n"
+                  using kme_node_trans KmeWaitHopRec a_split IoaState unfolding trans_of_def by simp
+                then show ?thesis
+                  using kmes' assms(2,5,6) net_eq by force
+              qed
+            next
+              case False
+              then have "\<forall>st' sent. \<not>kme_step enc dec state a st' sent"
+                using a_split kme_step.cases KmeWaitHopRec \<open>\<not>msg = OK\<close>
+                apply auto
+                apply (cases rule: kme_step.cases)
+                by auto
+              then have "kmes' n = kmes n"
+                using kme_node_trans KmeWaitHopRec a_split IoaState unfolding trans_of_def by simp
+              then show ?thesis
+                using kmes' assms(2,5,6) net_eq by force
+            qed
+          qed
+        next
+          case False
+          then have "\<forall>st' sent. \<not>kme_step enc dec state a st' sent"
+            using a_split kme_step.cases KmeWaitHopRec
+            apply auto
+            apply (cases rule: kme_step.cases)
+            by auto
+          then have "kmes' n = kmes n"
+            using kme_node_trans KmeWaitHopRec a_split IoaState unfolding trans_of_def by simp
+          then show ?thesis
+            using kmes' assms(2,5,6) net_eq by force
+        qed
       qed
     qed
   next
