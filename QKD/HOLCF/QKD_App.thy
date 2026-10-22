@@ -10,7 +10,7 @@ inductive app_step :: "('keyID, 'keyVal, 'proc) app_state \<Rightarrow> ('proc, 
             {(kme, GetKey kme sae)}\<close> |
   Master_KeyResponse:
   \<open>app_step (App True sae kme keys)
-            (Receive sender rcpt (KeyResponse keyID keyVal))
+            (Receive kme rcpt (KeyResponse keyID keyVal))
             (App True sae kme (keys \<union> {(keyID, keyVal)}))
             {(sae, AppIDRelay keyID)}\<close> |
   Slave_GetKey:
@@ -20,7 +20,7 @@ inductive app_step :: "('keyID, 'keyVal, 'proc) app_state \<Rightarrow> ('proc, 
             {(kme, GetKeyWithID kme sae keyID)}\<close> |
   Slave_KeyResponse:
   \<open>app_step (App False sae kme keys)
-            (Receive sender rcpt (KeyResponse keyID keyVal))
+            (Receive kme rcpt (KeyResponse keyID keyVal))
             (App False sae kme (keys \<union> {(keyID, keyVal)}))
             {}\<close>
 

@@ -35,16 +35,25 @@ definition key_consistent where
       \<longrightarrow> keyVal1 = keyVal2)\<close>
 
 definition app_key_sent where
-  \<open>app_key_sent nodes kmeID appID s \<longleftrightarrow>
-    (\<forall>n master oSae kme store keyID keyVal.
+  \<open>app_key_sent nodes appID s \<longleftrightarrow>
+    (\<forall>n master oSae kme store msgs keyID keyVal.
       n \<in> nodes \<and>
-      app s n = IoaState (App master oSae kme store) \<and>
+      app s n = IoaState (App master oSae kme store) msgs \<and>
       (keyID, keyVal) \<in> store
-      \<longrightarrow> (kmeID n, appID n, KeyResponse keyID keyVal) \<in> network s)\<close>
+      \<longrightarrow> (kme, appID n, KeyResponse keyID keyVal) \<in> network s)\<close>
 
-definition app_kme_network_consistent where
-  \<open>app_kme_network_consistent s \<longleftrightarrow>
+definition app_kme_field_valid where
+  \<open>app_kme_field_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>n master oSae kme store msgs.
+      n \<in> nodes \<and>
+      app s n = IoaState (App master oSae kme store) msgs
+      \<longrightarrow> kme \<in> kmeID ` nodes)\<close>
+
+definition kme_send_consistent where
+  \<open>kme_send_consistent nodes kmeID s \<longleftrightarrow>
     (\<forall>s1 s2 r1 r2 keyID keyVal1 keyVal2.
+      s1 \<in> kmeID ` nodes \<and>
+      s2 \<in> kmeID ` nodes \<and>
       (s1, r1, KeyResponse keyID keyVal1) \<in> network s \<and>
       (s2, r2, KeyResponse keyID keyVal2) \<in> network s
       \<longrightarrow> keyVal1 = keyVal2)\<close>

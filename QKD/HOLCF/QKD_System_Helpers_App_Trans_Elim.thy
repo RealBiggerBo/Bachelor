@@ -27,9 +27,10 @@ lemma app_invariant_step[consumes 6, case_names
          \<lbrakk>a = RequestKey (appID n); net = net';
           apps n = IoaState (App True sae kme keys) msgs;
           apps' = apps(n := IoaState (App True sae kme keys) (msgs \<union> {(appID n, kme, GetKey kme sae)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>sae kme keys msgs sender keyID keyVal.
-         \<lbrakk>a = Receive sender (appID n) (KeyResponse keyID keyVal); net = net';
-          (sender, appID n, KeyResponse keyID keyVal) \<in> net;
+    (*change sender to kme*)
+    and "\<And>sae kme keys msgs keyID keyVal.
+         \<lbrakk>a = Receive kme (appID n) (KeyResponse keyID keyVal); net = net';
+          (kme, appID n, KeyResponse keyID keyVal) \<in> net;
           apps n = IoaState (App True sae kme keys) msgs;
           apps' = apps(n := IoaState (App True sae kme (keys \<union> {(keyID, keyVal)})) (msgs \<union> {(appID n, sae, AppIDRelay keyID)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sae kme keys msgs sender keyID.
@@ -37,9 +38,9 @@ lemma app_invariant_step[consumes 6, case_names
           (sender, appID n, AppIDRelay keyID) \<in> net;
           apps n = IoaState (App False sae kme keys) msgs;
           apps' = apps(n := IoaState (App False sae kme keys) (msgs \<union> {(appID n, kme, GetKeyWithID kme sae keyID)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>sae kme keys msgs sender keyID keyVal.
-         \<lbrakk>a = Receive sender (appID n) (KeyResponse keyID keyVal); net = net';
-          (sender, appID n, KeyResponse keyID keyVal) \<in> net;
+    and "\<And>sae kme keys msgs keyID keyVal.
+         \<lbrakk>a = Receive kme (appID n) (KeyResponse keyID keyVal); net = net';
+          (kme, appID n, KeyResponse keyID keyVal) \<in> net;
           apps n = IoaState (App False sae kme keys) msgs;
           apps' = apps(n := IoaState (App False sae kme (keys \<union> {(keyID, keyVal)})) msgs)\<rbrakk> \<Longrightarrow> P t"
     and "\<And>msgs rcpt msg appState.
@@ -124,16 +125,28 @@ proof
             case True
             then obtain keyID keyVal where msg_split:"msg = KeyResponse keyID keyVal"
               by blast
-            then have "apps' n = IoaState (App True sae kme (keys \<union> {(keyID, keyVal)})) (msgs \<union> {(appID n, sae, AppIDRelay keyID)})"
-              using a_split assms(4) app_node_trans IoaState App \<open>isMaster\<close> unfolding trans_of_def apply simp
-              unfolding actions_def asig_projections asig_of_def apply simp
-              using app_step.cases apply auto
-                   apply fast
-                  apply blast+
-              using QKD_App.Master_KeyResponse apply meson
-              using QKD_App.Master_KeyResponse by meson
             then show ?thesis
-              using IoaState App \<open>isMaster\<close> net_eq assms(8) a_split msg_split rec_in_net apps' by presburger
+            proof(cases "sender = kme")
+              case True
+              then have "apps' n = IoaState (App True sae kme (keys \<union> {(keyID, keyVal)})) (msgs \<union> {(appID n, sae, AppIDRelay keyID)})"
+                using a_split assms(4) app_node_trans IoaState App \<open>isMaster\<close> msg_split unfolding trans_of_def apply simp
+                unfolding actions_def asig_projections asig_of_def apply simp
+                using app_step.cases apply auto
+                     apply fast
+                    apply blast+
+                using QKD_App.Master_KeyResponse apply meson
+                using QKD_App.Master_KeyResponse by meson
+              then show ?thesis
+                using IoaState App \<open>isMaster\<close> net_eq assms(8) a_split msg_split rec_in_net apps' True by force
+            next
+              case False
+              then have "apps' n = apps n"
+                using a_split assms(4) app_node_trans IoaState App \<open>isMaster\<close> unfolding trans_of_def apply simp
+                unfolding actions_def asig_projections asig_of_def 
+                by (simp add: app_step.simps)
+              then show ?thesis
+                using apps' assms(2,5,6) net_eq by fastforce
+            qed
           next
             case False
             then have "apps' n = apps n"
@@ -150,15 +163,27 @@ proof
             case True
             then obtain keyID keyVal where msg_split:"msg = KeyResponse keyID keyVal"
               by blast
-            then have "apps' n = IoaState (App False sae kme (keys \<union> {(keyID, keyVal)})) msgs"
-              using a_split assms(4) app_node_trans IoaState App \<open>\<not>isMaster\<close> unfolding trans_of_def apply simp
-              unfolding actions_def asig_projections asig_of_def apply simp
-              using app_step.cases apply auto
-                apply fast
-               apply blast
-              using QKD_App.Slave_KeyResponse by meson
             then show ?thesis
-              using IoaState App \<open>\<not>isMaster\<close> net_eq assms(10) a_split msg_split rec_in_net apps' by presburger
+            proof(cases "sender = kme")
+              case True
+              then have "apps' n = IoaState (App False sae kme (keys \<union> {(keyID, keyVal)})) msgs"
+                using a_split assms(4) app_node_trans IoaState App \<open>\<not>isMaster\<close> msg_split unfolding trans_of_def apply simp
+                unfolding actions_def asig_projections asig_of_def apply simp
+                using app_step.cases apply auto
+                  apply fast
+                apply blast
+                using QKD_App.Slave_KeyResponse by meson
+              then show ?thesis
+                using IoaState App \<open>\<not>isMaster\<close> net_eq assms(10) a_split msg_split rec_in_net apps' True by force
+            next
+              case False
+              then have "apps' n = apps n"
+                using a_split assms(4) app_node_trans IoaState App msg_split \<open>\<not>isMaster\<close>
+                unfolding trans_of_def actions_def asig_projections asig_of_def
+                by (simp add: app_step.simps)
+              then show ?thesis
+                using apps' assms(2,5,6) net_eq by fastforce
+            qed
           next
             case False
             then show ?thesis 
@@ -181,8 +206,8 @@ proof
                 using a_split assms(4) app_node_trans IoaState App \<open>\<not>isMaster\<close> \<open>\<nexists>keyID keyVal. msg = KeyResponse keyID keyVal\<close> 
                 unfolding trans_of_def actions_def asig_projections asig_of_def
                 by (simp add: app_step.simps)
-            then show ?thesis
-              using apps' assms(2,5,6) net_eq by fastforce
+              then show ?thesis
+                using apps' assms(2,5,6) net_eq by fastforce
             qed
           qed
         qed
@@ -212,7 +237,6 @@ proof
     qed
   qed
 qed
-
 end
 
 end

@@ -5,7 +5,8 @@ begin
 context QKD_Network
 begin
 
-lemma "invariant System.ioa qkd_layer_consistent"
+lemma inv_qkd_layer_consistent:
+  shows "invariant System.ioa qkd_layer_consistent"
 proof (induction rule: invariantI)
   case (1 s)
   then show ?case
