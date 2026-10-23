@@ -2,7 +2,7 @@ theory QKD_inv_key_consistent
   imports QKD_inv_def QKD_System_Def QKD_System_Helpers
           QKD_inv_app_kme_field_valid
           QKD_inv_app_key_sent
-          QKD_inv_kme_send_consistent
+          QKD_inv_kme_app_send_consistent
 begin
 
 context QKD_Network
@@ -38,10 +38,13 @@ next
       using reach inv_app_key_sent unfolding invariant_def by fast
     moreover have "app_kme_field_valid nodes kmeID t"
       using reach inv_app_kme_field_valid unfolding invariant_def by fast
-    moreover have "kme_send_consistent nodes kmeID t"
-      using reach inv_kme_send_consistent unfolding invariant_def by fast
+    moreover have "kme_app_send_consistent nodes appID kmeID t"
+      using reach inv_kme_app_send_consistent unfolding invariant_def by fast
+    moreover have "appID n \<in> appID ` nodes"
+      using App_Master_KeyResponse(4) by blast
     ultimately show ?case 
-      unfolding key_consistent_def app_key_sent_def kme_send_consistent_def app_kme_field_valid_def by meson
+      unfolding key_consistent_def app_key_sent_def kme_app_send_consistent_def app_kme_field_valid_def 
+      by (meson imageI)
   next
     case (App_Slave_AppIDRelay apps kmes bridges qkd net apps' n sae kme keys msgs sender keyID)
     then have "\<And>n state msgs state' msgs'. \<lbrakk>n \<in> nodes; app s n = IoaState state msgs; app t n = IoaState state' msgs'\<rbrakk> \<Longrightarrow> state = state'"
@@ -59,10 +62,13 @@ next
       using reach inv_app_key_sent unfolding invariant_def by fast
     moreover have "app_kme_field_valid nodes kmeID t"
       using reach inv_app_kme_field_valid unfolding invariant_def by fast
-    moreover have "kme_send_consistent nodes kmeID t"
-      using reach inv_kme_send_consistent unfolding invariant_def by fast
+    moreover have "kme_app_send_consistent nodes appID kmeID t"
+      using reach inv_kme_app_send_consistent unfolding invariant_def by fast
+    moreover have "appID n \<in> appID ` nodes"
+      using App_Slave_KeyResponse(4) by blast
     ultimately show ?case 
-      unfolding key_consistent_def app_key_sent_def kme_send_consistent_def app_kme_field_valid_def by meson
+      unfolding key_consistent_def app_key_sent_def kme_app_send_consistent_def app_kme_field_valid_def 
+      by (meson imageI)
   next
     case (App_Send apps kmes bridges qkd net apps' net' n msgs rcpt msg appState)
     then have "\<And>n state msgs state' msgs'. \<lbrakk>n \<in> nodes; app s n = IoaState state msgs; app t n = IoaState state' msgs'\<rbrakk> \<Longrightarrow> state = state'"

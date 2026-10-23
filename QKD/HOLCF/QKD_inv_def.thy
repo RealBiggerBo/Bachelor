@@ -49,13 +49,27 @@ definition app_kme_field_valid where
       app s n = IoaState (App master oSae kme store) msgs
       \<longrightarrow> kme \<in> kmeID ` nodes)\<close>
 
-definition kme_send_consistent where
-  \<open>kme_send_consistent nodes kmeID s \<longleftrightarrow>
+definition kme_app_send_consistent where
+  \<open>kme_app_send_consistent nodes appID kmeID s \<longleftrightarrow>
     (\<forall>s1 s2 r1 r2 keyID keyVal1 keyVal2.
       s1 \<in> kmeID ` nodes \<and>
       s2 \<in> kmeID ` nodes \<and>
+      r1 \<in> appID ` nodes \<and>
+      r2 \<in> appID ` nodes \<and>
       (s1, r1, KeyResponse keyID keyVal1) \<in> network s \<and>
       (s2, r2, KeyResponse keyID keyVal2) \<in> network s
+      \<longrightarrow> keyVal1 = keyVal2)\<close>
+
+definition kme_buffer_app_send_consistent where
+  \<open>kme_buffer_app_send_consistent nodes appID kmeID s\<longleftrightarrow>
+    (\<forall>n state msgs s1 s2 r1 r2 keyID keyVal1 keyVal2.
+      n \<in> nodes \<and>
+      kme s n = IoaState state msgs \<and>
+      s2 \<in> kmeID ` nodes \<and>
+      r1 \<in> appID ` nodes \<and>
+      r2 \<in> appID ` nodes \<and>
+      (s1,r1,KeyResponse keyID keyVal1) \<in> msgs \<and>
+      (s2,r2,KeyResponse keyID keyVal2) \<in> network s
       \<longrightarrow> keyVal1 = keyVal2)\<close>
 
 definition kme_layer_consistent where
