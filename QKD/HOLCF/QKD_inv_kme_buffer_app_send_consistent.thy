@@ -67,27 +67,24 @@ next
     then show ?case sorry
   next
     case (Kme_Send apps kmes bridges qkd net kmes' net' n msgs rcpt msg appState)
-    have "\<forall>n' state msgs s1 s2 r1 r2 keyID keyVal1 keyVal2.
-       n' \<in> nodes - {n} \<and>
-       kme t n' = IoaState state msgs \<and>
-       s2 \<in> kmeID ` nodes \<and>
-       r1 \<in> appID ` nodes \<and>
-       r2 \<in> appID ` nodes \<and>
-       (s1, r1, KeyResponse keyID keyVal1) \<in> msgs \<and> (s2, r2, KeyResponse keyID keyVal2) \<in> network t \<longrightarrow>
-       keyVal1 = keyVal2"
+    have "\<forall>n1 n2 state1 state2 msgs1 msgs2 s1 s2 r1 r2 keyID keyVal1 keyVal2.
+            n1 \<in> nodes \<and>
+            n2 \<in> nodes \<and>
+            kme s n1 = IoaState state1 msgs1 \<and>
+            kme s n2 = IoaState state2 msgs2 \<and>
+            r1 \<in> appID ` nodes \<and>
+            r2 \<in> appID ` nodes \<and>
+            (s1, r1, KeyResponse keyID keyVal1) \<in> msgs1 \<and>
+            (s2, r2, KeyResponse keyID keyVal2) \<in> msgs2
+            \<longrightarrow> keyVal1 = keyVal2"
       sorry
-    moreover have "\<forall>n' state msgs s1 s2 r1 r2 keyID keyVal1 keyVal2.
-       n' \<in> {n} \<and>
-       kme t n' = IoaState state msgs \<and>
-       s2 \<in> kmeID ` nodes \<and>
-       r1 \<in> appID ` nodes \<and>
-       r2 \<in> appID ` nodes \<and>
-       (s1, r1, KeyResponse keyID keyVal1) \<in> msgs \<and> (s2, r2, KeyResponse keyID keyVal2) \<in> network t \<longrightarrow>
-       keyVal1 = keyVal2"
-      sorry
-    ultimately show ?case
-      unfolding kme_buffer_app_send_consistent_def
-      by (meson DiffI)
+    then show ?case
+      using 2(2) Kme_Send(2,3,4,7,8,9,10)
+      unfolding kme_buffer_app_send_consistent_def apply auto
+             apply blast
+            apply blast
+           apply blast
+          by (meson imageI)+
   next
     case (Bridge_Send apps kmes bridges qkds net bridges' net' n b msgs rcpt msg bridgeState)
     have "b \<notin> kmeID ` nodes"
