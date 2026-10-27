@@ -18,10 +18,10 @@ abbreviation network where
   \<open>network s \<equiv> snd (snd (snd (snd s)))\<close>
 
 fun kme_has_key where
-  \<open>kme_has_key (IoaState (Kme store _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
-  \<open>kme_has_key (IoaState (KmeWaitReserve _ _ store _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
-  \<open>kme_has_key (IoaState (KmeWaitHop _ _ _ _ _ store _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
-  \<open>kme_has_key (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ store _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close>
+  \<open>kme_has_key (IoaState (Kme store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitReserve _ _ store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitHop _ _ _ _ _ store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close>
 
 definition key_consistent where
   \<open>key_consistent nodes s \<longleftrightarrow>
@@ -60,8 +60,75 @@ definition kme_app_send_consistent where
       (s2, r2, KeyResponse keyID keyVal2) \<in> network s
       \<longrightarrow> keyVal1 = keyVal2)\<close>
 
+(*not used right now - needs further invariants*)
+definition kme_app_msg_sent where
+  \<open>kme_app_msg_sent nodes appID kmeID bridgeIDs s \<longleftrightarrow>
+    (\<forall>s1 r1 keyID keyVal.
+      s1 \<in> kmeID ` nodes \<and>
+      r1 \<in> appID ` nodes \<and>
+      (s1, r1, KeyResponse keyID keyVal) \<in> network s
+      \<longrightarrow> (\<exists>s2 r2 otherKme. 
+            s2 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+            r2 \<in> kmeID ` nodes \<and>
+            (s2, r2, KMPost otherKme keyID keyVal) \<in> network s))\<close>
+
+(*not used right now*)
+definition bridge_kme_send_consistent where
+  \<open>bridge_kme_send_consistent nodes kmeID bridgeIDs s \<longleftrightarrow>
+    (\<forall>s1 s2 r1 r2 otherKme1 otherKme2 keyID keyVal1 keyVal2.
+      s1 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      s2 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      r1 \<in> kmeID ` nodes \<and>
+      r2 \<in> kmeID ` nodes \<and>
+      (s1, r1, KMPost otherKme1 keyID keyVal1) \<in> network s \<and>
+      (s2, r2, KMPost otherKme2 keyID keyVal2) \<in> network s
+      \<longrightarrow> keyVal1 = keyVal2)\<close>
+
+(*not used right now - needs further invariants*)
+definition bridge_kme_msg_sent where
+  \<open>bridge_kme_msg_sent nodes kmeID bridgeIDs qkdID s \<longleftrightarrow>
+    (\<forall>s1 r1 otherKme keyID keyVal.
+      s1 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      r1 \<in> kmeID ` nodes \<and>
+      (s1, r1, KMPost otherKme keyID keyVal) \<in> network s
+      \<longrightarrow> (\<exists>s2 r2. 
+            s2 \<in> qkdID ` \<Union>(bridgeIDs ` nodes) \<and>
+            r2 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+            (s2, r2, KeyResponse keyID keyVal) \<in> network s))\<close>
+
+(*not used right now*)
+definition qkd_bridge_send_consistent where
+  \<open>qkd_bridge_send_consistent nodes bridgeIDs qkdID s \<longleftrightarrow>
+    (\<forall>s1 s2 r1 r2 keyID keyVal1 keyVal2.
+      s1 \<in> qkdID ` \<Union>(bridgeIDs ` nodes) \<and>
+      s2 \<in> qkdID ` \<Union>(bridgeIDs ` nodes) \<and>
+      r1 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      r2 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      (s1, r1, KeyResponse keyID keyVal1) \<in> network s \<and>
+      (s2, r2, KeyResponse keyID keyVal2) \<in> network s
+      \<longrightarrow> keyVal1 = keyVal2)\<close>
+
+(*not used right now - needs further invariants*)
+definition qkd_bridge_msg_sent where
+  \<open>qkd_bridge_msg_sent nodes bridgeIDs qkdID s \<longleftrightarrow>
+    (\<forall>s1 r1 keyID keyVal.
+      s1 \<in> qkdID ` \<Union>(bridgeIDs ` nodes) \<and>
+      r1 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      (s1, r1, KeyResponse keyID keyVal) \<in> network s
+      \<longrightarrow> (\<exists>gen sent.
+            qkd_layer s = QKD gen sent \<and>
+            (keyID, keyVal) \<in> (snd ` gen \<union> sent)))\<close>
+
+definition qkd_layer_consistent where
+  \<open>qkd_layer_consistent s \<longleftrightarrow>
+    (\<forall>gen sent keyID keyVal1 keyVal2.
+      qkd_layer s = QKD gen sent \<and>
+      (keyID, keyVal1) \<in> (snd ` gen \<union> sent) \<and>
+      (keyID, keyVal2) \<in> (snd ` gen \<union> sent)
+      \<longrightarrow> keyVal1 = keyVal2)\<close>
+
 definition kme_buffer_app_send_consistent where
-  \<open>kme_buffer_app_send_consistent nodes appID kmeID s\<longleftrightarrow>
+  \<open>kme_buffer_app_send_consistent nodes appID kmeID s \<longleftrightarrow>
     (\<forall>n state msgs s1 s2 r1 r2 keyID keyVal1 keyVal2.
       n \<in> nodes \<and>
       kme s n = IoaState state msgs \<and>
@@ -72,19 +139,37 @@ definition kme_buffer_app_send_consistent where
       (s2,r2,KeyResponse keyID keyVal2) \<in> network s
       \<longrightarrow> keyVal1 = keyVal2)\<close>
 
-definition kme_layer_consistent where
-  \<open>kme_layer_consistent s \<longleftrightarrow>
+definition kme_buffer_consistent where
+ \<open>kme_buffer_consistent nodes appID s \<longleftrightarrow>
+   (\<forall>n1 n2 state1 state2 msgs1 msgs2 s1 s2 r1 r2 keyID keyVal1 keyVal2.
+            n1 \<in> nodes \<and>
+            n2 \<in> nodes \<and>
+            kme s n1 = IoaState state1 msgs1 \<and>
+            kme s n2 = IoaState state2 msgs2 \<and>
+            r1 \<in> appID ` nodes \<and>
+            r2 \<in> appID ` nodes \<and>
+            (s1, r1, KeyResponse keyID keyVal1) \<in> msgs1 \<and>
+            (s2, r2, KeyResponse keyID keyVal2) \<in> msgs2
+            \<longrightarrow> keyVal1 = keyVal2)\<close>
+
+definition kme_store_buffer_consistent where
+  \<open>kme_store_buffer_consistent nodes appID s \<longleftrightarrow>
+    (\<forall>n1 n2 keyID state msgs sender rcpt keyVal1 keyVal2.
+            n1 \<in> nodes \<and>
+            n2 \<in> nodes \<and>
+            kme_has_key (kme s n1) keyID keyVal1 \<and>
+            kme s n2 = IoaState state msgs \<and>
+            rcpt \<in> appID ` nodes \<and>
+            (sender, rcpt, KeyResponse keyID keyVal2) \<in> msgs
+            \<longrightarrow> keyVal1 = keyVal2)\<close>
+
+definition kme_stores_consistent where
+  \<open>kme_stores_consistent nodes s \<longleftrightarrow>
     (\<forall>n1 n2 keyID keyVal1 keyVal2. 
+      n1 \<in> nodes \<and>
+      n2 \<in> nodes \<and>
       kme_has_key (kme s n1) keyID keyVal1 \<and>
       kme_has_key (kme s n2) keyID keyVal2
-      \<longrightarrow> keyVal1 = keyVal2)\<close>
-
-definition qkd_layer_consistent where
-  \<open>qkd_layer_consistent s \<longleftrightarrow>
-    (\<forall>gen sent keyID keyVal1 keyVal2.
-      qkd_layer s = QKD gen sent \<and>
-      (keyID, keyVal1) \<in> (snd ` gen \<union> sent) \<and>
-      (keyID, keyVal2) \<in> (snd ` gen \<union> sent)
       \<longrightarrow> keyVal1 = keyVal2)\<close>
 
 end

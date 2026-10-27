@@ -1,6 +1,7 @@
 theory QKD_inv_kme_app_send_consistent
   imports QKD_inv_def QKD_System_Def QKD_System_Helpers
-          QKD_inv_qkd_layer_consistent
+          (*QKD_inv_kme_app_msg_sent*)
+          QKD_inv_bridge_kme_send_consistent
 begin
 
 context QKD_Network
@@ -31,14 +32,14 @@ next
       using 2(2) by argo
   next
     case (Kme_Send apps kmes bridges qkd net kmes' net' n msgs rcpt msg appState)
-    then have "kme_buffer_app_send_consistent nodes appID kmeID s"
+    then have "kme_app_msg_sent nodes appID kmeID bridgeIDs t"
       sorry
-    then show ?case
-      using 2(2) Kme_Send(2-10)
-      unfolding kme_app_send_consistent_def kme_buffer_app_send_consistent_def apply auto
-        apply blast
-       apply blast
-      by (meson image_eqI)
+    moreover have "bridge_kme_send_consistent nodes kmeID bridgeIDs t"
+      using inv_bridge_kme_send_consistent 2(1) Kme_Send(1) reachable_n unfolding invariant_def by fast
+    ultimately show ?case
+      using Kme_Send(2,3,7,8,9,10)
+      unfolding kme_app_msg_sent_def bridge_kme_send_consistent_def kme_app_send_consistent_def
+      by metis
   next
     case (Bridge_Send apps kmes bridges qkds net bridges' net' n b msgs rcpt msg bridgeState)
     then have "b \<notin> kmeID ` nodes"

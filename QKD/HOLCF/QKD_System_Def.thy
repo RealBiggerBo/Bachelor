@@ -88,7 +88,7 @@ section BaseNodes
 sublocale app: App_locale "appID n" "isMaster (appID n)" "appOtherSae n" "kmeID n"
   for n .
 
-sublocale kme: Kme_locale "kmeID n" "route n" "saeToKme" "enc" "dec"
+sublocale kme: Kme_locale "kmeID n" "route n" "saeToKme" "bridgeIDs n" "enc" "dec"
   for n
 proof
   show "\<And>val v1 v2. (dec (enc val v1) v2 = val) = (v1 = v2)"

@@ -1,5 +1,6 @@
 theory QKD_inv_kme_buffer_app_send_consistent
   imports QKD_inv_def QKD_System_Def QKD_System_Helpers
+          QKD_inv_kme_buffer_consistent
 begin
 
 context QKD_Network
@@ -27,64 +28,55 @@ next
       using 2(2) App_Send(2,3,7) unfolding kme_buffer_app_send_consistent_def
       apply auto by (metis image_eqI)+
   next
-    case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' n sender otherKme keyID keyVal store route saeToKme msgs)
-    then show ?case sorry
-  next
-    case (Kme_KMPut_Confirm apps kmes bridges qkd net kmes' n sender otherKme keyID store route saeToKme msgs)
-    then show ?case sorry
-  next
-    case (Kme_GetKey apps kmes bridges qkd net kmes' n sender host slaveSae store route saeToKme msgs keyID val)
-    then show ?case sorry
-  next
-    case (Kme_KMPut_Reserve apps kmes bridges qkd net kmes' n sender otherKme slaveSae store route saeToKme msgs keyID)
-    then show ?case sorry
-  next
     case (Kme_GetKey_Reserved apps kmes bridges qkd net kmes' n sender store keyID val conf res saeID route saeToKme msgs)
-    then show ?case sorry
+    have "\<forall>n state msgs sharedSave c r s2 r2 keyID keyVal1 keyVal2.
+            n \<in> nodes \<and>
+            kme_has_key (kme s n) keyID keyVal1 \<and>
+            s2 \<in> kmeID ` nodes \<and> 
+            r2 \<in> appID ` nodes \<and>
+            (s2, r2, KeyResponse keyID keyVal2) \<in> network s
+            \<longrightarrow> keyVal1 = keyVal2"
+      sorry
+    then show ?case 
+      using Kme_GetKey_Reserved(2,3,4,7,8,9) 2(2)
+      unfolding kme_buffer_app_send_consistent_def apply auto
+       apply (metis image_eqI kme_has_key.simps(2))
+      by (meson image_eqI)
   next
     case (Kme_GetKeyWithID_IDFound apps kmes bridges qkd net kmes' n sender host store keyID val saeToKme masterSae route msgs)
-    then show ?case sorry
-  next
-    case (Kme_GetKeyWithID_IDNotFound apps kmes bridges qkd net kmes' n sender host masterSae keyID store route nextKme keyID2 val2 saeToKme msgs)
-    then show ?case sorry
-  next
-    case (Kme_GetKeyWithID_IDNotFound_Reserved apps kmes bridges qkd net kmes' n nextKme masterSae slaveSae keyID keyID2 store route saeToKme msgs)
-    then show ?case sorry
+    have "\<forall>n state msgs sharedSave c r s2 r2 keyID keyVal1 keyVal2.
+            n \<in> nodes \<and> 
+            kme_has_key (kme s n) keyID keyVal1 \<and>
+            s2 \<in> kmeID ` nodes \<and> 
+            r2 \<in> appID ` nodes \<and>
+            (s2, r2, KeyResponse keyID keyVal2) \<in> network s
+            \<longrightarrow> keyVal1 = keyVal2"
+      sorry
+    then show ?case 
+      using Kme_GetKeyWithID_IDFound(2,3,4,7,8,9) 2(2)
+      unfolding kme_buffer_app_send_consistent_def apply auto
+       apply (metis image_eqI kme_has_key.simps(1))
+      by (meson image_eqI)
   next
     case (Kme_KMGetKeyWithID_IDFound apps kmes bridges qkd net kmes' n nextKme masterSae keyID keyID2 slaveSae store route saeToKme msgs sender val val2)
     then show ?case sorry
   next
-    case (Kme_KMGetKeyWithID_IDNotFound apps kmes bridges qkd net kmes' n nextKme masterSae keyID keyID2 slaveSae store val2 sender route keyID3 val3 saeToKme msgs)
-    then show ?case sorry
-  next
-    case (Kme_KMGetKeyWithID_IDNotFound_Reserved apps kmes bridges qkd net kmes' n nextKme prevKme masterSae keyID keyID2 slaveSae store route keyID3 saeToKme msgs)
-    then show ?case sorry
-  next
     case (Kme_KMGetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' n nextKme prevKme keyID keyVal' store keyID2 val2 sender keyID3 val3 masterSae route saeToKme msgs slaveSae)
-    then show ?case sorry
+      then show ?case sorry
   next
     case (Kme_GetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' n nextKme keyID keyVal' store keyID2 val2 masterSae sender route saeToKme msgs)
     then show ?case sorry
   next
     case (Kme_Send apps kmes bridges qkd net kmes' net' n msgs rcpt msg appState)
-    have "\<forall>n1 n2 state1 state2 msgs1 msgs2 s1 s2 r1 r2 keyID keyVal1 keyVal2.
-            n1 \<in> nodes \<and>
-            n2 \<in> nodes \<and>
-            kme s n1 = IoaState state1 msgs1 \<and>
-            kme s n2 = IoaState state2 msgs2 \<and>
-            r1 \<in> appID ` nodes \<and>
-            r2 \<in> appID ` nodes \<and>
-            (s1, r1, KeyResponse keyID keyVal1) \<in> msgs1 \<and>
-            (s2, r2, KeyResponse keyID keyVal2) \<in> msgs2
-            \<longrightarrow> keyVal1 = keyVal2"
-      sorry
+    have "kme_buffer_consistent nodes appID s"
+      using inv_kme_buffer_consistent 2(1) unfolding invariant_def by blast
     then show ?case
       using 2(2) Kme_Send(2,3,4,7,8,9,10)
-      unfolding kme_buffer_app_send_consistent_def apply auto
+      unfolding kme_buffer_app_send_consistent_def kme_buffer_consistent_def apply auto
              apply blast
             apply blast
            apply blast
-          by (meson imageI)+
+      by (meson imageI)+
   next
     case (Bridge_Send apps kmes bridges qkds net bridges' net' n b msgs rcpt msg bridgeState)
     have "b \<notin> kmeID ` nodes"
