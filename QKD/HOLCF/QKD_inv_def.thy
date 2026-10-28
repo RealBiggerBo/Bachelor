@@ -84,7 +84,6 @@ definition bridge_kme_send_consistent where
       (s2, r2, KMPost otherKme2 keyID keyVal2) \<in> network s
       \<longrightarrow> keyVal1 = keyVal2)\<close>
 
-(*not used right now - needs further invariants*)
 definition bridge_kme_msg_sent where
   \<open>bridge_kme_msg_sent nodes kmeID bridgeIDs qkdID s \<longleftrightarrow>
     (\<forall>s1 r1 otherKme keyID keyVal.
@@ -96,7 +95,18 @@ definition bridge_kme_msg_sent where
             r2 \<in> \<Union>(bridgeIDs ` nodes) \<and>
             (s2, r2, KeyResponse keyID keyVal) \<in> network s))\<close>
 
-(*not used right now*)
+definition bridge_kme_buffer_sent where
+  \<open>bridge_kme_buffer_sent nodes kmeID bridgeIDs qkdID s \<longleftrightarrow>
+    (\<forall>n b state msgs otherKme rcpt keyID keyVal.
+      n \<in> nodes \<and>
+      b \<in> bridgeIDs n \<and>
+      bridge s n b = IoaState state msgs \<and>
+      (b, rcpt, KMPost otherKme keyID keyVal) \<in> msgs
+      \<longrightarrow> (\<exists>s2 r2.
+            s2 \<in> qkdID ` \<Union> (bridgeIDs ` nodes) \<and> 
+            r2 \<in> \<Union> (bridgeIDs ` nodes) \<and> 
+            (s2, r2, KeyResponse keyID keyVal) \<in> network s))\<close>
+
 definition qkd_bridge_send_consistent where
   \<open>qkd_bridge_send_consistent nodes bridgeIDs qkdID s \<longleftrightarrow>
     (\<forall>s1 s2 r1 r2 keyID keyVal1 keyVal2.
@@ -108,7 +118,6 @@ definition qkd_bridge_send_consistent where
       (s2, r2, KeyResponse keyID keyVal2) \<in> network s
       \<longrightarrow> keyVal1 = keyVal2)\<close>
 
-(*not used right now - needs further invariants*)
 definition qkd_bridge_msg_sent where
   \<open>qkd_bridge_msg_sent nodes bridgeIDs qkdID s \<longleftrightarrow>
     (\<forall>s1 r1 keyID keyVal.
@@ -126,6 +135,10 @@ definition qkd_layer_consistent where
       (keyID, keyVal1) \<in> (snd ` gen \<union> sent) \<and>
       (keyID, keyVal2) \<in> (snd ` gen \<union> sent)
       \<longrightarrow> keyVal1 = keyVal2)\<close>
+
+
+
+
 
 definition kme_buffer_app_send_consistent where
   \<open>kme_buffer_app_send_consistent nodes appID kmeID s \<longleftrightarrow>

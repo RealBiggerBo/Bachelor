@@ -10,7 +10,7 @@ inductive bridge_step :: "'proc bridge_state \<Rightarrow> ('proc, ('keyID, 'key
                {(qkd, GetKey qkd otherKme)}\<close> |
   Master_KeyResponse:
   \<open>bridge_step (Bridge True bridge otherKme qkd kme)
-               (Receive sender rcpt (KeyResponse keyID keyVal))
+               (Receive qkd rcpt (KeyResponse keyID keyVal))
                (Bridge True bridge otherKme qkd kme)
                {(kme, KMPost otherKme keyID keyVal), (bridge, BridgeIDRelay keyID)}\<close> |
   Slave_GetKeyWithID:
@@ -20,7 +20,7 @@ inductive bridge_step :: "'proc bridge_state \<Rightarrow> ('proc, ('keyID, 'key
                {(qkd, GetKeyWithID qkd otherKme keyID)}\<close> |
   Slave_KeyResponse:
   \<open>bridge_step (Bridge False bridge otherKme qkd kme) 
-               (Receive sender rcpt (KeyResponse keyID keyVal))
+               (Receive qkd rcpt (KeyResponse keyID keyVal))
                (Bridge False bridge otherKme qkd kme)
                {(kme, KMPost otherKme keyID keyVal)}\<close>
 

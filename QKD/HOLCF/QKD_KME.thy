@@ -88,7 +88,7 @@ inductive kme_step :: "'keyVal cipher_function \<Rightarrow> 'keyVal cipher_func
             (Kme store route saeToKme bridgeIDs)
             (Receive sender rcpt (KMGet masterSae keyID keyID2 slaveSae))
             (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme bridgeIDs)
-            {(sender, KeyResponse keyID (enc val val2))}\<close> |
+            {(sender, KMKeyResponse keyID2 keyID (enc val val2))}\<close> |
   KMGetKeyWithID_IDNotFound:
   \<open>store keyID = None \<Longrightarrow>
    store keyID2 = Some (Some val2, sender, True, Some sender) \<Longrightarrow>
@@ -110,14 +110,14 @@ inductive kme_step :: "'keyVal cipher_function \<Rightarrow> 'keyVal cipher_func
    store keyID3 = Some (Some val3, nextKme, True, None) \<Longrightarrow>
    kme_step enc dec
             (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs)
-            (Receive nextKme rcpt (KeyResponse keyID keyVal'))
+            (Receive nextKme rcpt (KMKeyResponse keyID3 keyID keyVal'))
             (Kme (keyStore_remove (keyStore_remove store keyID2) keyID3) route saeToKme bridgeIDs)
-            {(prevKme, KeyResponse keyID (enc (dec keyVal' val3) val2))}\<close> |
+            {(prevKme, KMKeyResponse keyID2 keyID (enc (dec keyVal' val3) val2))}\<close> |
   GetKeyWithID_IDNotFound_Return:
   \<open>store keyID2 = Some (Some val2, nextKme, True, None) \<Longrightarrow>
    kme_step enc dec
             (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs)
-            (Receive nextKme rcpt (KeyResponse keyID keyVal'))
+            (Receive nextKme rcpt (KMKeyResponse keyID2 keyID keyVal'))
             (Kme (keyStore_remove store keyID2) route saeToKme bridgeIDs)
             {(slaveSae, KeyResponse keyID (dec keyVal' val2))}\<close>
 

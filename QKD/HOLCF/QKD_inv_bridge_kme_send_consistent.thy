@@ -1,6 +1,6 @@
 theory QKD_inv_bridge_kme_send_consistent
   imports QKD_inv_def QKD_System_Def QKD_System_Helpers
-          (*QKD_inv_bridge_kme_msg_sent*)
+          QKD_inv_bridge_kme_msg_sent
           QKD_inv_qkd_bridge_send_consistent
 begin
 
@@ -43,7 +43,7 @@ next
   next
     case (Bridge_Send apps kmes bridges qkds net bridges' net' n b msgs rcpt msg bridgeState)
     then have "bridge_kme_msg_sent nodes kmeID bridgeIDs qkdID t"
-      sorry
+      using inv_bridge_kme_msg_sent 2(1) Bridge_Send(1) reachable_n unfolding invariant_def by fast
     moreover have "qkd_bridge_send_consistent nodes bridgeIDs qkdID t"
       using inv_qkd_bridge_send_consistent 2(1) Bridge_Send(1) reachable_n unfolding invariant_def by fast
     ultimately show ?case

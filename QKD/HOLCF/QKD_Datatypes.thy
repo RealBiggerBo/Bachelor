@@ -8,6 +8,7 @@ datatype ('keyID, 'keyVal, 'proc) msg =
   GetKey (GetKey_host: 'proc) (GetKey_slaveSaeID: 'proc) |
   GetKeyWithID (GetKeyWithID_host: 'proc) (GetKeyWithID_masterSaeID: 'proc) (GetKeyWithID_keyID: 'keyID) |
   KeyResponse (KeyResponse_keyID: 'keyID) (Key_Response_keyVal: 'keyVal) |
+  KMKeyResponse (KMKeyResponse_encryptionKeyID: 'keyID) (KMKeyResponse_keyID: 'keyID) (KMKey_Response_keyVal: 'keyVal) |
   BridgeIDRelay (BridgeIDRelay_keyID: 'keyID) |
   KMPost (KMPost_kmePartner: 'proc) (KMPost_keyID: 'keyID) (KMPost_keyVal: 'keyVal) |
   KMPut (KMPut_ownKmeID: 'proc) (KMPut_keyID: 'keyID) (KMPut_reservedOption: "'proc option") |
