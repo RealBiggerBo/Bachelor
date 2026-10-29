@@ -100,7 +100,7 @@ sublocale bridge: ETSI_Bridge_locale "bridgeID" "isMaster bridgeID" "bridgeOther
 
 sublocale qkd_layer: QKD_Layer_locale "qkdID ` (\<Union>(bridgeIDs ` nodes))" .
 
-sublocale network: Lossy_Reorder_SetChannel .
+sublocale network: FifoChannel .
 
 section Set_Compositions
 

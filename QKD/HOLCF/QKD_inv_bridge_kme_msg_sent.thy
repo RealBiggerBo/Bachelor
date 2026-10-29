@@ -7,7 +7,7 @@ context QKD_Network
 begin
 
 lemma inv_bridge_kme_msg_sent:
-  shows "invariant System.ioa (bridge_kme_msg_sent nodes kmeID bridgeIDs qkdID)"
+  shows "invariant System.ioa (bridge_kme_msg_sent nodes bridgeIDs qkdID)"
 proof (induction rule: invariantI)
   case (1 s)
   then show ?case

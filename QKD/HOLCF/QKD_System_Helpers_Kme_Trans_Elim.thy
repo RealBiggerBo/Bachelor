@@ -62,6 +62,7 @@ lemma kme_invariant_step[consumes 6, case_names
     KMGetKeyWithID_IDNotFound_Reserved
     KMGetKeyWithID_IDNotFound_Return
     GetKeyWithID_IDNotFound_Return
+    Receive_Stutter
     Send]:
   assumes "reachable System.ioa s"
     and "P s"
@@ -70,42 +71,48 @@ lemma kme_invariant_step[consumes 6, case_names
     and "s = (apps, kmes, bridges, qkd, net)"
     and "t = (apps, kmes', bridges, qkd, net')"
     and "\<And>sender otherKme keyID keyVal store route saeToKme bridgeIDs msgs.
-         \<lbrakk>a = Receive sender (kmeID n) (KMPost otherKme keyID keyVal); net = net';
-          (sender, kmeID n, KMPost otherKme keyID keyVal) \<in> net;
+         \<lbrakk>a = Receive sender (kmeID n) (KMPost otherKme keyID keyVal); net' = rmv_msg net sender (kmeID n) (KMPost otherKme keyID keyVal);
+          can_send net sender (kmeID n) (KMPost otherKme keyID keyVal);
           sender \<in> bridgeIDs;
           kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_add store keyID (Some keyVal) otherKme) route saeToKme bridgeIDs) 
           (msgs \<union> {(kmeID n, sender, OK), (kmeID n, otherKme, KMPut (kmeID n) keyID None)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender otherKme keyID store route saeToKme bridgeIDs msgs.
-         \<lbrakk>a = Receive sender (kmeID n) (KMPut otherKme keyID None); net = net';
+         \<lbrakk>a = Receive sender (kmeID n) (KMPut otherKme keyID None); net' = rmv_msg net sender (kmeID n) (KMPut otherKme keyID None);
+          can_send net sender (kmeID n) (KMPut otherKme keyID None);
           kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs) 
           (msgs \<union> {(kmeID n, sender, OK)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender host slaveSae store route saeToKme bridgeIDs msgs keyID val.
-         \<lbrakk>a = Receive sender (kmeID n) (GetKey host slaveSae); net = net';
+         \<lbrakk>a = Receive sender (kmeID n) (GetKey host slaveSae); net' = rmv_msg net sender (kmeID n) (GetKey host slaveSae);
+          can_send net sender (kmeID n) (GetKey host slaveSae);
           store keyID = Some (Some val, route slaveSae, True, None);
           kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (KmeWaitReserve keyID sender store route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, route slaveSae, KMPut (kmeID n) keyID (Some slaveSae))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender otherKme slaveSae store route saeToKme bridgeIDs msgs keyID.
-         \<lbrakk>a = Receive sender (kmeID n) (KMPut otherKme keyID (Some slaveSae)); net = net';
+         \<lbrakk>a = Receive sender (kmeID n) (KMPut otherKme keyID (Some slaveSae)); net' = rmv_msg net sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
+          can_send net sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
           kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, otherKme, OK)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender store keyID val conf res saeID route saeToKme bridgeIDs msgs.
-         \<lbrakk>a = Receive sender (kmeID n) OK; net = net';
+         \<lbrakk>a = Receive sender (kmeID n) OK; net' = rmv_msg net sender (kmeID n) OK;
+          can_send net sender (kmeID n) OK;
           store keyID = Some (Some val, sender, conf, res);
           kmes n = IoaState (KmeWaitReserve keyID saeID store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, saeID, KeyResponse keyID val)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender host store keyID val saeToKme masterSae route saeToKme bridgeIDs msgs.
-         \<lbrakk>a = Receive sender (kmeID n) (GetKeyWithID host masterSae keyID); net = net';
+         \<lbrakk>a = Receive sender (kmeID n) (GetKeyWithID host masterSae keyID); net' = rmv_msg net sender (kmeID n) (GetKeyWithID host masterSae keyID);
+          can_send net sender (kmeID n) (GetKeyWithID host masterSae keyID);
           store keyID = Some (Some val, saeToKme masterSae, True, Some sender);
           kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, sender, KeyResponse keyID val)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender host masterSae keyID store route nextKme keyID2 val2 saeToKme bridgeIDs msgs val.
-         \<lbrakk>a = Receive sender (kmeID n) (GetKeyWithID host masterSae keyID); net = net';
+         \<lbrakk>a = Receive sender (kmeID n) (GetKeyWithID host masterSae keyID); net' = rmv_msg net sender (kmeID n) (GetKeyWithID host masterSae keyID);
+          can_send net sender (kmeID n) (GetKeyWithID host masterSae keyID);
           store keyID = None;
           route masterSae = nextKme;
           store keyID2 = Some (Some val2, nextKme, True, None);
@@ -113,19 +120,22 @@ lemma kme_invariant_step[consumes 6, case_names
           kmes' = kmes(n := IoaState (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, nextKme, KMPut (kmeID n) keyID2 (Some (kmeID n)))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme masterSae slaveSae keyID keyID2 store route saeToKme bridgeIDs msgs.
-         \<lbrakk>a = Receive nextKme (kmeID n) OK; net = net';
+         \<lbrakk>a = Receive nextKme (kmeID n) OK; net' = rmv_msg net nextKme (kmeID n) OK;
+          can_send net nextKme (kmeID n) OK;
           kmes n = IoaState (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, nextKme, KMGet masterSae keyID keyID2 slaveSae)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme masterSae keyID keyID2 slaveSae store route saeToKme bridgeIDs msgs sender val val2.
-         \<lbrakk>a = Receive nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae); net = net';
+         \<lbrakk>a = Receive nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae); net' = rmv_msg net nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
+          can_send net nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
           store keyID = Some (Some val, saeToKme masterSae, True, Some slaveSae);
           store keyID2 = Some (Some val2, sender, True, Some sender);
           kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, sender, KMKeyResponse keyID2 keyID (enc val val2))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme masterSae keyID keyID2 slaveSae store val2 sender route keyID3 val3 saeToKme bridgeIDs msgs.
-         \<lbrakk>a = Receive sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae); net = net';
+         \<lbrakk>a = Receive sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae); net' = rmv_msg net sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
+          can_send net sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
           store keyID = None;
           store keyID2 = Some (Some val2, sender, True, Some sender);
           route masterSae = nextKme;
@@ -134,25 +144,32 @@ lemma kme_invariant_step[consumes 6, case_names
           kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae slaveSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, nextKme, KMPut (kmeID n) keyID3 (Some (kmeID n)))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme prevKme masterSae keyID keyID2 slaveSae store sender route keyID3 saeToKme bridgeIDs msgs.
-         \<lbrakk>a = Receive nextKme (kmeID n) OK; net = net';
+         \<lbrakk>a = Receive nextKme (kmeID n) OK; net' = rmv_msg net nextKme (kmeID n) OK;
+          can_send net nextKme (kmeID n) OK;
           kmes n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, nextKme, KMGet masterSae keyID keyID3 slaveSae)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme prevKme keyID keyVal' store keyID2 val2 sender keyID3 val3 masterSae route saeToKme bridgeIDs msgs slaveSae.
-         \<lbrakk>a = Receive nextKme (kmeID n) (KMKeyResponse keyID3 keyID keyVal'); net = net';
+         \<lbrakk>a = Receive nextKme (kmeID n) (KMKeyResponse keyID3 keyID keyVal'); net' = rmv_msg net nextKme (kmeID n) (KMKeyResponse keyID3 keyID keyVal');
+          can_send net nextKme (kmeID n) (KMKeyResponse keyID3 keyID keyVal');
           store keyID2 = Some (Some val2, sender, True, Some sender);
           store keyID3 = Some (Some val3, nextKme, True, None);
           kmes n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID2) keyID3) route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, prevKme, KMKeyResponse keyID2 keyID (enc (dec keyVal' val3) val2))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>nextKme keyID keyVal' store keyID2 val2 masterSae sender keyID3 val3 masterSae route saeToKme bridgeIDs msgs slaveSae.
-         \<lbrakk>a = Receive nextKme (kmeID n) (KMKeyResponse keyID2 keyID keyVal'); net = net';
+         \<lbrakk>a = Receive nextKme (kmeID n) (KMKeyResponse keyID2 keyID keyVal'); net' = rmv_msg net nextKme (kmeID n) (KMKeyResponse keyID2 keyID keyVal');
+          can_send net nextKme (kmeID n) (KMKeyResponse keyID2 keyID keyVal');
           store keyID2 = Some (Some val2, nextKme, True, None);
           kmes n = IoaState (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID2) route saeToKme bridgeIDs)
           (msgs \<union> {(kmeID n, sender, KeyResponse keyID (dec keyVal' val2))}))\<rbrakk> \<Longrightarrow> P t"
+    and "\<And>sender msg.
+         \<lbrakk>a = Receive sender (kmeID n) msg; net' = rmv_msg net sender (kmeID n) msg;
+          can_send net sender (kmeID n) msg;
+          kmes = kmes'\<rbrakk> \<Longrightarrow> P t"
     and "\<And>msgs rcpt msg appState.
-         \<lbrakk>a = Send (kmeID n) rcpt msg; net' = net \<union> {(kmeID n, rcpt, msg)};
+         \<lbrakk>a = Send (kmeID n) rcpt msg; net' = add_msg net (kmeID n) rcpt msg;
           (kmeID n, rcpt, msg) \<in> msgs;
           kmes n = IoaState appState msgs;
           kmes' = kmes(n := IoaState appState (msgs - {(kmeID n, rcpt, msg)}))\<rbrakk> \<Longrightarrow> P t"
@@ -175,16 +192,16 @@ proof
   then show "P t"
   proof cases
     case 1
+    then obtain sender msg where a_split:"a = Receive sender (kmeID n) msg"
+      by blast
     then have "a \<in> act network.ioa"
-      unfolding actions_def asig_projections asig_of_def by force
+      unfolding actions_def asig_projections asig_of_def by auto
     then have net_trans:"net \<midarrow>a\<midarrow>network.ioa\<rightarrow> net'"
-      using sys_trans by meson
-    then have net_eq:"net = net'"
-      using 1 unfolding trans_of_def by auto
-    obtain sender msg where a_split:"a = Receive sender (kmeID n) msg"
-      using 1 by presburger
-    then have in_net:"(sender, kmeID n, msg) \<in> net"
-      using net_trans unfolding trans_of_def by simp
+      using sys_trans by force
+    then have net_step:"net' = rmv_msg net sender (kmeID n) msg"
+      using a_split unfolding trans_of_def by auto
+    then have rec_in_net: "can_send net sender (kmeID n) msg"
+      using net_trans a_split unfolding trans_of_def by simp
     then show ?thesis
     proof (cases "kmes n")
       case (IoaState state msgs)
@@ -206,14 +223,14 @@ proof
               apply (auto elim: kme_step_KMPostE)
               using KMPost_NewKeyVal by fast+
             then show ?thesis
-              using assms(7)[OF _ net_eq] IoaState kmes' msg_split a_split Kme True in_net by presburger
+              using assms(7)[OF _ net_step] IoaState kmes' msg_split a_split Kme True rec_in_net by presburger
           next
             case False
             then have "kmes' n = kmes n"
               using kme_node_trans Kme msg_split a_split IoaState unfolding trans_of_def apply auto
               using kme_step.cases by (smt (verit, del_insts) kme_step_KMPostE)+
             then show ?thesis
-              using kmes' assms(2,5,6) net_eq by force
+              using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
           qed
         next
           case False
@@ -229,7 +246,7 @@ proof
               apply (auto elim: kme_step_KMPutE)
               using KMPut_Confirm by fast+
             then show ?thesis
-              using assms(8)[OF _ net_eq] IoaState kmes' msg_split a_split Kme by presburger
+              using assms(8)[OF _ net_step] IoaState kmes' msg_split a_split Kme rec_in_net by presburger
           next
             case False
             then show ?thesis
@@ -249,15 +266,14 @@ proof
                   apply (smt (verit) Un_commute image_empty image_insert insert_is_Un ioa_state.inject kme_step_GetKeyE)
                   by (meson GetKey)
                 show ?thesis
-                  using assms(9)[OF _ net_eq] IoaState kmes' kn msg_split a_split Kme prem
-                  by metis
+                  using assms(9)[OF _ net_step] IoaState kmes' kn msg_split a_split Kme prem rec_in_net by metis
               next
                 case False
                 then have "kmes' n = kmes n"
                   using kme_node_trans Kme msg_split a_split IoaState unfolding trans_of_def apply auto
                   using kme_step.cases by (smt (verit, del_insts) kme_step_GetKeyE)+
                 then show ?thesis
-                  using kmes' assms(2,5,6) net_eq by force
+                  using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
               qed
             next
               case False
@@ -273,7 +289,7 @@ proof
                   apply (auto elim: kme_step_KMPutReserveE)
                   using KMPut_Reserve by fast+
                 then show ?thesis
-                  using assms(10)[OF _ net_eq] IoaState kmes' msg_split a_split Kme by presburger
+                  using assms(10)[OF _ net_step] IoaState kmes' msg_split a_split Kme rec_in_net by presburger
               next
                 case False
                 then show ?thesis
@@ -293,7 +309,7 @@ proof
                       apply (auto elim: kme_step_GetKeyWithIDE)
                       using GetKeyWithID_IDFound by fast+
                     then show ?thesis
-                      using assms(12)[OF _ net_eq] IoaState kmes' msg_split a_split Kme store_keyID by presburger
+                      using assms(12)[OF _ net_step] IoaState kmes' msg_split a_split Kme store_keyID rec_in_net by presburger
                   next
                     case False
                     then show ?thesis
@@ -314,7 +330,7 @@ proof
                            apply (smt (verit, ccfv_SIG) not_None_eq)
                           by (meson GetKeyWithID_IDNotFound)
                         show ?thesis
-                          using assms(13)[OF _ net_eq] IoaState kmes' kn msg_split a_split Kme prem nxtKme \<open>store keyID = None\<close>
+                          using assms(13)[OF _ net_step] IoaState kmes' kn msg_split a_split Kme prem nxtKme \<open>store keyID = None\<close> rec_in_net
                           by metis
                       next
                         case False
@@ -323,7 +339,7 @@ proof
                           unfolding trans_of_def apply auto
                           by (smt (verit) kme_step_GetKeyWithIDE option.discI)+
                         then show ?thesis
-                          using kmes' assms(2,5,6) net_eq by force
+                          using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
                       qed
                     next
                       case False
@@ -335,7 +351,7 @@ proof
                         using kme_step_GetKeyWithIDE[of enc dec store route saeToKme bridgeIDs sender "kmeID n" host masterSae keyID]
                         by auto
                       then show ?thesis
-                        using kmes' assms(2,5,6) net_eq by force
+                        using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
                     qed
                   qed
                 next
@@ -362,7 +378,7 @@ proof
                           apply (auto elim: kme_step_GetKeyWithID_RecE)
                           using KMGetKeyWithID_IDFound by meson+
                         then show ?thesis
-                          using assms(15)[OF _ net_eq] IoaState kmes' msg_split a_split Kme store_keyID store_keyID2
+                          using assms(15)[OF _ net_step] IoaState kmes' msg_split a_split Kme store_keyID store_keyID2 rec_in_net
                           by metis
                       next
                         case False
@@ -371,7 +387,7 @@ proof
                           unfolding trans_of_def apply auto
                           by (smt (verit) kme_step_GetKeyWithID_RecE option.discI)+
                         then show ?thesis
-                          using kmes' assms(2,5,6) net_eq by force
+                          using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
                       qed
                     next
                       case False
@@ -399,7 +415,7 @@ proof
                                apply (smt (verit, ccfv_SIG) not_None_eq)
                               using KMGetKeyWithID_IDNotFound by meson
                             then show ?thesis
-                              using assms(16)[OF _ net_eq] IoaState kmes' kn msg_split a_split Kme prem nxtKme val2_split \<open>store keyID = None\<close>
+                              using assms(16)[OF _ net_step] IoaState kmes' kn msg_split a_split Kme prem nxtKme val2_split \<open>store keyID = None\<close> rec_in_net
                               by force
                           next
                             case False
@@ -408,7 +424,7 @@ proof
                               unfolding trans_of_def apply auto
                               by (smt (verit) kme_step_GetKeyWithID_RecE option.discI)+
                             then show ?thesis
-                              using kmes' assms(2,5,6) net_eq by force
+                              using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
                           qed
                         next
                           case False
@@ -417,7 +433,7 @@ proof
                             unfolding trans_of_def apply auto
                             by (smt (verit) kme_step_GetKeyWithID_RecE option.discI)+
                           then show ?thesis
-                            using kmes' assms(2,5,6) net_eq by force
+                            using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
                         qed
                       next
                         case False
@@ -427,7 +443,7 @@ proof
                           using False \<open>\<nexists>val. store keyID = Some (Some val, saeToKme masterSae, True, Some slaveSae)\<close> kme_step_GetKeyWithID_RecE 
                            by (fastforce,meson)
                         then show ?thesis
-                          using kmes' assms(2,5,6) net_eq by force
+                          using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
                       qed
                     qed
                   next
@@ -445,7 +461,7 @@ proof
                     then have "kmes' n = kmes n"
                       using kme_node_trans Kme a_split IoaState unfolding trans_of_def by simp
                     then show ?thesis
-                      using kmes' assms(2,5,6) net_eq by force
+                      using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
                   qed
                 qed
               qed
@@ -469,7 +485,7 @@ proof
               apply (auto elim: kme_step_GetKey_ReservedE)
               using GetKey_Reserved by meson+
             then show ?thesis
-              using assms(11)[OF _ net_eq] IoaState kmes' \<open>msg = OK\<close> a_split KmeWaitReserve store_keyID store_keyID
+              using assms(11)[OF _ net_step] IoaState kmes' \<open>msg = OK\<close> a_split KmeWaitReserve store_keyID store_keyID rec_in_net
               by metis
           next
             case False
@@ -479,7 +495,7 @@ proof
               using False kme_step_GetKey_ReservedE
               by meson+
             then show ?thesis
-              using kmes' assms(2,5,6) net_eq by force
+              using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
           qed
         next
           case False
@@ -491,7 +507,7 @@ proof
           then have "kmes' n = kmes n"
             using kme_node_trans KmeWaitReserve a_split IoaState unfolding trans_of_def by simp
           then show ?thesis
-            using kmes' assms(2,5,6) net_eq by force
+              using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
         qed
       next
         case (KmeWaitHop masterSae slaveSae nextKme keyID encryptionKeyID store route saeToKme bridgeIDs)
@@ -508,7 +524,7 @@ proof
               apply (auto elim: kme_step_GetKeyWithID_IDNotFound_ReservedE)
               using GetKeyWithID_IDNotFound_Reserved by fast
             then show ?thesis
-              using assms(14)[OF _ net_eq] IoaState kmes' \<open>msg = OK\<close> \<open>sender = nextKme\<close> a_split KmeWaitHop
+              using assms(14)[OF _ net_step] IoaState kmes' \<open>msg = OK\<close> \<open>sender = nextKme\<close> a_split KmeWaitHop rec_in_net
               by force
           next
             case False
@@ -518,7 +534,7 @@ proof
               using False kme_step_GetKeyWithID_IDNotFound_ReservedE
               by meson+
             then show ?thesis
-              using kmes' assms(2,5,6) net_eq by force
+              using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
           qed
         next
           case False
@@ -543,7 +559,7 @@ proof
                   using GetKeyWithID_IDNotFound_Return
                   by fast
                 then show ?thesis
-                  using assms(19)[OF _ net_eq] IoaState kmes' msg_split store \<open>sender = nextKme\<close> a_split KmeWaitHop
+                  using assms(19)[OF _ net_step] IoaState kmes' msg_split store \<open>sender = nextKme\<close> a_split KmeWaitHop rec_in_net
                   by force
               next
                 case False
@@ -553,7 +569,7 @@ proof
                   using False kme_step_GetKeyWithID_IDNotFound_ReturnE
                   by meson+
                 then show ?thesis
-                  using kmes' assms(2,5,6) net_eq by force
+                  using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
               qed
             next
               case False
@@ -563,7 +579,7 @@ proof
                 using False kme_step_GetKeyWithID_IDNotFound_ReturnE
                 by meson+
               then show ?thesis
-                using kmes' assms(2,5,6) net_eq by force
+                using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
             qed
           next
             case False
@@ -575,7 +591,7 @@ proof
             then have "kmes' n = kmes n"
               using kme_node_trans KmeWaitHop a_split IoaState unfolding trans_of_def by simp
             then show ?thesis
-              using kmes' assms(2,5,6) net_eq by force
+              using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
           qed
         qed
       next
@@ -593,7 +609,7 @@ proof
               apply (auto elim: kme_step_KMGetKeyWithID_IDNotFound_ReservedE)
               using KMGetKeyWithID_IDNotFound_Reserved by fast
             then show ?thesis
-              using assms(17)[OF _ net_eq] IoaState kmes' \<open>msg = OK\<close> \<open>sender = nextKme\<close> a_split KmeWaitHopRec
+              using assms(17)[OF _ net_step] IoaState kmes' \<open>msg = OK\<close> \<open>sender = nextKme\<close> a_split KmeWaitHopRec rec_in_net
               by force
           next
             case False
@@ -620,7 +636,7 @@ proof
                     apply (auto elim: kme_step_KMGetKeyWithID_IDNotFound_ReturnE)
                     using KMGetKeyWithID_IDNotFound_Return by meson
                   then show ?thesis 
-                  using assms(18)[OF _ net_eq] IoaState kmes' msg_split store_val2 store_val3 \<open>sender = nextKme\<close> a_split KmeWaitHopRec
+                  using assms(18)[OF _ net_step] IoaState kmes' msg_split store_val2 store_val3 \<open>sender = nextKme\<close> a_split KmeWaitHopRec rec_in_net
                   by force
                 next
                   case False
@@ -631,7 +647,7 @@ proof
                   then have "kmes' n = kmes n"
                     using kme_node_trans KmeWaitHopRec a_split IoaState unfolding trans_of_def by simp
                   then show ?thesis
-                    using kmes' assms(2,5,6) net_eq by force
+                    using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
                 qed
               next
                 case False
@@ -642,7 +658,7 @@ proof
                 then have "kmes' n = kmes n"
                   using kme_node_trans KmeWaitHopRec a_split IoaState unfolding trans_of_def by simp
                 then show ?thesis
-                  using kmes' assms(2,5,6) net_eq by force
+                  using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
               qed
             next
               case False
@@ -654,7 +670,7 @@ proof
               then have "kmes' n = kmes n"
                 using kme_node_trans KmeWaitHopRec a_split IoaState unfolding trans_of_def by simp
               then show ?thesis
-                using kmes' assms(2,5,6) net_eq by force
+                using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
             qed
           qed
         next
@@ -667,7 +683,7 @@ proof
           then have "kmes' n = kmes n"
             using kme_node_trans KmeWaitHopRec a_split IoaState unfolding trans_of_def by simp
           then show ?thesis
-            using kmes' assms(2,5,6) net_eq by force
+            using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
         qed
       qed
     qed
@@ -679,7 +695,7 @@ proof
       using sys_trans by force
     obtain rcpt msg where a_split:"a = Send (kmeID n) rcpt msg"
       using 2 by blast
-    then have net':"net' = net \<union> {(kmeID n, rcpt, msg)}"
+    then have net':"net' = add_msg net (kmeID n) rcpt msg"
       using net_trans unfolding trans_of_def by auto
     then show ?thesis
     proof (cases "kmes n")
@@ -689,7 +705,7 @@ proof
       moreover have "kmes' n = IoaState state (msgs - {(kmeID n, rcpt, msg)})"
         using calculation kme_node_trans a_split IoaState unfolding trans_of_def by simp
       ultimately show ?thesis
-        using assms(20) a_split net' IoaState kmes' by presburger
+        using assms(21) a_split net' IoaState kmes' by presburger
     qed
   qed
 qed

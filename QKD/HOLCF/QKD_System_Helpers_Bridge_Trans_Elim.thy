@@ -16,6 +16,7 @@ lemma bridge_invariant_step[consumes 7, case_names
     Master_KeyResponse
     Slave_GetKeyWithID
     Slave_KeyResponse
+    Receive_Stutter
     Send]:
   assumes "reachable System.ioa s"
     and "P s"
@@ -25,26 +26,30 @@ lemma bridge_invariant_step[consumes 7, case_names
     and "s = (apps, kmes, bridges, qkd, net)"
     and "t = (apps, kmes, bridges', qkd, net')"
     and "\<And>slaveBridge otherKme qkd kme msgs.
-         \<lbrakk>a = TimerTick b; net = net';
+         \<lbrakk>a = TimerTick b; net' = net;
           bridges (n,b) = IoaState (Bridge True slaveBridge otherKme qkd kme) msgs;
           bridges' = bridges((n,b) := IoaState (Bridge True slaveBridge otherKme qkd kme) (msgs \<union> {(b, qkd, GetKey qkd otherKme)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>slaveBridge otherKme qkd kme msgs keyID keyVal.
-         \<lbrakk>a = Receive qkd b (KeyResponse keyID keyVal); net = net';
-          (qkd, b, KeyResponse keyID keyVal) \<in> net;
+         \<lbrakk>a = Receive qkd b (KeyResponse keyID keyVal); net' = rmv_msg net qkd b (KeyResponse keyID keyVal);
+          can_send net qkd b (KeyResponse keyID keyVal);
           bridges (n,b) = IoaState (Bridge True slaveBridge otherKme qkd kme) msgs;
           bridges' = bridges((n,b) := IoaState (Bridge True slaveBridge otherKme qkd kme) (msgs \<union> {(b, kme, KMPost otherKme keyID keyVal), (b, slaveBridge, BridgeIDRelay keyID)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>masterBridge otherKme qkd kme msgs sender keyID.
-         \<lbrakk>a = Receive sender b (BridgeIDRelay keyID); net = net';
-          (sender, b, BridgeIDRelay keyID) \<in> net;
+         \<lbrakk>a = Receive sender b (BridgeIDRelay keyID); net' = rmv_msg net sender b (BridgeIDRelay keyID);
+          can_send net sender b (BridgeIDRelay keyID);
           bridges (n,b) = IoaState (Bridge False masterBridge otherKme qkd kme) msgs;
           bridges' = bridges((n,b) := IoaState (Bridge False masterBridge otherKme qkd kme) (msgs \<union> {(b, qkd, GetKeyWithID qkd otherKme keyID)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>masterBridge otherKme qkd kme msgs sender keyID keyVal.
-         \<lbrakk>a = Receive qkd b (KeyResponse keyID keyVal); net = net';
-          (qkd, b, KeyResponse keyID keyVal) \<in> net;
+    and "\<And>masterBridge otherKme qkd kme msgs keyID keyVal.
+         \<lbrakk>a = Receive qkd b (KeyResponse keyID keyVal); net' = rmv_msg net qkd b (KeyResponse keyID keyVal);
+          can_send net qkd b (KeyResponse keyID keyVal);
           bridges (n,b) = IoaState (Bridge False masterBridge otherKme qkd kme) msgs;
           bridges' = bridges((n,b) := IoaState (Bridge False masterBridge otherKme qkd kme) (msgs \<union> {(b, kme, KMPost otherKme keyID keyVal)}))\<rbrakk> \<Longrightarrow> P t"
+    and "\<And>sender msg.
+         \<lbrakk>a = Receive sender b msg; net' = rmv_msg net sender b msg;
+          can_send net sender b msg;
+          bridges = bridges'\<rbrakk> \<Longrightarrow> P t"
     and "\<And>msgs rcpt msg bridgeState.
-         \<lbrakk>a = Send b rcpt msg; net' = net \<union> {(b, rcpt, msg)};
+         \<lbrakk>a = Send b rcpt msg; net' = add_msg net b rcpt msg;
           (b, rcpt, msg) \<in> msgs;
           bridges (n,b) = IoaState bridgeState msgs;
           bridges' = bridges((n,b) := IoaState bridgeState (msgs - {(b, rcpt, msg)}))\<rbrakk> \<Longrightarrow> P t"
@@ -79,7 +84,7 @@ proof
     case 1
     then have "a \<notin> act network.ioa"
       unfolding actions_def asig_projections asig_of_def by force
-    then have net_eq:"net = net'"
+    then have net_eq:"net' = net"
       using sys_trans by fast
     then show ?thesis
     proof (cases "bridges (n,b)")
@@ -110,16 +115,16 @@ proof
     qed
   next
     case 2
+    then obtain sender msg where a_split:"a = Receive sender b msg"
+      by blast
     then have "a \<in> act network.ioa"
       unfolding actions_def asig_projections asig_of_def by auto
     then have net_trans:"net \<midarrow>a\<midarrow>network.ioa\<rightarrow> net'"
       using sys_trans by force
-    then have net_eq:"net = net'"
-      using 2 unfolding trans_of_def by auto
-    obtain sender msg where a_split:"a = Receive sender b msg"
-      using 2 by blast
-    then have rec_in_net: "(sender, b, msg) \<in> net"
-      using net_trans unfolding trans_of_def by simp
+    then have net_step:"net' = rmv_msg net sender b msg"
+      using a_split unfolding trans_of_def by auto
+    then have rec_in_net: "can_send net sender b msg"
+      using net_trans a_split unfolding trans_of_def by simp
     show ?thesis
     proof (cases "bridges (n,b)")
       case (IoaState state msgs)
@@ -146,7 +151,7 @@ proof
                 using QKD_ETSI_Bridge.Master_KeyResponse apply meson
                 using QKD_ETSI_Bridge.Master_KeyResponse by meson
               then show ?thesis
-                using IoaState Bridge \<open>isMaster\<close> net_eq assms(9) a_split msg_split rec_in_net bridges' True 
+                using IoaState Bridge \<open>isMaster\<close> net_step assms(9) a_split msg_split rec_in_net bridges' True 
                 by force
             next
               case False
@@ -155,7 +160,7 @@ proof
                 unfolding actions_def asig_projections asig_of_def
                 by (simp add: bridge_step.simps)
               then show ?thesis
-                using bridges' assms(2,3,6,7) net_eq by fastforce
+                using bridges' assms(2,3,6,7) assms(12)[OF a_split net_step rec_in_net] by fastforce
             qed
           next
             case False
@@ -164,7 +169,7 @@ proof
               unfolding actions_def asig_projections asig_of_def 
               by (simp add: bridge_step.simps)
             then show ?thesis
-              using bridges' assms(2,3,6,7) net_eq by fastforce
+              using bridges' assms(2,3,6,7) assms(12)[OF a_split net_step rec_in_net] by fastforce
           qed
         next
           case False
@@ -184,8 +189,8 @@ proof
                 apply blast+
                 using QKD_ETSI_Bridge.Slave_KeyResponse by meson
               then show ?thesis
-                using IoaState Bridge \<open>\<not>isMaster\<close> net_eq assms(11) a_split msg_split rec_in_net bridges' True 
-                by simp
+                using IoaState Bridge \<open>\<not>isMaster\<close> net_step assms(11) a_split msg_split rec_in_net bridges' True 
+                by auto
             next
               case False
               then have "bridges' (n,b) = bridges (n,b)"
@@ -193,7 +198,7 @@ proof
                 unfolding actions_def asig_projections asig_of_def
                 by (simp add: bridge_step.simps)
               then show ?thesis
-                using bridges' assms(2,3,6,7) net_eq by fastforce
+                using bridges' assms(2,3,6,7) assms(12)[OF a_split net_step rec_in_net] by fastforce
             qed
           next
             case False
@@ -210,7 +215,7 @@ proof
                    apply blast+
                 using Slave_GetKeyWithID by fast
               then show ?thesis
-                using IoaState Bridge \<open>\<not>isMaster\<close> net_eq assms(10) a_split msg_split rec_in_net bridges' by presburger
+                using IoaState Bridge \<open>\<not>isMaster\<close> net_step assms(10) a_split msg_split rec_in_net bridges' by presburger
             next
               case False
               then have "bridges' (n,b) = bridges (n,b)"
@@ -218,7 +223,7 @@ proof
                 unfolding trans_of_def actions_def asig_projections asig_of_def
                 by (simp add: bridge_step.simps)
             then show ?thesis
-              using bridges' assms(2,6,7) net_eq by fastforce
+                using bridges' assms(2,3,6,7) assms(12)[OF a_split net_step rec_in_net] by fastforce
             qed
           qed
         qed
@@ -232,7 +237,7 @@ proof
       using sys_trans by force
     obtain rcpt msg where a_split:"a = Send b rcpt msg"
       using 3 by blast
-    then have net':"net' = net \<union> {(b, rcpt, msg)}"
+    then have net':"net' = add_msg net b rcpt msg"
       using net_trans unfolding trans_of_def by auto
     then show ?thesis
     proof (cases "bridges (n,b)")
@@ -244,7 +249,7 @@ proof
         using bridge_node_trans a_split IoaState unfolding trans_of_def apply simp
         by (simp add: bridge.valid_ins)
       ultimately show ?thesis
-        using assms(12) a_split net' IoaState bridges' by presburger
+        using assms(13) a_split net' IoaState bridges' by presburger
     qed
   qed
 qed

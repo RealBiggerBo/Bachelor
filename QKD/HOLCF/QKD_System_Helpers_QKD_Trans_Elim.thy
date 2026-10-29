@@ -8,6 +8,7 @@ begin
 lemma qkd_invariant_step[consumes 5, case_names 
     GetKey_Gen
     GetKeyWithID_Reserve
+    Receive_Stutter
     Send]:
   assumes "reachable System.ioa s"
     and "P s"
@@ -17,20 +18,27 @@ lemma qkd_invariant_step[consumes 5, case_names
     and "\<And>pid gen sent sender target keyID keyVal.
          \<lbrakk>pid \<in> qkdID ` (\<Union>(bridgeIDs ` nodes));
           keyID \<notin> fst ` ((snd ` gen) \<union> sent);
-          a = Receive sender pid (GetKey pid target); net = net';
+          a = Receive sender pid (GetKey pid target); net' = rmv_msg net sender pid (GetKey pid target);
+          can_send net sender pid (GetKey pid target);
           qkd  = QKD gen sent;
           qkd' = QKD (gen \<union> {(sender, keyID, keyVal)}) sent\<rbrakk> \<Longrightarrow> P t"
     and "\<And>pid gen sent sender target keyID keyVal.
          \<lbrakk>pid \<in> qkdID ` (\<Union>(bridgeIDs ` nodes));
           (keyID, keyVal) \<in> sent;
-          a = Receive sender pid (GetKeyWithID pid target keyID); net = net';
+          a = Receive sender pid (GetKeyWithID pid target keyID); net' = rmv_msg net sender pid (GetKeyWithID pid target keyID);
+          can_send net sender pid (GetKeyWithID pid target keyID);
           qkd  = QKD gen sent;
           qkd' = QKD (gen \<union> {(sender, keyID, keyVal)}) (sent - {(keyID, keyVal)})\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>pid gen sent rcpt target keyID keyVal.
+    and "\<And>pid sender msg.
+         \<lbrakk>pid \<in> qkdID ` (\<Union>(bridgeIDs ` nodes));
+          a = Receive sender pid msg; net' = rmv_msg net sender pid msg;
+          can_send net sender pid msg;
+          qkd = qkd'\<rbrakk> \<Longrightarrow> P t"
+    and "\<And>pid gen sent rcpt keyID keyVal.
          \<lbrakk>pid \<in> qkdID ` (\<Union>(bridgeIDs ` nodes));
           (rcpt, keyID, keyVal) \<in> gen;
-          a = Send pid rcpt (KeyResponse keyID keyVal); 
-          net' = net \<union> {(pid, rcpt, KeyResponse keyID keyVal)};
+          a = Send pid rcpt (KeyResponse keyID keyVal);
+          net' = add_msg net pid rcpt (KeyResponse keyID keyVal);
           qkd  = QKD gen sent;
           qkd' = QKD (gen - {(rcpt, keyID, keyVal)}) (sent \<union> {(keyID, keyVal)})\<rbrakk> \<Longrightarrow> P t"
   shows "s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t \<longrightarrow> P t"
@@ -44,18 +52,19 @@ proof
   then show "P t"
   proof cases
     case 1
-    then obtain sender pid msg where 
-        a_split:"a = Receive sender pid msg" and 
-        valid_pid:"pid \<in> qkdID ` \<Union> (bridgeIDs ` nodes)"
+    then obtain sender pid msg where a_split:"a = Receive sender pid msg"
+                               and valid_pid:"pid \<in> qkdID ` (\<Union>(bridgeIDs ` nodes))"
       by blast
     then have "a \<in> act network.ioa"
       unfolding actions_def asig_projections asig_of_def by auto
     then have net_trans:"net \<midarrow>a\<midarrow>network.ioa\<rightarrow> net'"
       using sys_trans by force
-    then have net_eq:"net = net'"
-      using 1 unfolding trans_of_def by auto
     have qkd_trans:"qkd \<midarrow>a\<midarrow>qkd_layer.ioa\<rightarrow> qkd'"
-      using sys_trans assms(3) by force
+      using sys_trans assms(3) by force      
+    have net_step:"net' = rmv_msg net sender pid msg"
+      using net_trans a_split unfolding trans_of_def by auto
+    then have rec_in_net: "can_send net sender pid msg"
+      using net_trans a_split unfolding trans_of_def by simp
     then show ?thesis
     proof (cases qkd)
       case (QKD gen sent)
@@ -86,8 +95,7 @@ proof
                                      and qkd'_split: "qkd' = QKD (gen \<union> {(sender, keyID, keyVal)}) sent"
             by (cases rule: qkd_layer_step.cases; auto simp: a_split msg_split)
           show "P t"
-            using assms(6)[OF valid_pid fresh _ net_eq QKD qkd'_split]
-            by (simp add: a_split msg_split)
+            using assms(6)[OF valid_pid fresh _ net_step] a_split msg_split rec_in_net QKD qkd'_split by blast
         next
           case False
           have "\<not>qkd_layer_step (QKD gen sent) a qkd'"
@@ -102,7 +110,7 @@ proof
           then have "qkd = qkd'"
             using qkd_trans QKD unfolding trans_of_def qkd_layer.layer_trans by auto
           then show ?thesis
-            using net_eq assms(2,4,5) by meson
+            using assms(8)[OF valid_pid a_split net_step rec_in_net] by blast
         qed
       next
         case False
@@ -133,8 +141,7 @@ proof
                                 and qkd'_split: "qkd' = QKD (gen \<union> {(sender, keyID, keyVal)}) (sent - {(keyID, keyVal)})"
               by (cases rule: qkd_layer_step.cases; auto simp: a_split msg_split)
             show "P t"
-              using assms(7)[OF valid_pid valid_keyVal _ net_eq QKD qkd'_split]
-              by (simp add: a_split msg_split)
+              using assms(7)[OF valid_pid valid_keyVal _ net_step _ QKD qkd'_split] rec_in_net a_split msg_split by blast
           next
             case False
             have "\<not>qkd_layer_step (QKD gen sent) a qkd'"
@@ -149,7 +156,7 @@ proof
             then have "qkd = qkd'"
               using qkd_trans QKD unfolding trans_of_def qkd_layer.layer_trans by auto
             then show ?thesis
-              using net_eq assms(2,4,5) by meson
+              using assms(8)[OF valid_pid a_split net_step rec_in_net] by blast
           qed
         next
           case False
@@ -163,7 +170,7 @@ proof
           then have "qkd = qkd'"
             using qkd_trans QKD unfolding trans_of_def qkd_layer.layer_trans by auto
           then show ?thesis
-            using net_eq assms(2,4,5) by meson
+            using assms(8)[OF valid_pid a_split net_step rec_in_net] by blast
         qed
       qed
     qed
@@ -177,7 +184,7 @@ proof
       unfolding actions_def asig_projections asig_of_def by auto
     then have net_trans:"net \<midarrow>a\<midarrow>network.ioa\<rightarrow> net'"
       using sys_trans by force
-    then have net':"net' = net \<union> {(pid, rcpt, msg)}"
+    then have net':"net' = add_msg net pid rcpt msg"
       using a_split unfolding trans_of_def by auto
     have qkd_trans:"qkd \<midarrow>a\<midarrow>qkd_layer.ioa\<rightarrow> qkd'"
       using sys_trans assms(3) by force
@@ -202,7 +209,7 @@ proof
           unfolding trans_of_def qkd_layer.layer_trans apply auto
           using qkd_layer_step.cases by force
         show ?thesis
-          using assms(8)[OF valid_pid in_gen _ _ QKD qkd'] a_split msg_split net' by fast
+          using assms(9)[OF valid_pid in_gen _ _ QKD qkd'] a_split msg_split net' by fast
       qed
     qed
   qed

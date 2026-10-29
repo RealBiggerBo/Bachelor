@@ -19,45 +19,30 @@ next
   case (2 s t a)
   then show ?case
   proof (induction rule: System_step_induct)
-    case (App_Master_RequestKey apps kmes bridges qkd net apps' n sae kme keys msgs)
-    then have "(\<forall>na master oSae kme store msgs. na \<in> nodes - {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) unfolding app_kme_field_valid_def by simp
-    moreover have "(\<forall>na master oSae kme store msgs. na \<in> {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) App_Master_RequestKey(2-4,7,8) unfolding app_kme_field_valid_def by fastforce
-    ultimately show ?case
-      unfolding app_kme_field_valid_def by blast
+    case (App_Master_RequestKey apps kmes bridges qkd net apps' net' n sae kme keys msgs)
+    then show ?case
+      using 2(2)
+      unfolding app_kme_field_valid_def apply simp by fast
   next
-    case (App_Master_KeyResponse apps kmes bridges qkd net apps' n sae kme keys msgs keyID keyVal)
-    then have "(\<forall>na master oSae kme store msgs. na \<in> nodes - {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) unfolding app_kme_field_valid_def by simp
-    moreover have "(\<forall>na master oSae kme store msgs. na \<in> {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) App_Master_KeyResponse(2-4,8,9) unfolding app_kme_field_valid_def by fastforce
-    ultimately show ?case
-      unfolding app_kme_field_valid_def by blast
+    case (App_Master_KeyResponse apps kmes bridges qkd net apps' net' n sae kme keys msgs keyID keyVal)
+    then show ?case
+      using 2(2)
+      unfolding app_kme_field_valid_def apply simp by fast
   next
-    case (App_Slave_AppIDRelay apps kmes bridges qkd net apps' n sae kme keys msgs sender keyID)
-    then have "(\<forall>na master oSae kme store msgs. na \<in> nodes - {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) unfolding app_kme_field_valid_def by simp
-    moreover have "(\<forall>na master oSae kme store msgs. na \<in> {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) App_Slave_AppIDRelay(2-4,8,9) unfolding app_kme_field_valid_def by fastforce
-    ultimately show ?case
-      unfolding app_kme_field_valid_def by blast
+    case (App_Slave_AppIDRelay apps kmes bridges qkd net apps' net'  sae kme keys msgs sender keyID)
+    then show ?case
+      using 2(2)
+      unfolding app_kme_field_valid_def apply simp by fast
   next
-    case (App_Slave_KeyResponse apps kmes bridges qkd net apps' n sae kme keys msgs keyID keyVal)
-    then have "(\<forall>na master oSae kme store msgs. na \<in> nodes - {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) unfolding app_kme_field_valid_def by simp
-    moreover have "(\<forall>na master oSae kme store msgs. na \<in> {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) App_Slave_KeyResponse(2-4,8,9) unfolding app_kme_field_valid_def by fastforce
-    ultimately show ?case
-      unfolding app_kme_field_valid_def by blast
+    case (App_Slave_KeyResponse apps kmes bridges qkd net apps' net' n sae kme keys msgs keyID keyVal)
+    then show ?case
+      using 2(2)
+      unfolding app_kme_field_valid_def apply simp by fast
   next
     case (App_Send apps kmes bridges qkd net apps' net' n msgs rcpt msg appState)
-    then have "(\<forall>na master oSae kme store msgs. na \<in> nodes - {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) unfolding app_kme_field_valid_def by simp
-    moreover have "(\<forall>na master oSae kme store msgs. na \<in> {n} \<and> app t na = IoaState (App master oSae kme store) msgs \<longrightarrow> kme \<in> kmeID ` nodes)"
-      using 2(2) App_Send(2-4,9,10) unfolding app_kme_field_valid_def by fastforce
-    ultimately show ?case
-      unfolding app_kme_field_valid_def by blast
+    then show ?case
+      using 2(2)
+      unfolding app_kme_field_valid_def apply simp by fast
   qed
   (use 2(2) in \<open>simp_all add: app_kme_field_valid_def\<close>)
 qed

@@ -21,12 +21,12 @@ lemma network_invariant_step[consumes 9, case_names
          \<lbrakk>a = Receive sender rcpt msg;
           all = (appID ` nodes) \<union> (kmeID ` nodes) \<union> \<Union>(bridgeIDs ` nodes) \<union> qkdID ` (\<Union>(bridgeIDs ` nodes));
           rcpt \<notin> all;
-          net = net'\<rbrakk> \<Longrightarrow> P t"
+          net' = rmv_msg net sender rcpt msg\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender rcpt msg all.
          \<lbrakk>a = Send sender rcpt msg;
           all = (appID ` nodes) \<union> (kmeID ` nodes) \<union> \<Union>(bridgeIDs ` nodes) \<union> qkdID ` (\<Union>(bridgeIDs ` nodes));
           sender \<notin> all;
-          net' = net \<union> {(sender, rcpt, msg)}\<rbrakk> \<Longrightarrow> P t"
+          net' = add_msg net sender rcpt msg\<rbrakk> \<Longrightarrow> P t"
   shows "s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t \<longrightarrow> P t"
 proof
   let ?all = "(appID ` nodes) \<union> (kmeID ` nodes) \<union> \<Union>(bridgeIDs ` nodes) \<union> qkdID ` (\<Union>(bridgeIDs ` nodes))"
@@ -46,7 +46,7 @@ proof
     then obtain sender rcpt msg where "a = Send sender rcpt msg"
                                 and "sender \<notin> ?all"
       by metis
-    moreover have "net' = net \<union> {(sender, rcpt, msg)}"
+    moreover have "net' = add_msg net sender rcpt msg"
       using trans_net calculation(1) unfolding trans_of_def by force
     ultimately show ?thesis
       using assms(11) by blast
@@ -55,7 +55,7 @@ proof
     then obtain sender rcpt msg where "a = Receive sender rcpt msg"
                                 and "rcpt \<notin> ?all"
       by metis
-    moreover have "net' = net"
+    moreover have "net' = rmv_msg net sender rcpt msg"
       using trans_net calculation(1) unfolding trans_of_def by force
     ultimately show ?thesis
       using assms(10) by blast
