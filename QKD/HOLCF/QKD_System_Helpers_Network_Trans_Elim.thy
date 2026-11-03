@@ -21,6 +21,7 @@ lemma network_invariant_step[consumes 9, case_names
          \<lbrakk>a = Receive sender rcpt msg;
           all = (appID ` nodes) \<union> (kmeID ` nodes) \<union> \<Union>(bridgeIDs ` nodes) \<union> qkdID ` (\<Union>(bridgeIDs ` nodes));
           rcpt \<notin> all;
+          can_send net sender rcpt msg;
           net' = rmv_msg net sender rcpt msg\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender rcpt msg all.
          \<lbrakk>a = Send sender rcpt msg;
@@ -55,6 +56,8 @@ proof
     then obtain sender rcpt msg where "a = Receive sender rcpt msg"
                                 and "rcpt \<notin> ?all"
       by metis
+    moreover have "can_send net sender rcpt msg"
+      using trans_net calculation(1) unfolding trans_of_def by auto
     moreover have "net' = rmv_msg net sender rcpt msg"
       using trans_net calculation(1) unfolding trans_of_def by force
     ultimately show ?thesis

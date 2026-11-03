@@ -403,6 +403,7 @@ assumes "reachable System.ioa s"
           a \<in> act network.ioa; a \<notin> act apps.ioa; a \<notin> act kmes.ioa; a \<notin> act bridges.ioa; a \<notin> act qkd_layer.ioa;
           a = Receive sender rcpt msg;
           all = (appID ` nodes) \<union> (kmeID ` nodes) \<union> \<Union>(bridgeIDs ` nodes) \<union> qkdID ` (\<Union>(bridgeIDs ` nodes));
+          can_send net sender rcpt msg;
           net' = rmv_msg net sender rcpt msg;
           rcpt \<notin> all\<rbrakk> \<Longrightarrow> P t"
     and "\<And>apps kmes bridges qkd net net' sender rcpt msg all.

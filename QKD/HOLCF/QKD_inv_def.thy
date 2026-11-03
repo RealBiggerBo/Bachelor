@@ -71,8 +71,9 @@ definition bridge_kme_msg_sent where
       network_has_msg (network s) s1 r1 (KMPost otherKme keyID keyVal)
       \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
 
+(*Requires proof of: qkd field of bridge is valid*)
 definition bridge_kme_buffer_sent where
-  \<open>bridge_kme_buffer_sent nodes kmeID bridgeIDs qkdID s \<longleftrightarrow>
+  \<open>bridge_kme_buffer_sent nodes bridgeIDs s \<longleftrightarrow>
     (\<forall>n b state msgs otherKme rcpt keyID keyVal.
       n \<in> nodes \<and>
       b \<in> bridgeIDs n \<and>
