@@ -1,6 +1,7 @@
 theory QKD_inv_bridge_kme_buffer_sent
   imports QKD_inv_def QKD_System_Def QKD_System_Helpers
           QKD_inv_qkd_bridge_msg_sent
+          QKD_inv_bridge_qkd_field_valid
 begin
 
 context QKD_Network
@@ -22,7 +23,8 @@ next
   proof (induction rule: System_step_induct)
     case (Bridge_Master_KeyResponse apps kmes bridges qkds net bridges' net' n b slaveBridge otherKme qkd kme msgs keyID keyVal)
     have "qkd \<in> qkdID ` \<Union> (bridgeIDs ` nodes)"
-      sorry
+      using Bridge_Master_KeyResponse(2-11) inv_bridge_qkd_field_valid 2(1) 
+      unfolding bridge_qkd_field_valid_def invariant_def by fastforce
     moreover have "network_has_msg s qkd b (KeyResponse keyID keyVal)"
       using Bridge_Master_KeyResponse(2,9) by (metis list.set_sel(1) split_pairs2)
     ultimately have "qkd_has_key s keyID keyVal"
@@ -35,8 +37,8 @@ next
       unfolding bridge_kme_buffer_sent_def by auto
   next
     case (Bridge_Slave_KeyResponse apps kmes bridges qkds net bridges' net' n b masterBridge otherKme qkd kme msgs keyID keyVal)
-    have "qkd \<in> qkdID ` \<Union> (bridgeIDs ` nodes)"
-      sorry
+    then have "qkd \<in> qkdID ` \<Union> (bridgeIDs ` nodes)"
+      using inv_bridge_qkd_field_valid 2(1) unfolding invariant_def bridge_qkd_field_valid_def apply simp by fast
     moreover have "network_has_msg s qkd b (KeyResponse keyID keyVal)"
       using Bridge_Slave_KeyResponse(2,9) by (metis list.set_sel(1) split_pairs2)
     ultimately have "qkd_has_key s keyID keyVal"

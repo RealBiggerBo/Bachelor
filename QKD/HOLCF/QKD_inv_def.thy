@@ -63,15 +63,23 @@ definition kme_app_msg_sent where
       network_has_msg (network s) s1 r1 (KeyResponse keyID keyVal)
       \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
 
+definition kme_app_buffer_sent where
+  \<open>kme_app_buffer_sent nodes kmeID s \<longleftrightarrow>
+    (\<forall>n state msgs rcpt keyID keyVal.
+      n \<in> nodes \<and>
+      kme s n = IoaState state msgs \<and>
+      (kmeID n, rcpt, KeyResponse keyID keyVal) \<in> msgs
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+(*Proofed till here*)
 definition bridge_kme_msg_sent where
   \<open>bridge_kme_msg_sent nodes kmeID bridgeIDs s \<longleftrightarrow>
     (\<forall>s1 r1 otherKme keyID keyVal.
       s1 \<in> \<Union>(bridgeIDs ` nodes) \<and>
       r1 \<in> kmeID ` nodes \<and>
-      network_has_msg (network s) s1 r1 (KMPost otherKme keyID keyVal)
+      network_has_msg s s1 r1 (KMPost otherKme keyID keyVal)
       \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
 
-(*Requires proof of: qkd field of bridge is valid*)
 definition bridge_kme_buffer_sent where
   \<open>bridge_kme_buffer_sent nodes bridgeIDs s \<longleftrightarrow>
     (\<forall>n b state msgs otherKme rcpt keyID keyVal.
@@ -80,6 +88,14 @@ definition bridge_kme_buffer_sent where
       bridge s n b = IoaState state msgs \<and>
       (b, rcpt, KMPost otherKme keyID keyVal) \<in> msgs
       \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition bridge_qkd_field_valid where
+  \<open>bridge_qkd_field_valid nodes bridgeIDs qkdID s \<longleftrightarrow>
+    (\<forall>n b isMaster masterBridge otherKme qkd kme msgs.
+      n \<in> nodes \<and>
+      b \<in> bridgeIDs n \<and>
+      bridge s n b = IoaState (Bridge isMaster masterBridge otherKme qkd kme) msgs
+      \<longrightarrow> qkd \<in> qkdID ` \<Union> (bridgeIDs ` nodes))\<close>
 
 definition qkd_bridge_msg_sent where
   \<open>qkd_bridge_msg_sent nodes bridgeIDs qkdID s \<longleftrightarrow>
