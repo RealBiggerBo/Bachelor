@@ -1,6 +1,6 @@
 theory QKD_inv_kme_app_buffer_sent
   imports QKD_inv_def QKD_System_Def QKD_System_Helpers
-          QKD_inv_bridge_kme_msg_sent
+          QKD_inv_kme_store_key_sent
 begin
 
 context QKD_Network
@@ -21,6 +21,13 @@ next
   then show ?case
   proof (induction rule: System_step_induct)
     case (Kme_GetKey_Reserved apps kmes bridges qkd net kmes' net' n sender store keyID val conf res saeID route saeToKme bridgeIDs msgs)
+    then have "kme_store_key_sent nodes kmeID s"
+      using inv_kme_store_key_sent 2(1) unfolding invariant_def by fast
+    then have "qkd_has_key s keyID val"
+      using Kme_GetKey_Reserved(2,4,9,10) kme_has_key.simps(2) unfolding kme_store_key_sent_def
+      by (metis (no_types, lifting) fst_conv snd_conv)
+    moreover have "\<forall>keyID'. keyID \<noteq> keyID' \<longrightarrow> qkd_has_key t keyID' val"
+      sorry
     then show ?case 
       sorry
   next
