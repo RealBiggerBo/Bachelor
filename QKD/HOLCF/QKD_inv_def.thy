@@ -23,6 +23,12 @@ fun kme_has_key where
   \<open>kme_has_key (IoaState (KmeWaitHop _ _ _ _ _ store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
   \<open>kme_has_key (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close>
 
+fun kme_get_bridgeIDs_field where
+  \<open>kme_get_bridgeIDs_field (IoaState (Kme _ _ _ bridgeIDs) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitReserve _ _ _ _ _ bridgeIDs) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitHop _ _ _ _ _ _ _ _ bridgeIDs) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ _ _ _ bridgeIDs) _) = bridgeIDs\<close>
+
 abbreviation qkd_has_key where
   \<open>qkd_has_key s keyID keyVal \<equiv> \<exists>gen sent. (qkd_layer s = QKD gen sent) \<and> (keyID, keyVal) \<in> (snd ` gen \<union> sent)\<close>
 
@@ -72,6 +78,20 @@ definition kme_app_buffer_sent where
       \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
 
 (*Proofed till here*)
+definition kme_store_key_sent where
+  \<open>kme_store_key_sent nodes kmeID s \<longleftrightarrow>
+    (\<forall>n keyID keyVal.
+      n \<in> nodes \<and>
+      kme_has_key (kme s n) keyID keyVal
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition kme_bridgeIDs_field_valid where
+  \<open>kme_bridgeIDs_field_valid nodes bridgeIDs s \<longleftrightarrow>
+    (\<forall>n bridgeIDs'.
+      n \<in> nodes \<and>
+      bridgeIDs' = kme_get_bridgeIDs_field (kme s n)
+      \<longrightarrow> bridgeIDs' = bridgeIDs n)\<close>
+
 definition bridge_kme_msg_sent where
   \<open>bridge_kme_msg_sent nodes kmeID bridgeIDs s \<longleftrightarrow>
     (\<forall>s1 r1 otherKme keyID keyVal.
