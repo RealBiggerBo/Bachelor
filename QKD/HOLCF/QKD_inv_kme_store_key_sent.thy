@@ -29,7 +29,7 @@ next
   case (2 s t a)
   then show ?case
   proof (induction rule: System_step_induct)
-    case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs' msgs)
+    case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs' kmeIDs msgs)
     have "network_has_msg s sender (kmeID n) (KMPost otherKme keyID keyVal)"
       using Kme_KMPost_NewKeyVal(2,8) by (metis list.set_sel(1) snd_conv)
     moreover have "sender \<in> \<Union>(bridgeIDs ` nodes)"
@@ -48,16 +48,16 @@ next
     ultimately show ?case
       unfolding kme_store_key_sent_def by blast
   next
-    case (Kme_KMPut_Confirm apps kmes bridges qkd net kmes' net' n sender otherKme keyID store route saeToKme bridgeIDs msgs)
+    case (Kme_KMPut_Confirm apps kmes bridges qkd net kmes' net' n sender otherKme keyID store route saeToKme bridgeIDs kmeIDs msgs)
     have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longleftrightarrow> qkd_has_key t keyID keyVal"
       using Kme_KMPut_Confirm(2,3) by force
     moreover have "\<And>keyID keyVal n. n \<in> nodes 
                       \<longrightarrow> (kme_has_key (kme s n) keyID keyVal \<longleftrightarrow> kme_has_key (kme t n) keyID keyVal)"
-      using Kme_KMPut_Confirm(2,3,9,10) apply simp by (auto split: option.splits)
+      using Kme_KMPut_Confirm(2,3,10,11) apply simp by (auto split: option.splits)
     ultimately show ?case 
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_GetKey apps kmes bridges qkd net kmes' net' n sender host slaveSae store route saeToKme bridgeIDs msgs keyID val)
+    case (Kme_GetKey apps kmes bridges qkd net kmes' net' n sender host slaveSae store route saeToKme bridgeIDs kmeIDs msgs keyID val)
     have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longleftrightarrow> qkd_has_key t keyID keyVal"
       using Kme_GetKey(2,3) by force
     moreover have "\<And>keyID keyVal n. n \<in> nodes 
@@ -66,7 +66,7 @@ next
     ultimately show ?case 
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_KMPut_Reserve apps kmes bridges qkd net kmes' net' n sender otherKme slaveSae store route saeToKme bridgeIDs msgs keyID)
+    case (Kme_KMPut_Reserve apps kmes bridges qkd net kmes' net' n sender otherKme slaveSae store route saeToKme bridgeIDs kmeIDs msgs keyID)
     have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longleftrightarrow> qkd_has_key t keyID keyVal"
       using Kme_KMPut_Reserve(2,3) by force
     moreover have "\<And>keyID keyVal n. n \<in> nodes 
@@ -75,7 +75,7 @@ next
     ultimately show ?case 
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_GetKey_Reserved apps kmes bridges qkd net kmes' net' n sender store keyID val conf res saeID route saeToKme bridgeIDs msgs)
+    case (Kme_GetKey_Reserved apps kmes bridges qkd net kmes' net' n sender store keyID val conf res saeID route saeToKme bridgeIDs kmeIDs msgs)
     have "\<And>keyID keyVal n. kme_has_key (kme t n) keyID keyVal \<longrightarrow> kme_has_key (kme s n) keyID keyVal"
       using Kme_GetKey_Reserved(2,3,8,10,11) by auto
     moreover have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longrightarrow> qkd_has_key t keyID keyVal"
@@ -83,7 +83,7 @@ next
     ultimately show ?case
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_GetKeyWithID_IDFound apps kmes bridges qkd net kmes' net' n sender host store keyID val saeToKme bridgeIDs masterSae route msgs)
+    case (Kme_GetKeyWithID_IDFound apps kmes bridges qkd net kmes' net' n sender host store keyID val saeToKme bridgeIDs kmeIDs masterSae route msgs)
     have "\<And>keyID keyVal n. kme_has_key (kme t n) keyID keyVal \<longrightarrow> kme_has_key (kme s n) keyID keyVal"
       using Kme_GetKeyWithID_IDFound(2,3,8,10,11) by auto
     moreover have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longrightarrow> qkd_has_key t keyID keyVal"
@@ -91,7 +91,7 @@ next
     ultimately show ?case
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_GetKeyWithID_IDNotFound apps kmes bridges qkd net kmes' net' n sender host masterSae keyID store route nextKme keyID2 val2 saeToKme bridgeIDs msgs)
+    case (Kme_GetKeyWithID_IDNotFound apps kmes bridges qkd net kmes' net' n sender host masterSae keyID store route nextKme keyID2 val2 saeToKme bridgeIDs kmeIDs msgs)
     have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longleftrightarrow> qkd_has_key t keyID keyVal"
       using Kme_GetKeyWithID_IDNotFound(2,3) by force
     moreover have "\<And>keyID keyVal n. n \<in> nodes 
@@ -100,7 +100,7 @@ next
     ultimately show ?case 
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_GetKeyWithID_IDNotFound_Reserved apps kmes bridges qkd net kmes' net' n nextKme masterSae slaveSae keyID keyID2 store route saeToKme bridgeIDs msgs)
+    case (Kme_GetKeyWithID_IDNotFound_Reserved apps kmes bridges qkd net kmes' net' n nextKme masterSae slaveSae keyID keyID2 store route saeToKme bridgeIDs kmeIDs msgs)
     have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longleftrightarrow> qkd_has_key t keyID keyVal"
       using Kme_GetKeyWithID_IDNotFound_Reserved(2,3) by force
     moreover have "\<And>keyID keyVal n. n \<in> nodes 
@@ -109,7 +109,7 @@ next
     ultimately show ?case 
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_KMGetKeyWithID_IDFound apps kmes bridges qkd net kmes' net' n nextKme masterSae keyID keyID2 slaveSae store route saeToKme bridgeIDs msgs sender val val2)
+    case (Kme_KMGetKeyWithID_IDFound apps kmes bridges qkd net kmes' net' n masterSae keyID keyID2 slaveSae store route saeToKme bridgeIDs kmeIDs sender msgs val val2)
     have "\<And>keyID keyVal n. kme_has_key (kme t n) keyID keyVal \<longrightarrow> kme_has_key (kme s n) keyID keyVal"
       using Kme_KMGetKeyWithID_IDFound(2,3,8,11,12) by auto
     moreover have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longrightarrow> qkd_has_key t keyID keyVal"
@@ -117,7 +117,7 @@ next
     ultimately show ?case
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_KMGetKeyWithID_IDNotFound apps kmes bridges qkd net kmes' net' n nextKme masterSae keyID keyID2 slaveSae store val2 sender route keyID3 val3 saeToKme bridgeIDs msgs)
+    case (Kme_KMGetKeyWithID_IDNotFound apps kmes bridges qkd net kmes' net' n nextKme masterSae keyID keyID2 slaveSae store val2 sender route keyID3 val3 saeToKme bridgeIDs kmeIDs msgs)
     have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longleftrightarrow> qkd_has_key t keyID keyVal"
       using Kme_KMGetKeyWithID_IDNotFound(2,3) by force
     moreover have "\<And>keyID keyVal n. n \<in> nodes 
@@ -126,7 +126,7 @@ next
     ultimately show ?case 
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_KMGetKeyWithID_IDNotFound_Reserved apps kmes bridges qkd net kmes' net' n nextKme prevKme masterSae keyID keyID2 slaveSae store route keyID3 saeToKme bridgeIDs msgs)
+    case (Kme_KMGetKeyWithID_IDNotFound_Reserved apps kmes bridges qkd net kmes' net' n nextKme prevKme masterSae keyID keyID2 slaveSae store route keyID3 saeToKme bridgeIDs kmeIDs msgs)
     have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longleftrightarrow> qkd_has_key t keyID keyVal"
       using Kme_KMGetKeyWithID_IDNotFound_Reserved(2,3) by force
     moreover have "\<And>keyID keyVal n. n \<in> nodes 
@@ -135,7 +135,7 @@ next
     ultimately show ?case 
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_KMGetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme prevKme keyID keyVal' store keyID2 val2 sender keyID3 val3 masterSae route saeToKme bridgeIDs msgs slaveSae)
+    case (Kme_KMGetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme prevKme keyID keyVal' store keyID2 val2 keyID3 val3 masterSae route saeToKme bridgeIDs kmeIDs msgs slaveSae)
     have "\<And>keyID keyVal n. kme_has_key (kme t n) keyID keyVal \<longrightarrow> kme_has_key (kme s n) keyID keyVal"
       using Kme_KMGetKeyWithID_IDNotFound_Return(2,3,8,11,12) by auto
     moreover have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longrightarrow> qkd_has_key t keyID keyVal"
@@ -143,7 +143,7 @@ next
     ultimately show ?case
       using 2(2) unfolding kme_store_key_sent_def by meson
   next
-    case (Kme_GetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme keyID keyVal' store keyID2 val2 masterSae sender route saeToKme bridgeIDs msgs)
+    case (Kme_GetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme keyID keyVal' store keyID2 val2 masterSae sender route saeToKme bridgeIDs kmeIDs msgs)
     have "\<And>keyID keyVal n. kme_has_key (kme t n) keyID keyVal \<longrightarrow> kme_has_key (kme s n) keyID keyVal"
       using Kme_GetKeyWithID_IDNotFound_Return(2,3,7,9,10,11) by auto
     moreover have "\<And>keyID keyVal. qkd_has_key s keyID keyVal \<longrightarrow> qkd_has_key t keyID keyVal"

@@ -18,16 +18,22 @@ abbreviation network where
   \<open>network s \<equiv> (snd (snd (snd (snd s))))\<close>
 
 fun kme_has_key where
-  \<open>kme_has_key (IoaState (Kme store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
-  \<open>kme_has_key (IoaState (KmeWaitReserve _ _ store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
-  \<open>kme_has_key (IoaState (KmeWaitHop _ _ _ _ _ store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
-  \<open>kme_has_key (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ store _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close>
+  \<open>kme_has_key (IoaState (Kme store _ _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitReserve _ _ store _ _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitHop _ _ _ _ _ store _ _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ store _ _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close>
+
+fun kme_get_store where
+  \<open>kme_get_store (IoaState (Kme store _ _ _ _) _) = store\<close> |
+  \<open>kme_get_store (IoaState (KmeWaitReserve _ _ store _ _ _ _) _) = store\<close> |
+  \<open>kme_get_store (IoaState (KmeWaitHop _ _ _ _ _ store _ _ _ _) _) = store\<close> |
+  \<open>kme_get_store (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ store _ _ _ _) _) = store\<close>
 
 fun kme_get_bridgeIDs_field where
-  \<open>kme_get_bridgeIDs_field (IoaState (Kme _ _ _ bridgeIDs) _) = bridgeIDs\<close> |
-  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitReserve _ _ _ _ _ bridgeIDs) _) = bridgeIDs\<close> |
-  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitHop _ _ _ _ _ _ _ _ bridgeIDs) _) = bridgeIDs\<close> |
-  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ _ _ _ bridgeIDs) _) = bridgeIDs\<close>
+  \<open>kme_get_bridgeIDs_field (IoaState (Kme _ _ _ bridgeIDs _) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitReserve _ _ _ _ _ bridgeIDs _) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitHop _ _ _ _ _ _ _ _ bridgeIDs _) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ _ _ _ bridgeIDs _) _) = bridgeIDs\<close>
 
 abbreviation qkd_has_key where
   \<open>qkd_has_key s keyID keyVal \<equiv> \<exists>gen sent. (qkd_layer s = QKD gen sent) \<and> (keyID, keyVal) \<in> (snd ` gen \<union> sent)\<close>
@@ -70,12 +76,19 @@ definition kme_app_msg_sent where
       \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
 
 definition kme_app_buffer_sent where
-  \<open>kme_app_buffer_sent nodes kmeID s \<longleftrightarrow>
-    (\<forall>n state msgs rcpt keyID keyVal.
+  \<open>kme_app_buffer_sent nodes appID kmeID s \<longleftrightarrow>
+    (\<forall>n state msgs keyID keyVal.
       n \<in> nodes \<and>
       kme s n = IoaState state msgs \<and>
-      (kmeID n, rcpt, KeyResponse keyID keyVal) \<in> msgs
+      (kmeID n, appID n, KeyResponse keyID keyVal) \<in> msgs
       \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition kme_store_partnerField_valid where
+  \<open>kme_store_partnerField_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>n keyID keyVal partner conf res.
+      n \<in> nodes \<and>
+      kme_get_store (kme s n) keyID = Some (Some keyVal, partner, conf, res)
+      \<longrightarrow> partner \<in> kmeID ` nodes)\<close>
 
 (*Proofed till here*)
 definition kme_store_key_sent where

@@ -7,7 +7,7 @@ context QKD_Network
 begin
 
 lemma inv_kme_app_buffer_sent:
-  shows "invariant System.ioa (kme_app_buffer_sent nodes kmeID)"
+  shows "invariant System.ioa (kme_app_buffer_sent nodes appID kmeID)"
 proof (induction rule: invariantI)
   case (1 s)
   then show ?case
@@ -26,25 +26,38 @@ next
     then have "qkd_has_key s keyID val"
       using Kme_GetKey_Reserved(2,4,9,10) kme_has_key.simps(2) unfolding kme_store_key_sent_def
       by (metis (no_types, lifting) fst_conv snd_conv)
-    moreover have "\<forall>keyID'. keyID \<noteq> keyID' \<longrightarrow> qkd_has_key t keyID' val"
-      sorry
-    then show ?case 
-      sorry
+    then show ?case
+      using 2(2) Kme_GetKey_Reserved(2,3,4,10,11)
+      unfolding kme_app_buffer_sent_def by simp
   next
     case (Kme_GetKeyWithID_IDFound apps kmes bridges qkd net kmes' net' n sender host store keyID val saeToKme bridgeIDs masterSae route msgs)
-    then show ?case 
-      sorry
+    then have "kme_store_key_sent nodes kmeID s"
+      using inv_kme_store_key_sent 2(1) unfolding invariant_def by fast
+    then have "qkd_has_key t keyID val"
+      using Kme_GetKeyWithID_IDFound(2,3,4,9,10) kme_has_key.simps(1) unfolding kme_store_key_sent_def
+      by (metis (no_types, opaque_lifting) fst_conv snd_conv)
+    then show ?case
+      using 2(2) Kme_GetKeyWithID_IDFound(2,3,4,10,11)
+      unfolding kme_app_buffer_sent_def by simp
   next
-    case (Kme_KMGetKeyWithID_IDFound apps kmes bridges qkd net kmes' net' n nextKme masterSae keyID keyID2 slaveSae store route saeToKme bridgeIDs msgs sender val val2)
-    then show ?case 
+    case (Kme_KMGetKeyWithID_IDFound apps kmes bridges qkd net kmes' net' n masterSae keyID keyID2 slaveSae store route saeToKme bridgeIDs kmeIDs msgs sender val val2)
+    have "kme_store_partnerField_valid nodes kmeID s"
       sorry
+    then have "sender \<noteq> appID n"
+      using Kme_KMGetKeyWithID_IDFound(2,4,10,11) kme_get_store.simps disjoint_ids unfolding kme_store_partnerField_valid_def disjnt_def by fastforce
+    then show ?case
+      using 2(2) Kme_KMGetKeyWithID_IDFound(2,3,4,11,12)
+      unfolding kme_app_buffer_sent_def by simp
   next
-    case (Kme_KMGetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme prevKme keyID keyVal' store keyID2 val2 sender keyID3 val3 masterSae route saeToKme bridgeIDs msgs slaveSae)
-    then show ?case 
+    case (Kme_KMGetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme prevKme keyID keyVal' store keyID2 val2 keyID3 val3 masterSae route saeToKme bridgeIDs kmeIDs msgs slaveSae)
+    then have "prevKme \<noteq> appID n"
       sorry
+    then show ?case
+      using 2(2) Kme_KMGetKeyWithID_IDNotFound_Return(2,3,4,11,12)
+      unfolding kme_app_buffer_sent_def by simp
   next
-    case (Kme_GetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme keyID keyVal' store keyID2 val2 masterSae sender route saeToKme bridgeIDs msgs)
-    then show ?case 
+    case (Kme_GetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme keyID keyVal' store keyID2 val2 masterSae sender route saeToKme bridgeIDs kmeIDs msgs)
+    then show ?case
       sorry
   next
     case (Qkd_GetKeyWithID_Reserve apps kmes bridges qkd net qkd' net' pid gen sent sender target keyID keyVal)

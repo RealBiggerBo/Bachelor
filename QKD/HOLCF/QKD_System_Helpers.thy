@@ -14,7 +14,7 @@ lemma starts_of_System [elim]:
   obtains apps kmes bridges qkd net where
     "s = (apps, kmes, bridges, qkd, net)"
     "\<And>n. n \<in> nodes \<Longrightarrow> apps n = IoaState (App (isMaster (appID n)) (appOtherSae n) (kmeID n) {}) {}"
-    "\<And>n. n \<in> nodes \<Longrightarrow> kmes n = IoaState (Kme (\<lambda>id. None) (route n) saeToKme (bridgeIDs n)) {}"
+    "\<And>n. n \<in> nodes \<Longrightarrow> kmes n = IoaState (Kme (\<lambda>id. None) (route n) saeToKme (bridgeIDs n) (kmeID ` nodes)) {}"
     "\<And>n i. (n, i) \<in> Sigma nodes bridgeIDs \<Longrightarrow> bridges (n,i) = IoaState (Bridge (isMaster i) (bridgeOtherBridge i) (bridgeOtherKme i) (qkdID i) (kmeID n)) {}"
     "qkd = QKD {} {}"
     "net = (\<lambda>set. [])"
@@ -28,7 +28,7 @@ proof -
     unfolding starts_of_def by simp
   moreover have "kmes \<in> starts_of kmes.ioa"
     using assms split unfolding starts_of_par by fastforce
-  then have "\<And>n. n \<in> nodes \<Longrightarrow> kmes n = IoaState (Kme (\<lambda>id. None) (route n) saeToKme (bridgeIDs n)) {}"
+  then have "\<And>n. n \<in> nodes \<Longrightarrow> kmes n = IoaState (Kme (\<lambda>id. None) (route n) saeToKme (bridgeIDs n) (kmeID ` nodes)) {}"
     unfolding starts_of_set_ioa
     unfolding starts_of_def by simp
   moreover have "bridges \<in> starts_of bridges.ioa"
@@ -143,28 +143,29 @@ assumes "reachable System.ioa s"
           apps n = IoaState appState msgs;
           apps' = apps(n := IoaState appState (msgs - {(appID n, rcpt, msg)}))\<rbrakk> \<Longrightarrow> P t"
 \<comment> \<open>================ KME CASES ================\<close>
-    and "\<And>apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs kmeIDs msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive sender (kmeID n) (KMPost otherKme keyID keyVal);
           net' = rmv_msg net sender (kmeID n) (KMPost otherKme keyID keyVal);
           can_send net sender (kmeID n) (KMPost otherKme keyID keyVal);
           sender \<in> bridgeIDs;
-          kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (Kme (keyStore_add store keyID (Some keyVal) otherKme) route saeToKme bridgeIDs) 
+          kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_add store keyID (Some keyVal) otherKme) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, sender, OK), (kmeID n, otherKme, KMPut (kmeID n) keyID None)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n sender otherKme keyID store route saeToKme bridgeIDs msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n sender otherKme keyID store route saeToKme bridgeIDs kmeIDs msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive sender (kmeID n) (KMPut otherKme keyID None);
           net' = rmv_msg net sender (kmeID n) (KMPut otherKme keyID None);
           can_send net sender (kmeID n) (KMPut otherKme keyID None);
-          kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs)
+          sender \<in> kmeIDs;
+          kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, sender, OK)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n sender host slaveSae store route saeToKme bridgeIDs msgs keyID val.
+    and "\<And>apps kmes bridges qkd net kmes' net' n sender host slaveSae store route saeToKme bridgeIDs kmeIDs msgs keyID val.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
           s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
@@ -172,42 +173,42 @@ assumes "reachable System.ioa s"
           net' = rmv_msg net sender (kmeID n) (GetKey host slaveSae);
           can_send net sender (kmeID n) (GetKey host slaveSae);
           store keyID = Some (Some val, route slaveSae, True, None);
-          kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (KmeWaitReserve keyID sender store route saeToKme bridgeIDs)
+          kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (KmeWaitReserve keyID sender store route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, route slaveSae, KMPut (kmeID n) keyID (Some slaveSae))}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n sender otherKme slaveSae store route saeToKme bridgeIDs msgs keyID.
+    and "\<And>apps kmes bridges qkd net kmes' net' n sender otherKme slaveSae store route saeToKme bridgeIDs kmeIDs msgs keyID.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
           net' = rmv_msg net sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
           can_send net sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
-          kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs)
+          kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, otherKme, OK)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n sender store keyID val conf res saeID route saeToKme bridgeIDs msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n sender store keyID val conf res saeID route saeToKme bridgeIDs kmeIDs msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive sender (kmeID n) OK;
           net' = rmv_msg net sender (kmeID n) OK;
           can_send net sender (kmeID n) OK;
           store keyID = Some (Some val, sender, conf, res);
-          kmes n = IoaState (KmeWaitReserve keyID saeID store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs)
+          kmes n = IoaState (KmeWaitReserve keyID saeID store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, saeID, KeyResponse keyID val)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n sender host store keyID val saeToKme bridgeIDs masterSae route msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n sender host store keyID val saeToKme bridgeIDs kmeIDs masterSae route msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive sender (kmeID n) (GetKeyWithID host masterSae keyID);
           net' = rmv_msg net sender (kmeID n) (GetKeyWithID host masterSae keyID);
           can_send net sender (kmeID n) (GetKeyWithID host masterSae keyID);
           store keyID = Some (Some val, saeToKme masterSae, True, Some sender);
-          kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs)
+          kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, sender, KeyResponse keyID val)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n sender host masterSae keyID store route nextKme keyID2 val2 saeToKme bridgeIDs msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n sender host masterSae keyID store route nextKme keyID2 val2 saeToKme bridgeIDs kmeIDs msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
           s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
           n \<in> nodes; a \<in> act (kme.ioa n);
@@ -217,34 +218,34 @@ assumes "reachable System.ioa s"
           store keyID = None;
           route masterSae = nextKme;
           store keyID2 = Some (Some val2, nextKme, True, None);
-          kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs)
+          kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, nextKme, KMPut (kmeID n) keyID2 (Some (kmeID n)))}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme masterSae slaveSae keyID keyID2 store route saeToKme bridgeIDs msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme masterSae slaveSae keyID keyID2 store route saeToKme bridgeIDs kmeIDs msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive nextKme (kmeID n) OK;
           net' = rmv_msg net nextKme (kmeID n) OK;
           can_send net nextKme (kmeID n) OK;
-          kmes n = IoaState (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs)
+          kmes n = IoaState (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, nextKme, KMGet masterSae keyID keyID2 slaveSae)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme masterSae keyID keyID2 slaveSae store route saeToKme bridgeIDs msgs sender val val2.
+    and "\<And>apps kmes bridges qkd net kmes' net' n masterSae keyID keyID2 slaveSae store route saeToKme bridgeIDs kmeIDs msgs sender val val2.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
-          a = Receive nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
-          net' = rmv_msg net nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
-          can_send net nextKme (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
+          a = Receive sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
+          net' = rmv_msg net sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
+          can_send net sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
           store keyID = Some (Some val, saeToKme masterSae, True, Some slaveSae);
           store keyID2 = Some (Some val2, sender, True, Some sender);
-          kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme bridgeIDs)
+          kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, sender, KeyResponse keyID (enc val val2))}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme masterSae keyID keyID2 slaveSae store val2 sender route keyID3 val3 saeToKme bridgeIDs msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme masterSae keyID keyID2 slaveSae store val2 sender route keyID3 val3 saeToKme bridgeIDs kmeIDs msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
           net' = rmv_msg net sender (kmeID n) (KMGet masterSae keyID keyID2 slaveSae);
@@ -253,41 +254,41 @@ assumes "reachable System.ioa s"
           store keyID2 = Some (Some val2, sender, True, Some sender);
           route masterSae = nextKme;
           store keyID3 = Some (Some val3, nextKme, True, None);
-          kmes n = IoaState (Kme store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae slaveSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs)
+          kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae slaveSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, nextKme, KMPut (kmeID n) keyID3 (Some (kmeID n)))}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme prevKme masterSae keyID keyID2 slaveSae store route keyID3 saeToKme bridgeIDs msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme prevKme masterSae keyID keyID2 slaveSae store route keyID3 saeToKme bridgeIDs kmeIDs msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive nextKme (kmeID n) OK;
           net' = rmv_msg net nextKme (kmeID n) OK;
           can_send net nextKme (kmeID n) OK;
-          kmes n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs)
+          kmes n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, nextKme, KMGet masterSae keyID keyID3 slaveSae)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme prevKme keyID keyVal' store keyID2 val2 sender keyID3 val3 masterSae route saeToKme bridgeIDs msgs slaveSae.
+    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme prevKme keyID keyVal' store keyID2 val2 keyID3 val3 masterSae route saeToKme bridgeIDs kmeIDs msgs slaveSae.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive nextKme (kmeID n) (KeyResponse keyID keyVal');
           net' = rmv_msg net nextKme (kmeID n) (KeyResponse keyID keyVal');
           can_send net nextKme (kmeID n) (KeyResponse keyID keyVal');
-          store keyID2 = Some (Some val2, sender, True, Some sender);
+          store keyID2 = Some (Some val2, prevKme, True, Some prevKme);
           store keyID3 = Some (Some val3, nextKme, True, None);
-          kmes n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID2) keyID3) route saeToKme bridgeIDs)
+          kmes n = IoaState (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_remove (keyStore_remove store keyID2) keyID3) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, prevKme, KeyResponse keyID (enc (dec keyVal' val3) val2))}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme keyID keyVal' store keyID2 val2 masterSae sender route saeToKme bridgeIDs msgs.
+    and "\<And>apps kmes bridges qkd net kmes' net' n nextKme keyID keyVal' store keyID2 val2 masterSae sender route saeToKme bridgeIDs kmeIDs msgs.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
-          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net'); 
+          s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');
           n \<in> nodes; a \<in> act (kme.ioa n);
           a = Receive nextKme (kmeID n) (KeyResponse keyID keyVal');
           net' = rmv_msg net nextKme (kmeID n) (KeyResponse keyID keyVal');
           can_send net nextKme (kmeID n) (KeyResponse keyID keyVal');
           store keyID2 = Some (Some val2, nextKme, True, None);
-          kmes n = IoaState (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs) msgs;
-          kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID2) route saeToKme bridgeIDs)
+          kmes n = IoaState (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs) msgs;
+          kmes' = kmes(n := IoaState (Kme (keyStore_remove store keyID2) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, sender, KeyResponse keyID (dec keyVal' val2))}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>apps kmes bridges qkd net net' n sender msg.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;

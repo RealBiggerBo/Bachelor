@@ -29,65 +29,66 @@ inductive kme_step :: "'keyVal cipher_function \<Rightarrow> 'keyVal cipher_func
   KMPost_NewKeyVal:
   \<open>sender \<in> bridgeIDs \<Longrightarrow>
    kme_step enc dec
-            (Kme store route saeToKme bridgeIDs) 
+            (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (KMPost otherKme keyID keyVal))
-            (Kme (keyStore_add store keyID (Some keyVal) otherKme) route saeToKme bridgeIDs) 
+            (Kme (keyStore_add store keyID (Some keyVal) otherKme) route saeToKme bridgeIDs kmeIDs)
             {(sender, OK), (otherKme, KMPut rcpt keyID None)}\<close> |
   KMPut_Confirm:
-  \<open>kme_step enc dec
-            (Kme store route saeToKme bridgeIDs) 
+  \<open>sender \<in> kmeIDs \<Longrightarrow>
+   kme_step enc dec
+            (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (KMPut otherKme keyID None))
-            (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs) 
+            (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs kmeIDs)
             {(sender, OK)}\<close> |
   GetKey:
   \<open>store keyID = Some (Some val, route slaveSae, True, None) \<Longrightarrow> 
    kme_step enc dec
-            (Kme store route saeToKme bridgeIDs)
+            (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (GetKey host slaveSae))
-            (KmeWaitReserve keyID sender store route saeToKme bridgeIDs) 
+            (KmeWaitReserve keyID sender store route saeToKme bridgeIDs kmeIDs)
             {(route slaveSae, KMPut rcpt keyID (Some slaveSae))}\<close> |
   KMPut_Reserve:
   \<open>kme_step enc dec
-            (Kme store route saeToKme bridgeIDs)
+            (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (KMPut otherKme keyID (Some slaveSae)))
-            (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs)
+            (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs kmeIDs)
             {(otherKme, OK)}\<close> |
   GetKey_Reserved:
   \<open>store keyID = Some (Some val, sender, conf, res) \<Longrightarrow>
    kme_step enc dec
-            (KmeWaitReserve keyID saeID store route saeToKme bridgeIDs)
+            (KmeWaitReserve keyID saeID store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt OK)
-            (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs)
+            (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs kmeIDs)
             {(saeID, KeyResponse keyID val)}\<close> |
   GetKeyWithID_IDFound:
   \<open>store keyID = Some (Some val, saeToKme masterSae, True, Some sender) \<Longrightarrow>
    kme_step enc dec
-            (Kme store route saeToKme bridgeIDs)
+            (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (GetKeyWithID host masterSae keyID))
-            (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs)
+            (Kme (keyStore_remove store keyID) route saeToKme bridgeIDs kmeIDs)
             {(sender, KeyResponse keyID val)}\<close> |
   GetKeyWithID_IDNotFound:
   \<open>store keyID = None \<Longrightarrow>
    route masterSae = nextKme \<Longrightarrow>
    store keyID2 = Some (Some val2, nextKme, True, None) \<Longrightarrow>
    kme_step enc dec
-            (Kme store route saeToKme bridgeIDs)
+            (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (GetKeyWithID host masterSae keyID))
-            (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs)
+            (KmeWaitHop masterSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
             {(nextKme, KMPut rcpt keyID2 (Some rcpt))}\<close> |
   GetKeyWithID_IDNotFound_Reserved:
   \<open>kme_step enc dec
-            (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs)
+            (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
             (Receive nextKme rcpt OK)
-            (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs)
+            (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
             {(nextKme, KMGet masterSae keyID keyID2 slaveSae)}\<close> |
   KMGetKeyWithID_IDFound:
   \<open>store keyID = Some (Some val, saeToKme masterSae, True, Some slaveSae) \<Longrightarrow>
    store keyID2 = Some (Some val2, sender, True, Some sender) \<Longrightarrow>
    kme_step enc dec
-            (Kme store route saeToKme bridgeIDs)
+            (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (KMGet masterSae keyID keyID2 slaveSae))
-            (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme bridgeIDs)
+            (Kme (keyStore_remove (keyStore_remove store keyID) keyID2) route saeToKme bridgeIDs kmeIDs)
             {(sender, KeyResponse keyID (enc val val2))}\<close> |
   KMGetKeyWithID_IDNotFound:
   \<open>store keyID = None \<Longrightarrow>
@@ -95,30 +96,30 @@ inductive kme_step :: "'keyVal cipher_function \<Rightarrow> 'keyVal cipher_func
    route masterSae = nextKme \<Longrightarrow>
    store keyID3 = Some (Some val3, nextKme, True, None) \<Longrightarrow>
    kme_step enc dec
-            (Kme store route saeToKme bridgeIDs)
+            (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (KMGet masterSae keyID keyID2 slaveSae))
-            (KmeWaitHopRec keyID3 masterSae slaveSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs)
+            (KmeWaitHopRec keyID3 masterSae slaveSae sender nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
             {(nextKme, KMPut rcpt keyID3 (Some rcpt))}\<close> |
   KMGetKeyWithID_IDNotFound_Reserved:
   \<open>kme_step enc dec
-            (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs)
+            (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
             (Receive nextKme rcpt OK)
-            (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs)
+            (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
             {(nextKme, KMGet masterSae keyID keyID3 slaveSae)}\<close> |
   KMGetKeyWithID_IDNotFound_Return:
   \<open>store keyID2 = Some (Some val2, prevKme, True, Some prevKme) \<Longrightarrow>
    store keyID3 = Some (Some val3, nextKme, True, None) \<Longrightarrow>
    kme_step enc dec
-            (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs)
+            (KmeWaitHopRec keyID3 masterSae slaveSae prevKme nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
             (Receive nextKme rcpt (KeyResponse keyID keyVal'))
-            (Kme (keyStore_remove (keyStore_remove store keyID2) keyID3) route saeToKme bridgeIDs)
+            (Kme (keyStore_remove (keyStore_remove store keyID2) keyID3) route saeToKme bridgeIDs kmeIDs)
             {(prevKme, KeyResponse keyID (enc (dec keyVal' val3) val2))}\<close> |
   GetKeyWithID_IDNotFound_Return:
   \<open>store keyID2 = Some (Some val2, nextKme, True, None) \<Longrightarrow>
    kme_step enc dec
-            (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs)
+            (KmeWaitHop masterSae slaveSae nextKme keyID keyID2 store route saeToKme bridgeIDs kmeIDs)
             (Receive nextKme rcpt (KeyResponse keyID keyVal'))
-            (Kme (keyStore_remove store keyID2) route saeToKme bridgeIDs)
+            (Kme (keyStore_remove store keyID2) route saeToKme bridgeIDs kmeIDs)
             {(slaveSae, KeyResponse keyID (dec keyVal' val2))}\<close>
 
 locale Kme_locale =
@@ -126,6 +127,7 @@ locale Kme_locale =
     and route :: "'proc \<Rightarrow> 'proc"
     and saeToKme :: "'proc \<Rightarrow> 'proc"
     and bridgeIDs :: "'proc set"
+    and appIDs :: "'proc set"
     and enc :: "'keyVal \<Rightarrow> 'keyVal \<Rightarrow> 'keyVal"
     and dec :: "'keyVal \<Rightarrow> 'keyVal \<Rightarrow> 'keyVal"
   assumes cipher_correctness: "dec (enc val v1) v2 = val \<longleftrightarrow> v1 = v2"
@@ -134,7 +136,7 @@ begin
 sublocale Network_IOA
   kmeID
   "{}"
-  "Kme (\<lambda>keyID. None) route saeToKme bridgeIDs"
+  "Kme (\<lambda>keyID. None) route saeToKme bridgeIDs appIDs"
   "kme_step enc dec"
 proof
   show "\<forall>rcpt msg. Send kmeID rcpt msg \<notin> {}"
