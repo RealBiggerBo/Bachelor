@@ -1,17 +1,14 @@
 theory QKD_inv_kme_store_partnerField_valid
   imports QKD_inv_def QKD_System_Def QKD_System_Helpers
+          QKD_inv_kme_bridgeIDs_field_valid
+          QKD_inv_bridge_kme_msgField_valid
+          QKD_inv_kme_msg_field_valid
+          QKD_inv_kme_kmeIDs_field_valid
 begin
 
 lemma kme_get_store_ignores_msgs:
   "kme_get_store (IoaState state msgs) = kme_get_store (IoaState state msgs')"
   by (cases state) simp_all
-
-lemma store_remove_preserves_partner_inv:
-  assumes "\<forall>keyID keyVal partner conf res.
-             store keyID = Some (Some keyVal, partner, conf, res) \<longrightarrow> partner \<in> S"
-  shows   "\<forall>keyID keyVal partner conf res.
-             keyStore_remove store k keyID = Some (Some keyVal, partner, conf, res) \<longrightarrow> partner \<in> S"
-  using assms by auto
 
 context QKD_Network
 begin
@@ -30,9 +27,16 @@ next
   case (2 s t a)
   then show ?case
   proof (induction rule: System_step_induct)
-    case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs kmeIDs msgs)
-    have "otherKme \<in> kmeID ` nodes"
-      sorry
+    case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs' kmeIDs msgs)
+    have "bridge_kme_msgField_valid nodes bridgeIDs kmeID s \<and> kme_bridgeIDs_field_valid nodes bridgeIDs s"
+      using 2(1) inv_kme_bridgeIDs_field_valid inv_bridge_kme_msgField_valid
+      unfolding invariant_def by fast
+    moreover have "network_has_msg s sender (kmeID n) (KMPost otherKme keyID keyVal)"
+      using Kme_KMPost_NewKeyVal(2,8) by (metis hd_in_set sndI)
+    moreover have "sender \<in> \<Union> (bridgeIDs ` nodes)"
+      using calculation(1) Kme_KMPost_NewKeyVal(2,4,9,10) unfolding kme_bridgeIDs_field_valid_def by force
+    ultimately have "otherKme \<in> kmeID ` nodes"
+      unfolding bridge_kme_msgField_valid_def by blast
     then have "\<forall>keyID keyVal partner conf res.
                   kme_get_store (kme t n) keyID = Some (Some keyVal, partner, conf, res)
                   \<longrightarrow> partner \<in> kmeID ` nodes"
@@ -47,9 +51,15 @@ next
     ultimately show ?case
       unfolding kme_store_partnerField_valid_def by blast
   next
-    case (Kme_KMPut_Confirm apps kmes bridges qkd net kmes' net' n sender otherKme keyID store route saeToKme bridgeIDs kmeIDs msgs)
-    have "otherKme \<in> kmeID ` nodes"
-      sorry
+    case (Kme_KMPut_Confirm apps kmes bridges qkd net kmes' net' n sender otherKme keyID store route saeToKme bridgeIDs' kmeIDs msgs)
+    have "kme_msg_field_valid nodes kmeID s \<and> kme_kmeIDs_field_valid nodes kmeID s"
+      using inv_kme_msg_field_valid inv_kme_kmeIDs_field_valid 2(1) unfolding invariant_def by fast
+    moreover have "network_has_msg s sender (kmeID n) (KMPut otherKme keyID None)"
+      using Kme_KMPut_Confirm(8) by (metis Kme_KMPut_Confirm.IH(2) hd_in_set snd_conv)
+    moreover have "sender \<in> kmeID ` nodes"
+      using Kme_KMPut_Confirm(2,4,9,10) calculation(1) unfolding kme_kmeIDs_field_valid_def by auto
+    ultimately have "otherKme \<in> kmeID ` nodes"
+      unfolding kme_msg_field_valid_def by blast
     then have "\<forall>keyID keyVal partner conf res.
                   kme_get_store (kme t n) keyID = Some (Some keyVal, partner, conf, res)
                   \<longrightarrow> partner \<in> kmeID ` nodes"

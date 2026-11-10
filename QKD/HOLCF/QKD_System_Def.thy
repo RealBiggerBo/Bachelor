@@ -51,6 +51,7 @@ locale QKD_Network =
                        disjnt (\<Union>(range bridgeIDs)) (range qkdID)"
     and disjoint_node_bridges: "\<And>n1 n2. \<lbrakk>n1 \<in> nodes; n2 \<in> nodes; n1 \<noteq> n2\<rbrakk> \<Longrightarrow> 
                                    disjnt (bridgeIDs n1) (bridgeIDs n2)"
+    and bridgeOtherKme_valid: "range bridgeOtherKme \<subseteq> kmeID ` nodes"
 begin
 
 section SanityChecks

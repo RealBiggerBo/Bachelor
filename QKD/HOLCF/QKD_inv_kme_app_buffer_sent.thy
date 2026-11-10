@@ -1,6 +1,7 @@
 theory QKD_inv_kme_app_buffer_sent
   imports QKD_inv_def QKD_System_Def QKD_System_Helpers
           QKD_inv_kme_store_key_sent
+          QKD_inv_kme_store_partnerField_valid
 begin
 
 context QKD_Network
@@ -42,7 +43,7 @@ next
   next
     case (Kme_KMGetKeyWithID_IDFound apps kmes bridges qkd net kmes' net' n masterSae keyID keyID2 slaveSae store route saeToKme bridgeIDs kmeIDs msgs sender val val2)
     have "kme_store_partnerField_valid nodes kmeID s"
-      sorry
+      using inv_kme_store_partnerField_valid 2(1) unfolding invariant_def by fast
     then have "sender \<noteq> appID n"
       using Kme_KMGetKeyWithID_IDFound(2,4,10,11) kme_get_store.simps disjoint_ids unfolding kme_store_partnerField_valid_def disjnt_def by fastforce
     then show ?case
@@ -50,8 +51,12 @@ next
       unfolding kme_app_buffer_sent_def by simp
   next
     case (Kme_KMGetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme prevKme keyID keyVal' store keyID2 val2 keyID3 val3 masterSae route saeToKme bridgeIDs kmeIDs msgs slaveSae)
+    have "kme_store_partnerField_valid nodes kmeID s"
+      using inv_kme_store_partnerField_valid 2(1) unfolding invariant_def by fast
+    then have "prevKme \<in> kmeID ` nodes"
+      using Kme_KMGetKeyWithID_IDNotFound_Return(2,4,6,7,9,11,12) unfolding kme_store_partnerField_valid_def by fastforce
     then have "prevKme \<noteq> appID n"
-      sorry
+      using disjoint_ids unfolding disjnt_def by fast
     then show ?case
       using 2(2) Kme_KMGetKeyWithID_IDNotFound_Return(2,3,4,11,12)
       unfolding kme_app_buffer_sent_def by simp
