@@ -94,6 +94,7 @@ lemma kme_invariant_step[consumes 6, case_names
     and "\<And>sender otherKme slaveSae store route saeToKme bridgeIDs kmeIDs msgs keyID.
          \<lbrakk>a = Receive sender (kmeID n) (KMPut otherKme keyID (Some slaveSae)); net' = rmv_msg net sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
           can_send net sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
+          sender \<in> kmeIDs;
           kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, otherKme, OK)}))\<rbrakk> \<Longrightarrow> P t"
@@ -294,14 +295,26 @@ proof
                 case True
                 then obtain otherKme keyID slaveSae where msg_split:"msg = KMPut otherKme keyID (Some slaveSae)"
                   by blast
-                then have "kmes' n = IoaState (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs kmeIDs)
+                show ?thesis
+                proof(cases "sender \<in> kmeIDs")
+                  case True
+                  then have "kmes' n = IoaState (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs kmeIDs)
                                               (msgs \<union> {(kmeID n, otherKme, OK)})"
-                  using a_split assms(4) kme_node_trans IoaState Kme unfolding trans_of_def apply simp
-                  unfolding actions_def asig_projections asig_of_def apply simp
-                  apply (auto elim: kme_step_KMPutReserveE)
-                  using KMPut_Reserve by fast+
-                then show ?thesis
-                  using assms(10)[OF _ net_step] IoaState kmes' msg_split a_split Kme rec_in_net by presburger
+                    using a_split assms(4) kme_node_trans IoaState Kme msg_split unfolding trans_of_def apply simp
+                    unfolding actions_def asig_projections asig_of_def apply simp
+                    apply (auto elim: kme_step_KMPutReserveE)
+                    using KMPut_Reserve by fast+
+                  then show ?thesis
+                    using assms(10)[OF _ net_step] IoaState kmes' msg_split a_split Kme rec_in_net True by presburger
+                next
+                  case False
+                  then have "kmes' n = kmes n"
+                    using kme_node_trans Kme msg_split a_split IoaState 
+                    unfolding trans_of_def apply auto
+                    by (smt (verit) kme_step_KMPutReserveE option.discI)+
+                  then show ?thesis
+                    using kmes' assms(20)[OF a_split net_step rec_in_net] by fastforce
+                qed
               next
                 case False
                 then show ?thesis

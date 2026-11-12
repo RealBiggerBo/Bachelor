@@ -41,6 +41,11 @@ fun kme_get_kmeIDs_field where
   \<open>kme_get_kmeIDs_field (IoaState (KmeWaitHop _ _ _ _ _ _ _ _ _ kmeIDs) _) = kmeIDs\<close> |
   \<open>kme_get_kmeIDs_field (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ _ _ _ _ kmeIDs) _) = kmeIDs\<close>
 
+fun kme_has_decryptionKeyID where
+  \<open>kme_has_decryptionKeyID (IoaState (KmeWaitHop _ _ _ _ keyID2 _ _ _ _ _) _) = Some keyID2\<close> |
+  \<open>kme_has_decryptionKeyID (IoaState (KmeWaitHopRec keyID3 _ _ _ _ _ _ _ _ _ _ _) _) = Some keyID3\<close> |
+  \<open>kme_has_decryptionKeyID _ = None\<close>
+
 abbreviation qkd_has_key where
   \<open>qkd_has_key s keyID keyVal \<equiv> \<exists>gen sent. (qkd_layer s = QKD gen sent) \<and> (keyID, keyVal) \<in> (snd ` gen \<union> sent)\<close>
 
@@ -91,6 +96,48 @@ definition kme_app_buffer_sent where
 
 (*Wenn es eine KMGet Nachricht mit key als decipher schlüssel hat \<longrightarrow> dann hat ein kme eine decryptionKey key*)
 
+definition kme_KMGet_buffer_valid where
+  \<open>kme_KMGet_buffer_valid dec nodes kmeID s \<longleftrightarrow>
+    (\<forall>n sender encKeyID keyID keyVal'.
+      n \<in> nodes \<and>
+      sender \<in> kme ` nodes \<and>
+      kme_has_decryptionKeyID (kme s n) = Some encKeyID \<and>
+      network_has_msg s sender (kme s n) (KeyResponse keyID keyVal')
+      \<longrightarrow> qkd_has_key s keyID (dec keyVal' encKeyID))\<close>
+
+definition if_kme_in_kmeState_then_no_KeyResponse_Exists where
+  \<open>if_kme_in_kmeState_then_no_KeyResponse_Exists nodes kmeID s \<longleftrightarrow>
+    (\<forall>n sender store route saeToKme bridgeIDs kmeIDs keyID keyVal'.
+      n \<in> nodes \<and>
+      sender \<in> kmeID ` nodes \<and>
+      kme s n = Kme store route saeToKme bridgeIDs kmeIDs
+      \<longrightarrow> \<not>network_has_msg s sender (kme s n) (KeyResponse keyID keyVal'))\<close>
+
+definition only_one_single_KeyResponse_between_kmes where
+  \<open>only_one_single_KeyResponse_between_kmes nodes kmeID s \<longleftrightarrow>
+    (\<forall>sender rcpt keyID keyVal'.
+      sender \<in> kmeID ` nodes \<and>
+      rcpt \<in> kmeID ` nodes
+      \<longrightarrow> count_list (network s sender rcpt) (KeyResponse keyID keyVal') \<le> 1)\<close>
+
+definition if_keyResponse_exitst_then_no_KMGet_exists where
+  \<open>if_keyResponse_exitst_then_no_KMGet_exists nodes kmeID s \<longleftrightarrow>
+    (\<forall>sender rcpt keyID keyVal' slaveSae.
+      sender \<in> kmeID ` nodes \<and>
+      rcpt \<in> kmeID ` nodes \<and>
+      network_has_msg s sender rcpt (KeyResponse keyID keyVal')
+      \<longrightarrow> \<not>network_has_msg s rcpt sender (KMGet slaveSae keyID encKeyID masterSae))\<close>
+
+definition if_kme_sends_keyResponse_then_otherKme_has_valid_decKey where
+  \<open>if_kme_sends_keyResponse_then_otherKme_has_valid_decKey nodes kmeID s \<longleftrightarrow>
+    (\<forall>n sender slaveSae keyID encKeyID masterSae.
+      n \<in> nodes \<and>
+      sender \<in> kmeID ` nodes \<and>
+      network_has_msg s sender (kme s n) (KMGet slaveSae keyID encKeyID masterSae)
+      \<longrightarrow> (\<exists>n'. 
+            n' \<in> nodes \<and>
+            sender = kme s n' \<and>
+            kme_has_decryptionKeyID (kme s n') = Some encKeyID))\<close>
 
 (*Proofed till here*)
 definition kme_store_partnerField_valid where

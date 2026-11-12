@@ -71,7 +71,7 @@ next
       using Kme_KMPut_Reserve(2,3) by force
     moreover have "\<And>keyID keyVal n. n \<in> nodes 
                       \<longrightarrow> (kme_has_key (kme s n) keyID keyVal \<longleftrightarrow> kme_has_key (kme t n) keyID keyVal)"
-      using Kme_KMPut_Reserve(2,3,9,10) apply simp by (auto split: option.splits)
+      using Kme_KMPut_Reserve(2,3,10,11) apply simp by (auto split: option.splits)
     ultimately show ?case 
       using 2(2) unfolding kme_store_key_sent_def by meson
   next

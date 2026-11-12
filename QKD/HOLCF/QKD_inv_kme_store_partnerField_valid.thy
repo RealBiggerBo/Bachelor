@@ -91,7 +91,7 @@ next
                   n' \<in> nodes - {n} \<and>
                   kme_get_store (kme t n') keyID = Some (Some keyVal, partner, conf, res)
                   \<longrightarrow> partner \<in> kmeID ` nodes"
-      using 2(2) Kme_KMPut_Reserve(2,3,10) 
+      using 2(2) Kme_KMPut_Reserve(2,3,11) 
       unfolding kme_store_partnerField_valid_def by auto
     ultimately show ?case
       unfolding kme_store_partnerField_valid_def by blast

@@ -27,7 +27,7 @@ next
     then show ?case
       using 2(2) unfolding bridge_qkd_field_valid_def apply simp by fast
   next
-    case (Bridge_Slave_GetKeyWithID apps kmes bridges qkds net bridges' net' n b masterBridge otherKme qkd kme msgs sender keyID)
+    case (Bridge_Slave_GetKeyWithID apps kmes bridges qkds net bridges' net' n b masterBridge otherKme qkd kme msgs keyID)
     then show ?case
       using 2(2) unfolding bridge_qkd_field_valid_def apply simp by fast
   next

@@ -42,7 +42,7 @@ next
     then have "kmeID n \<in> kmeID ` nodes"
       by fast
     then show ?case 
-      using 2(2) Kme_KMPut_Reserve(2,3,4,9,10) unfolding kme_buffer_msg_field_valid_def by auto
+      using 2(2) Kme_KMPut_Reserve(2,3,4,10,11) unfolding kme_buffer_msg_field_valid_def by auto
   next
     case (Kme_GetKey_Reserved apps kmes bridges qkd net kmes' net' n sender store keyID val conf res saeID route saeToKme bridgeIDs kmeIDs msgs)
     then have "kmeID n \<in> kmeID ` nodes"

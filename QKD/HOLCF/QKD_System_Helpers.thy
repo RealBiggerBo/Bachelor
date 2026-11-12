@@ -183,6 +183,7 @@ assumes "reachable System.ioa s"
           a = Receive sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
           net' = rmv_msg net sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
           can_send net sender (kmeID n) (KMPut otherKme keyID (Some slaveSae));
+          sender \<in> kmeIDs;
           kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_reserve store keyID slaveSae) route saeToKme bridgeIDs kmeIDs)
           (msgs \<union> {(kmeID n, otherKme, OK)}))\<rbrakk> \<Longrightarrow> P t"
@@ -322,13 +323,13 @@ assumes "reachable System.ioa s"
           can_send net qkd b (KeyResponse keyID keyVal);
           bridges (n,b) = IoaState (Bridge True slaveBridge otherKme qkd kme) msgs;
           bridges' = bridges((n,b) := IoaState (Bridge True slaveBridge otherKme qkd kme) (msgs \<union> {(b, kme, KMPost otherKme keyID keyVal), (b, slaveBridge, BridgeIDRelay keyID)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>apps kmes bridges qkds net bridges' net' n b masterBridge otherKme qkd kme msgs sender keyID.
+    and "\<And>apps kmes bridges qkds net bridges' net' n b masterBridge otherKme qkd kme msgs keyID.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
           s = (apps, kmes, bridges, qkds, net); t = (apps, kmes, bridges', qkds, net'); 
           n \<in> nodes; b \<in> bridgeIDs n; a \<in> act (bridge.ioa b n);
-          a = Receive sender b (BridgeIDRelay keyID);
-          net' = rmv_msg net sender b (BridgeIDRelay keyID);
-          can_send net sender b (BridgeIDRelay keyID);
+          a = Receive masterBridge b (BridgeIDRelay keyID);
+          net' = rmv_msg net masterBridge b (BridgeIDRelay keyID);
+          can_send net masterBridge b (BridgeIDRelay keyID);
           bridges (n,b) = IoaState (Bridge False masterBridge otherKme qkd kme) msgs;
           bridges' = bridges((n,b) := IoaState (Bridge False masterBridge otherKme qkd kme) (msgs \<union> {(b, qkd, GetKeyWithID qkd otherKme keyID)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>apps kmes bridges qkds net bridges' net' n b masterBridge otherKme qkd kme msgs keyID keyVal.

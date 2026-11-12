@@ -34,9 +34,9 @@ lemma bridge_invariant_step[consumes 7, case_names
           can_send net qkd b (KeyResponse keyID keyVal);
           bridges (n,b) = IoaState (Bridge True slaveBridge otherKme qkd kme) msgs;
           bridges' = bridges((n,b) := IoaState (Bridge True slaveBridge otherKme qkd kme) (msgs \<union> {(b, kme, KMPost otherKme keyID keyVal), (b, slaveBridge, BridgeIDRelay keyID)}))\<rbrakk> \<Longrightarrow> P t"
-    and "\<And>masterBridge otherKme qkd kme msgs sender keyID.
-         \<lbrakk>a = Receive sender b (BridgeIDRelay keyID); net' = rmv_msg net sender b (BridgeIDRelay keyID);
-          can_send net sender b (BridgeIDRelay keyID);
+    and "\<And>masterBridge otherKme qkd kme msgs keyID.
+         \<lbrakk>a = Receive masterBridge b (BridgeIDRelay keyID); net' = rmv_msg net masterBridge b (BridgeIDRelay keyID);
+          can_send net masterBridge b (BridgeIDRelay keyID);
           bridges (n,b) = IoaState (Bridge False masterBridge otherKme qkd kme) msgs;
           bridges' = bridges((n,b) := IoaState (Bridge False masterBridge otherKme qkd kme) (msgs \<union> {(b, qkd, GetKeyWithID qkd otherKme keyID)}))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>masterBridge otherKme qkd kme msgs keyID keyVal.
@@ -207,22 +207,34 @@ proof
               case True
               then obtain keyID where msg_split:"msg = BridgeIDRelay keyID"
                 by blast
-              then have "bridges' (n,b) = IoaState (Bridge False otherBridge otherKme qkd kme) (msgs \<union> {(b, qkd, GetKeyWithID qkd otherKme keyID)})"
-                using a_split assms(5) bridge_node_trans IoaState Bridge \<open>\<not>isMaster\<close> unfolding trans_of_def apply simp
-                unfolding actions_def asig_projections asig_of_def apply simp
-                using bridge_step.cases apply auto
-                    apply fast
-                   apply blast+
-                using Slave_GetKeyWithID by fast
-              then show ?thesis
-                using IoaState Bridge \<open>\<not>isMaster\<close> net_step assms(10) a_split msg_split rec_in_net bridges' by presburger
+              show ?thesis
+              proof(cases "sender = otherBridge")
+                case True
+                then have "bridges' (n,b) = IoaState (Bridge False otherBridge otherKme qkd kme) (msgs \<union> {(b, qkd, GetKeyWithID qkd otherKme keyID)})"
+                  using a_split assms(5) bridge_node_trans IoaState Bridge msg_split \<open>\<not>isMaster\<close> unfolding trans_of_def apply simp
+                  unfolding actions_def asig_projections asig_of_def apply simp
+                  using bridge_step.cases apply auto
+                      apply fast
+                     apply blast+
+                  using Slave_GetKeyWithID by fast
+                then show ?thesis
+                  using IoaState Bridge \<open>\<not>isMaster\<close> net_step assms(10) a_split msg_split rec_in_net bridges' True by auto
+              next
+                case False
+                then have "bridges' (n,b) = bridges (n,b)"
+                  using a_split assms(4) bridge_node_trans IoaState Bridge \<open>\<not>isMaster\<close> \<open>\<nexists>keyID keyVal. msg = KeyResponse keyID keyVal\<close> 
+                  unfolding trans_of_def actions_def asig_projections asig_of_def
+                  by (simp add: bridge_step.simps)
+                then show ?thesis
+                  using bridges' assms(2,3,6,7) assms(12)[OF a_split net_step rec_in_net] by fastforce
+              qed
             next
               case False
               then have "bridges' (n,b) = bridges (n,b)"
                 using a_split assms(4) bridge_node_trans IoaState Bridge \<open>\<not>isMaster\<close> \<open>\<nexists>keyID keyVal. msg = KeyResponse keyID keyVal\<close> 
                 unfolding trans_of_def actions_def asig_projections asig_of_def
                 by (simp add: bridge_step.simps)
-            then show ?thesis
+              then show ?thesis
                 using bridges' assms(2,3,6,7) assms(12)[OF a_split net_step rec_in_net] by fastforce
             qed
           qed

@@ -15,7 +15,7 @@ inductive bridge_step :: "'proc bridge_state \<Rightarrow> ('proc, ('keyID, 'key
                {(kme, KMPost otherKme keyID keyVal), (bridge, BridgeIDRelay keyID)}\<close> |
   Slave_GetKeyWithID:
   \<open>bridge_step (Bridge False bridge otherKme qkd kme) 
-               (Receive sender rcpt (BridgeIDRelay keyID))
+               (Receive bridge rcpt (BridgeIDRelay keyID))
                (Bridge False bridge otherKme qkd kme)
                {(qkd, GetKeyWithID qkd otherKme keyID)}\<close> |
   Slave_KeyResponse:
