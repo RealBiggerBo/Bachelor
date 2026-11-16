@@ -98,14 +98,42 @@ definition kme_app_buffer_sent where
 
 definition kme_KMGet_buffer_valid where
   \<open>kme_KMGet_buffer_valid dec nodes kmeID s \<longleftrightarrow>
-    (\<forall>n sender encKeyID keyID keyVal'.
-      n \<in> nodes \<and>
-      sender \<in> kme ` nodes \<and>
-      kme_has_decryptionKeyID (kme s n) = Some encKeyID \<and>
-      network_has_msg s sender (kme s n) (KeyResponse keyID keyVal')
-      \<longrightarrow> qkd_has_key s keyID (dec keyVal' encKeyID))\<close>
+    (\<forall>nA nB encKeyID keyID encKeyVal keyVal'.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_has_decryptionKeyID (kme s nA) = Some encKeyID \<and>
+      kme_has_key (kme s nA) encKeyID encKeyVal \<and>
+      network_has_msg s (kmeID nB) (kmeID nA) (KeyResponse keyID keyVal')
+      \<longrightarrow> qkd_has_key s keyID (dec keyVal' encKeyVal))\<close>
 
-definition if_kme_in_kmeState_then_no_KeyResponse_Exists where
+fun kme_has_nextKme where
+  \<open>kme_has_nextKme (IoaState (KmeWaitHop _ _ nextKme _ _ _ _ _ _ _) _) kmeID = (nextKme = kmeID)\<close> |
+  \<open>kme_has_nextKme (IoaState (KmeWaitHopRec _ _ _ _ nextKme _ _ _ _ _ _ _) _) kmeID = (nextKme = kmeID)\<close> |
+  \<open>kme_has_nextKme _ _ = False\<close>
+
+abbreviation is_KeyResponse where
+  "is_KeyResponse msg \<equiv> (case msg of KeyResponse _ _ \<Rightarrow> True | _ \<Rightarrow> False)"
+
+abbreviation is_KMGet where
+  "is_KMGet msg \<equiv> (case msg of KMGet _ _ _ _ \<Rightarrow> True | _ \<Rightarrow> False)"
+
+abbreviation kme_buffer_has_msg where
+  "kme_buffer_has_msg sender msg \<equiv> (case sender of IoaState _ msgs \<Rightarrow> msg \<in> msgs)"
+
+abbreviation kme_network_has_msg where
+  "kme_network_has_msg kmeID s n1 n2 msg \<equiv> (network_has_msg s (kmeID n1) (kmeID n2) msg) \<or> (kme_buffer_has_msg (kme s n1) (kmeID n1, kmeID n2, msg))"
+
+section Right
+
+definition inv1 where
+  \<open>inv1 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB slaveSae keyID encKeyID masterSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae)
+      \<longrightarrow> kme_has_decryptionKeyID (kme s nA) = Some encKeyID)\<close>
+
+(*definition if_kme_in_kmeState_then_no_KeyResponse_Exists where
   \<open>if_kme_in_kmeState_then_no_KeyResponse_Exists nodes kmeID s \<longleftrightarrow>
     (\<forall>n sender store route saeToKme bridgeIDs kmeIDs keyID keyVal'.
       n \<in> nodes \<and>
@@ -137,7 +165,14 @@ definition if_kme_sends_keyResponse_then_otherKme_has_valid_decKey where
       \<longrightarrow> (\<exists>n'. 
             n' \<in> nodes \<and>
             sender = kme s n' \<and>
-            kme_has_decryptionKeyID (kme s n') = Some encKeyID))\<close>
+            kme_has_decryptionKeyID (kme s n') = Some encKeyID))\<close>*)
+
+
+
+
+
+
+
 
 (*Proofed till here*)
 definition kme_store_partnerField_valid where

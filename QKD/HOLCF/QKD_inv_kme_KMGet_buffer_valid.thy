@@ -6,7 +6,7 @@ context QKD_Network
 begin
 
 lemma inv_kme_KMGet_buffer_valid:
-  shows "invariant System.ioa (kme_KMGet_buffer_valid nodes kmeID)"
+  shows "invariant System.ioa (kme_KMGet_buffer_valid dec nodes kmeID)"
 proof (induction rule: invariantI)
   case (1 s)
   then show ?case
@@ -44,12 +44,13 @@ next
       using 2(2) unfolding kme_KMGet_buffer_valid_def by auto
   next
     case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs kmeIDs msgs)
-    then have "kme_KMGet_buffer_valid {n} kmeID s \<longrightarrow>  kme_KMGet_buffer_valid {n} kmeID t"
+    then have "kme_KMGet_buffer_valid dec {n} kmeID s \<longrightarrow>  kme_KMGet_buffer_valid dec {n} kmeID t"
       unfolding kme_KMGet_buffer_valid_def by simp
-    moreover have "kme_KMGet_buffer_valid (nodes - {n}) kmeID s \<longrightarrow>  kme_KMGet_buffer_valid (nodes - {n}) kmeID t"
+    moreover have "kme_KMGet_buffer_valid dec (nodes - {n}) kmeID s \<longrightarrow>  kme_KMGet_buffer_valid dec (nodes - {n}) kmeID t"
       using Kme_KMPost_NewKeyVal
-      unfolding kme_KMGet_buffer_valid_def by auto
-    ultimately have "kme_KMGet_buffer_valid nodes kmeID s \<longrightarrow>  kme_KMGet_buffer_valid nodes kmeID t"
+      unfolding kme_KMGet_buffer_valid_def
+      by auto
+    ultimately have "kme_KMGet_buffer_valid dec nodes kmeID s \<longrightarrow>  kme_KMGet_buffer_valid dec nodes kmeID t"
       unfolding kme_KMGet_buffer_valid_def by blast
     then show ?case 
       using 2(2) by simp
