@@ -123,6 +123,12 @@ abbreviation kme_buffer_has_msg where
 abbreviation kme_network_has_msg where
   "kme_network_has_msg kmeID s n1 n2 msg \<equiv> (network_has_msg s (kmeID n1) (kmeID n2) msg) \<or> (kme_buffer_has_msg (kme s n1) (kmeID n1, kmeID n2, msg))"
 
+abbreviation kme_get_buffer_msg where
+  "kme_get_buffer_msg kmeID s n1 n2 p \<equiv> (case kme s n1 of IoaState _ msgs \<Rightarrow> {(kmeID n1, kmeID n2, msg) | msg. p msg \<and> (kmeID n1, kmeID n2, msg) \<in> msgs})"
+
+abbreviation kme_get_msg_count where
+  "kme_get_msg_count kmeID s n1 n2 p \<equiv> (length (filter p (network s (kmeID n1, kmeID n2)))) + (card (kme_get_buffer_msg kmeID s n1 n2 p))"
+
 section Right
 
 definition inv1 where
@@ -132,6 +138,54 @@ definition inv1 where
       nB \<in> nodes \<and>
       kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae)
       \<longrightarrow> kme_has_decryptionKeyID (kme s nA) = Some encKeyID)\<close>
+
+definition inv2 where
+  \<open>inv2 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB slaveSae keyID' keyVal' keyID encKeyID masterSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nB nA (KeyResponse keyID' keyVal')
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae))\<close>
+
+definition inv3 where
+  \<open>inv3 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB.
+      nA \<in> nodes \<and>
+      nB \<in> nodes
+      \<longrightarrow> kme_get_msg_count kmeID s nA nB is_KMGet \<le> 1)\<close>
+
+definition inv4 where
+  \<open>inv4 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB slaveSae keyID encKeyID masterSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nB nA OK
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae))\<close>
+
+definition inv5 where
+  \<open>inv5 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB kmID keyID' reserveOption slaveSae keyID encKeyID masterSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nA nB (KMPut kmID keyID' reserveOption)
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae))\<close>
+
+definition inv6 where
+  \<open>inv6 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB slaveSae keyID encKeyID masterSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_has_decryptionKeyID (kme s nA) = None
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae))\<close>
+
+abbreviation right where
+  \<open>right nodes kmeID s \<equiv>
+    (inv1 nodes kmeID s \<and>
+    inv2 nodes kmeID s \<and>
+    inv3 nodes kmeID s \<and>
+    inv4 nodes kmeID s \<and>
+    inv5 nodes kmeID s \<and>
+    inv6 nodes kmeID s)\<close>
 
 (*definition if_kme_in_kmeState_then_no_KeyResponse_Exists where
   \<open>if_kme_in_kmeState_then_no_KeyResponse_Exists nodes kmeID s \<longleftrightarrow>
