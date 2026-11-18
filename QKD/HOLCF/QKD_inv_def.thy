@@ -149,10 +149,11 @@ definition inv2 where
 
 definition inv3 where
   \<open>inv3 nodes kmeID s \<longleftrightarrow>
-    (\<forall>nA nB.
+    (\<forall>nA nB state msgs.
       nA \<in> nodes \<and>
-      nB \<in> nodes
-      \<longrightarrow> kme_get_msg_count kmeID s nA nB is_KMGet \<le> 1)\<close>
+      nB \<in> nodes \<and>
+      kme s nA = IoaState state msgs
+      \<longrightarrow> kme_get_msg_count kmeID s nA nB is_KMGet \<le> 1 \<and> finite msgs)\<close>
 
 definition inv4 where
   \<open>inv4 nodes kmeID s \<longleftrightarrow>

@@ -12,20 +12,8 @@ lemma kme_network_has_msg_no_kme_change:
   shows "\<And>msg. kme_network_has_msg kmeID t nA nB msg \<Longrightarrow> kme_network_has_msg kmeID s nA nB msg"
   using assms apply (auto split: if_splits)
   apply(cases "net (kmeID nA, kmeID nB)")
-  apply meson by simp
-
-lemma 
-  assumes "s = (apps, kmes, bridges, qkd, net)"
-    and "t = (apps', kmes', bridges', qkd', net')"
-    and "kmes n = IoaState state msgs"
-    and "kmes' = kmes(n := IoaState state' (msgs \<union> newMsgs))"
-    and "net' = rmv_msg net sender rcpt msg"
-    and "can_send net sender rcpt msg"
-  shows "\<And>msg. \<lbrakk>(kmeID nA, kmeID nB, msg) \<notin> newMsgs; kme_network_has_msg kmeID t nA nB msg\<rbrakk> \<Longrightarrow> kme_network_has_msg kmeID s nA nB msg"
-  using assms apply (auto split: if_splits)
-  apply(cases "net (kmeID nA, kmeID nB)")
-    apply meson apply simp
-  apply(cases "net (kmeID nA, kmeID nB)") apply fast by simp
+   apply meson 
+  by simp
 
 lemma right_helper_receive_no_kme_change:
   assumes "s = (apps, kmes, bridges, qkd, net)"
@@ -56,8 +44,8 @@ proof -
   moreover have "inv3 nodes kmeID t"
     unfolding inv3_def
   proof (intro allI impI)
-    fix nA nB
-    assume assm:"nA \<in> nodes \<and> nB \<in> nodes"
+    fix nA nB state msgs
+    assume assm:"nA \<in> nodes \<and> nB \<in> nodes \<and> kme t nA = IoaState state msgs"
     have "card (kme_get_buffer_msg kmeID s nA nB is_KMGet) = card (kme_get_buffer_msg kmeID t nA nB is_KMGet)"
       using assms(1,2) by simp
     moreover have "length (filter is_KMGet (network t (kmeID nA, kmeID nB))) \<le> length (filter is_KMGet (network s (kmeID nA, kmeID nB)))"
@@ -66,9 +54,12 @@ proof -
     ultimately have "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> kme_get_msg_count kmeID s nA nB QKD_inv_def.is_KMGet"
       by simp
     moreover have "kme_get_msg_count kmeID s nA nB QKD_inv_def.is_KMGet \<le> 1"
-      using assm assms(4) unfolding inv3_def by simp
-    ultimately show "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> 1"
-      by simp
+      using assm assms(4) unfolding inv3_def by (cases "kme s nA"; simp)
+    moreover have "finite msgs"
+      using assms assm unfolding inv3_def by simp
+    ultimately show "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> 1 \<and> finite msgs"
+      by linarith
+try0
   qed
   moreover have "inv4 nodes kmeID t"
     unfolding inv4_def
@@ -110,13 +101,95 @@ proof -
     by simp
 qed
 
-lemma right_helper_send:
+lemma kme_network_has_msg_send_no_kme_change:
   assumes "s = (apps, kmes, bridges, qkd, net)"
-    and "t = (apps', kmes', bridges', qkd', net')"
+    and "t = (apps', kmes, bridges', qkd', net')"
     and "net' = add_msg net sender rcpt msg"
+    and "nA \<in> nodes \<and> nB \<in> nodes"
+    and "sender \<notin> kmeID ` nodes"
+  shows "\<And>msg. kme_network_has_msg kmeID t nA nB msg \<Longrightarrow> kme_network_has_msg kmeID s nA nB msg"
+  using assms by (auto split: if_splits)
+
+lemma right_helper_send_no_kme_change:
+  assumes "s = (apps, kmes, bridges, qkd, net)"
+    and "t = (apps', kmes, bridges', qkd', net')"
+    and "net' = add_msg net sender rcpt msg"
+    and "sender \<notin> kmeID ` nodes"
     and "right nodes kmeID s"
   shows "right nodes kmeID t"
-  sorry
+proof -
+  have "inv1 nodes kmeID t"
+    using assms kme_network_has_msg_send_no_kme_change unfolding inv1_def
+    apply simp by blast
+  moreover have "inv2 nodes kmeID t"
+    unfolding inv2_def
+  proof (intro allI impI)
+    fix nA nB slaveSae keyID' keyVal' keyID encKeyID masterSae
+    assume assm:"nA \<in> nodes \<and> nB \<in> nodes \<and> kme_network_has_msg kmeID t nB nA (KeyResponse keyID' keyVal')"
+    then have "kme_network_has_msg kmeID s nB nA (KeyResponse keyID' keyVal')"
+      using kme_network_has_msg_send_no_kme_change[OF assms(1,2,3)] assms(4) by simp
+    then have "\<not> kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      using assms(5) assm unfolding inv2_def by blast
+    then show "\<not> kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      using kme_network_has_msg_send_no_kme_change[OF assms(1,2,3)] assm assms(4) by auto
+  qed
+  moreover have "inv3 nodes kmeID t"
+    unfolding inv3_def
+  proof (intro allI impI)
+    fix nA nB state msgs
+    assume assm:"nA \<in> nodes \<and> nB \<in> nodes \<and> kme t nA = IoaState state msgs"
+    have "card (kme_get_buffer_msg kmeID s nA nB is_KMGet) = card (kme_get_buffer_msg kmeID t nA nB is_KMGet)"
+      using assms(1,2) by simp
+    moreover have "length (filter is_KMGet (network t (kmeID nA, kmeID nB))) = length (filter is_KMGet (network s (kmeID nA, kmeID nB)))"
+      using assms(1,2,3,4) assm by auto
+    ultimately have "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet = kme_get_msg_count kmeID s nA nB QKD_inv_def.is_KMGet"
+      by simp
+    moreover have "kme_get_msg_count kmeID s nA nB QKD_inv_def.is_KMGet \<le> 1"
+      using assm assms(5) unfolding inv3_def by (cases "kme s nA"; simp)
+    moreover have "finite msgs"
+      using assms assm unfolding inv3_def by simp
+    ultimately show "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> 1 \<and> finite msgs"
+      by simp
+  qed
+  moreover have "inv4 nodes kmeID t"
+    unfolding inv4_def
+  proof (intro allI impI)
+    fix nA nB slaveSae keyID encKeyID masterSae
+    assume assm:"nA \<in> nodes \<and> nB \<in> nodes \<and> kme_network_has_msg kmeID t nB nA OK"
+    then have "kme_network_has_msg kmeID s nB nA OK"
+      using kme_network_has_msg_send_no_kme_change[OF assms(1,2,3)] assms(4) by simp
+    then have "\<not> kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      using assms(5) assm unfolding inv4_def by blast
+    then show "\<not> kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      using kme_network_has_msg_send_no_kme_change[OF assms(1,2,3)] assms(4) assm by auto
+  qed
+  moreover have "inv5 nodes kmeID t"
+    unfolding inv5_def
+  proof (intro allI impI)
+    fix nA nB kmID keyID' reserveOption slaveSae keyID encKeyID masterSae
+    assume assm:"nA \<in> nodes \<and> nB \<in> nodes \<and> kme_network_has_msg kmeID t nA nB (KMPut kmID keyID' reserveOption)"
+    then have "kme_network_has_msg kmeID s nA nB (KMPut kmID keyID' reserveOption)"
+      using kme_network_has_msg_send_no_kme_change[OF assms(1,2,3)] assms(4) assm by simp
+    then have "\<not> kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      using assms(5) assm unfolding inv5_def by blast
+    then show "\<not> kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      using kme_network_has_msg_send_no_kme_change[OF assms(1,2,3)] assms(4) assm by auto
+  qed
+  moreover have "inv6 nodes kmeID t"
+    unfolding inv6_def
+  proof (intro allI impI)
+    fix nA nB slaveSae keyID encKeyID masterSae
+    assume assm:"nA \<in> nodes \<and> nB \<in> nodes \<and> kme_has_decryptionKeyID (kme t nA) = None"
+    then have "kme_has_decryptionKeyID (kme s nA) = None"
+      using assms(1,2) by simp
+    then have "\<not> kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      using assms(5) assm unfolding inv6_def by blast
+    then show "\<not> kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      using kme_network_has_msg_send_no_kme_change[OF assms(1,2,3)] assms(4) assm by auto
+  qed
+  ultimately show ?thesis
+    by simp
+qed
   
 
 lemma inv_kme_msg_field_valid:
@@ -136,7 +209,10 @@ next
     using 2 
   proof (induction rule: System_step_induct)
     case (App_Send apps kmes bridges qkd net apps' net' n msgs rcpt msg appState)
-    show ?case sorry
+    then have "appID n \<notin> kmeID ` nodes"
+      using disjoint_ids unfolding disjnt_def by fast
+    then show ?case 
+      using right_helper_send_no_kme_change[OF App_Send(2,3,7)] 2(2) by fast
   next
     case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs kmeIDs msgs)
     show ?case sorry
@@ -178,16 +254,107 @@ next
     show ?case sorry
   next
     case (Kme_Send apps kmes bridges qkd net kmes' net' n msgs rcpt msg appState)
-    show ?case sorry
+    have kmeNet:"\<And>nA nB msg. \<lbrakk>nA \<in> nodes; nB \<in> nodes; kme_network_has_msg kmeID t nA nB msg\<rbrakk> \<Longrightarrow> kme_network_has_msg kmeID s nA nB msg"
+      using Kme_Send(2,3,4,7,8,9,10) inj_kme unfolding inj_on_def by (auto split: if_splits)
+    have kmeDecKey:"\<And>n. kme_has_decryptionKeyID (kme s n) = kme_has_decryptionKeyID (kme t n)"
+      using Kme_Send(2,3,9,10) apply auto apply(cases appState) by auto
+    have "inv1 nodes kmeID t"
+      using 2(2) kmeNet kmeDecKey unfolding inv1_def by metis
+    moreover have "inv2 nodes kmeID t"
+      using 2(2) kmeNet kmeDecKey unfolding inv2_def by metis
+    moreover have "inv3 nodes kmeID t"
+      unfolding inv3_def
+    proof (intro allI impI)
+      fix nA nB state msgs'
+      assume assm:"nA \<in> nodes \<and> nB \<in> nodes \<and> kme t nA = IoaState state msgs'"
+      show "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> 1 \<and> finite msgs'"
+      proof(cases "nA = n")
+        case True
+        then show ?thesis 
+        proof(cases "kmeID nB = rcpt")
+          case True
+          then show ?thesis
+          proof(cases "is_KMGet msg")
+            case True
+            have finite: "finite msgs"
+              using assm \<open>nA = n\<close> Kme_Send(2,9) 2(2) unfolding inv3_def by force
+            have "card (kme_get_buffer_msg kmeID s n nB is_KMGet) > 0"
+              using finite True Kme_Send(2,8,9)  \<open>kmeID nB = rcpt\<close>
+              apply auto
+              apply (subst card_gt_0_iff)
+              apply (rule conjI)
+              apply blast
+              apply (rule finite_subset[where B=msgs])
+              by blast+
+            moreover have "card (kme_get_buffer_msg kmeID s n nB is_KMGet) \<le> 1"
+              using assm \<open>nA = n\<close> Kme_Send(2,3,9,10) 2(2) unfolding inv3_def by force
+            ultimately have set_one: "card (kme_get_buffer_msg kmeID s n nB is_KMGet) = 1"
+              by linarith
+            then have new_zero:"card (kme_get_buffer_msg kmeID t n nB is_KMGet) = 0"
+              using Kme_Send(2,3,8,9,10) True \<open>kmeID nB = rcpt\<close> apply auto
+              by (smt (verit) card.empty card_1_singleton_iff empty_Collect_eq mem_Collect_eq prod.inject
+                  singleton_iff)
+            have "(length (filter is_KMGet (network s (kmeID n, kmeID nB)))) = 0"
+              using set_one assm \<open>nA = n\<close> Kme_Send(2,3,9,10) 2(2) unfolding inv3_def by force
+            then have "(length (filter is_KMGet (network t (kmeID n, kmeID nB)))) = 1"
+              using Kme_Send(2,3,7,8,9,10) True \<open>kmeID nB = rcpt\<close> by auto
+            then have "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> 1"
+              using new_zero \<open>nA = n\<close> by presburger
+            then show ?thesis
+              using assm \<open>nA = n\<close> Kme_Send(2,3,9,10) 2(2) unfolding inv3_def by force
+          next
+            case False
+            then have "kme_get_msg_count kmeID s n nB is_KMGet = kme_get_msg_count kmeID t n nB is_KMGet"
+              using assm Kme_Send(2,3,4,7,8,9,10) inj_kme unfolding inj_on_def apply auto
+              by (rule arg_cong[where f=card], auto)
+            then have "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> 1 \<and> finite msgs"
+              using \<open>nA = n\<close> 2(2) assm Kme_Send(2,3,9,10) unfolding inv3_def by fastforce
+            then show ?thesis
+              using \<open>nA = n\<close> assm Kme_Send(3,10) by force
+          qed
+        next
+          case False
+          then have "kme_get_msg_count kmeID s n nB is_KMGet = kme_get_msg_count kmeID t n nB is_KMGet"
+            using assm Kme_Send(2,3,4,7,8,9,10) inj_kme unfolding inj_on_def by auto
+          then have "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> 1 \<and> finite msgs"
+            using \<open>nA = n\<close> 2(2) assm Kme_Send(2,3,9,10) unfolding inv3_def by fastforce
+          then show ?thesis
+            using \<open>nA = n\<close> assm Kme_Send(3,10) by force
+        qed
+      next
+        case False
+        then have "kme_get_msg_count kmeID s nA nB is_KMGet = kme_get_msg_count kmeID t nA nB is_KMGet"
+          using assm Kme_Send(2,3,4,7,9,10) inj_kme unfolding inj_on_def by force
+        then show ?thesis
+          using 2(2) Kme_Send(2,3,9,10) False assm unfolding inv3_def by force
+      qed
+    qed
+    moreover have "inv4 nodes kmeID t"
+      using 2(2) kmeNet kmeDecKey unfolding inv4_def by metis
+    moreover have "inv5 nodes kmeID t"
+      using 2(2) kmeNet kmeDecKey unfolding inv5_def by metis
+    moreover have "inv6 nodes kmeID t"
+      using 2(2) kmeNet kmeDecKey unfolding inv6_def by metis
+    ultimately show ?case
+      by simp
   next
     case (Bridge_Send apps kmes bridges qkds net bridges' net' n b msgs rcpt msg bridgeState)
-    show ?case sorry
+    then have "b \<notin> kmeID ` nodes"
+      using disjoint_ids unfolding disjnt_def by fast
+    then show ?case 
+      using right_helper_send_no_kme_change[OF Bridge_Send(2,3,8)] 2(2) by fast
   next
     case (Qkd_Send apps kmes bridges qkd net qkd' net' pid gen sent rcpt keyID keyVal)
-    show ?case sorry
+    then have "pid \<notin> kmeID ` nodes"
+      using disjoint_ids unfolding disjnt_def by fast
+    then show ?case 
+      using right_helper_send_no_kme_change[OF Qkd_Send(2,3,8)] 2(2) by fast
   next
     case (Network_Ext_Send apps kmes bridges qkd net net' sender rcpt msg all)
-    show ?case sorry
+    then have "sender \<notin> kmeID ` nodes"
+      using disjoint_ids unfolding disjnt_def by fast
+    then show ?case 
+      using right_helper_send_no_kme_change[OF Network_Ext_Send(2,3,12)] 2(2) by fast
   qed (use 2(2) right_helper_receive_no_kme_change in \<open>meson+\<close>)
 qed
 
