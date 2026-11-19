@@ -190,7 +190,32 @@ proof -
   ultimately show ?thesis
     by simp
 qed
-  
+
+lemma can_send_in_set_tl:
+  assumes "can_send net a b m"
+      and "x \<in> set (net (a, b))"
+      and "x \<noteq> m"
+  shows "True"
+  using assms
+  by (cases "net (a, b)") (auto)
+
+lemma kme_receive_no_network_change:
+  assumes "s = (apps, kmes, bridges, qkd, net)"
+    and "t = (apps, kmes', bridges, qkd, net')"
+    and "net' = rmv_msg net sender (kmeID n) msgR"
+    and "can_send net sender (kmeID n) msgR"
+    and "kmes n = IoaState state msgs"
+    and "kmes' = kmes(n := IoaState state' (msgs \<union> newMsgs))"
+    and "(kmeID n, kmeID nB, msg) \<notin> newMsgs"
+    and "msgR \<noteq> msg"
+  shows "kme_network_has_msg kmeID s nA nB msg = kme_network_has_msg kmeID t nA nB msg"
+  using assms apply auto
+       apply (metis list.exhaust_sel set_ConsD)
+      apply (meson list.set_sel(2))
+     apply (metis list.exhaust_sel set_ConsD)
+    apply (metis list.set_sel(2))
+   apply (metis list.collapse set_ConsD)
+  by (metis list.set_sel(2))
 
 lemma inv_kme_msg_field_valid:
   shows "invariant System.ioa (right nodes kmeID)"
@@ -214,8 +239,64 @@ next
     then show ?case 
       using right_helper_send_no_kme_change[OF App_Send(2,3,7)] 2(2) by fast
   next
-    case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs kmeIDs msgs)
-    show ?case sorry
+    case (Kme_KMPost_NewKeyVal apps kmes bridges qkd net kmes' net' n sender otherKme keyID keyVal store route saeToKme bridgeIDs' kmeIDs msgs)
+    then have "inv1 nodes kmeID t"
+    proof -
+      have "\<And>nA. kme_has_decryptionKeyID (kme s nA) = kme_has_decryptionKeyID (kme t nA)"
+        using  Kme_KMPost_NewKeyVal(2,3,10,11) by auto
+      moreover have "\<And>nA nB slaveSae keyID encKeyID masterSae. kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae) = kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+        using kme_receive_no_network_change[OF Kme_KMPost_NewKeyVal(2,3,7,8,10,11)] by simp
+      ultimately show ?thesis
+        using 2(2) unfolding inv1_def by metis
+    qed
+    moreover have "inv2 nodes kmeID t"
+    proof -
+      have "\<And>nA nB keyID keyVal. kme_network_has_msg kmeID s nA nB (KeyResponse keyID keyVal) = kme_network_has_msg kmeID t nA nB (KeyResponse keyID keyVal)"
+        using kme_receive_no_network_change[OF Kme_KMPost_NewKeyVal(2,3,7,8,10,11)] by simp
+      moreover have "\<And>nA nB slaveSae keyID encKeyID masterSae. kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae) = kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+        using kme_receive_no_network_change[OF Kme_KMPost_NewKeyVal(2,3,7,8,10,11)] by simp
+      ultimately show ?thesis
+        using 2(2) unfolding inv2_def  by metis
+    qed
+    moreover have "inv3 nodes kmeID t"
+      sorry
+    moreover have "inv4 nodes kmeID t"
+    proof -
+      have "sender \<in> \<Union> (bridgeIDs ` nodes)"
+        sorry
+      then have "\<And>nA nB keyID keyVal. kme_network_has_msg kmeID s nA nB OK = kme_network_has_msg kmeID t nA nB OK"
+        using kme_receive_no_network_change[OF Kme_KMPost_NewKeyVal(2,3,7,8,10,11)] disjoint_ids unfolding disjnt_def
+        apply (rename_tac nA nB keyID' keyVal')
+        apply (subgoal_tac "kmeID nB \<noteq> sender")
+        by (auto simp: disjoint_iff)
+      moreover have "\<And>nA nB slaveSae keyID encKeyID masterSae. kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae) = kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+        using kme_receive_no_network_change[OF Kme_KMPost_NewKeyVal(2,3,7,8,10,11)] by simp
+      ultimately show ?thesis
+        using 2(2) unfolding inv4_def  by metis
+    qed
+    moreover have "inv5 nodes kmeID t"
+    proof -
+      have "\<And>nA. kme_has_decryptionKeyID (kme s nA) = kme_has_decryptionKeyID (kme t nA)"
+        using  Kme_KMPost_NewKeyVal(2,3,10,11) by auto
+      (*have "\<And>nA nB kmID keyID' reserveOption. kme_network_has_msg kmeID s nA nB (KMPut kmID keyID' reserveOption) = kme_network_has_msg kmeID t nA nB (KMPut kmID keyID' reserveOption)"
+        using kme_receive_no_network_change[OF Kme_KMPost_NewKeyVal(2,3,7,8,10,11)] by simp*)
+      moreover have "\<And>nA nB slaveSae keyID encKeyID masterSae. kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae) = kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+        using kme_receive_no_network_change[OF Kme_KMPost_NewKeyVal(2,3,7,8,10,11)] by simp
+      ultimately show ?thesis
+        using 2(2) unfolding inv5_def inv6_def
+        by metis
+    qed
+    moreover have "inv6 nodes kmeID t"
+    proof -
+      have "\<And>nA. kme_has_decryptionKeyID (kme s nA) = kme_has_decryptionKeyID (kme t nA)"
+        using  Kme_KMPost_NewKeyVal(2,3,10,11) by auto
+      moreover have "\<And>nA nB slaveSae keyID encKeyID masterSae. kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae) = kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+        using kme_receive_no_network_change[OF Kme_KMPost_NewKeyVal(2,3,7,8,10,11)] by simp
+      ultimately show ?thesis
+        using 2(2) unfolding inv6_def by metis
+    qed
+    ultimately show ?case 
+      by blast
   next
     case (Kme_KMPut_Confirm apps kmes bridges qkd net kmes' net' n sender otherKme keyID store route saeToKme bridgeIDs kmeIDs msgs)
     show ?case sorry
