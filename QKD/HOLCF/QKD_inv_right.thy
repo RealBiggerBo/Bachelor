@@ -484,6 +484,87 @@ lemma kme_other_exclusive_preserved:
   shows "kme_network_has_msg kmeID t nA nB m1 \<longrightarrow> \<not> kme_network_has_msg kmeID t nA nB m2"
   using kme_network_has_msg_other_mono[OF assms(1-7)] assms(8) by blast
 
+lemma inv1_induct_one_kme:
+  assumes "s = (apps, kmes, bridges, qkd, net)"
+    and "t = (apps, kmes', bridges, qkd, net')"
+    and "net' = net((sender, kmeID n) := tl (net (sender, kmeID n)))"
+    and "can_send net sender (kmeID n) msgR"
+    and "kmes n = IoaState state msgs"
+    and "kmes' = kmes(n := IoaState state' (msgs \<union> newMsgs))"
+    and "n \<in> nodes"
+    and "inv1 nodes kmeID s"
+    and sent: "\<And>nB slaveSae keyID encKeyID masterSae.
+                 nB \<in> nodes \<Longrightarrow>
+                 (kmeID n, kmeID nB, KMGet slaveSae keyID encKeyID masterSae) \<in> newMsgs \<Longrightarrow>
+                 kme_has_decryptionKeyID (IoaState state' (msgs \<union> newMsgs)) = Some encKeyID"
+    and kept: "(\<forall>encKeyID. kme_has_decryptionKeyID (IoaState state msgs) = Some encKeyID \<longrightarrow>
+                          kme_has_decryptionKeyID (IoaState state' (msgs \<union> newMsgs)) = Some encKeyID)
+             \<or> (\<forall>nB slaveSae keyID encKeyID masterSae. nB \<in> nodes \<longrightarrow>
+                  \<not> kme_network_has_msg kmeID s n nB (KMGet slaveSae keyID encKeyID masterSae))"
+  shows "inv1 nodes kmeID t"
+proof -
+  have kme_s: "kme s n = IoaState state msgs"
+    using assms(1,5) by simp
+  have kme_t: "kme t n = IoaState state' (msgs \<union> newMsgs)"
+    using assms(2,6) by simp
+  have kme_other: "\<And>nA. nA \<noteq> n \<Longrightarrow> kme t nA = kme s nA"
+    using assms(1,2,6) by simp
+  have net_old: "\<And>p m. m \<in> set (network t p) \<Longrightarrow> m \<in> set (network s p)"
+    using assms(1-3) apply (cases "net (sender, kmeID n)") by (auto split: if_splits)
+  have other_mono: "\<And>nA nB m. nA \<noteq> n \<Longrightarrow>
+        kme_network_has_msg kmeID t nA nB m \<Longrightarrow> kme_network_has_msg kmeID s nA nB m"
+    by (auto dest: net_old simp: kme_other)
+  have n_old_or_new: "\<And>nB m. kme_network_has_msg kmeID t n nB m \<Longrightarrow>
+        kme_network_has_msg kmeID s n nB m \<or> (kmeID n, kmeID nB, m) \<in> newMsgs"
+    by (auto dest: net_old simp: kme_s kme_t)
+  have inv1_s: "\<And>nA nB slaveSae keyID encKeyID masterSae.
+        nA \<in> nodes \<Longrightarrow> nB \<in> nodes \<Longrightarrow>
+        kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae) \<Longrightarrow>
+        kme_has_decryptionKeyID (kme s nA) = Some encKeyID"
+    using assms(8) unfolding inv1_def by blast
+  show ?thesis
+    unfolding inv1_def
+  proof (intro allI impI)
+    fix nA nB slaveSae keyID encKeyID masterSae
+    assume a: "nA \<in> nodes \<and> nB \<in> nodes \<and>
+               kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+    then have nA_nodes: "nA \<in> nodes" and nB_nodes: "nB \<in> nodes"
+      and has_t: "kme_network_has_msg kmeID t nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+      by blast+
+    show "kme_has_decryptionKeyID (kme t nA) = Some encKeyID"
+    proof (cases "nA = n")
+      case False
+      have has_s: "kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae)"
+        by (rule other_mono[OF False has_t])
+      have "kme_has_decryptionKeyID (kme s nA) = Some encKeyID"
+        by (rule inv1_s[OF nA_nodes nB_nodes has_s])
+      then show ?thesis
+        by (simp add: kme_other[OF False])
+    next
+      case True
+      have has_t_n: "kme_network_has_msg kmeID t n nB (KMGet slaveSae keyID encKeyID masterSae)"
+        using has_t True by fastforce
+      consider (new) "(kmeID n, kmeID nB, KMGet slaveSae keyID encKeyID masterSae) \<in> newMsgs"
+        | (old) "kme_network_has_msg kmeID s n nB (KMGet slaveSae keyID encKeyID masterSae)"
+        using n_old_or_new[OF has_t_n] by blast
+      then show ?thesis
+      proof cases
+        case new
+        from sent[OF nB_nodes new] show ?thesis
+          by (simp add: True kme_t)
+      next
+        case old
+        have dk_s: "kme_has_decryptionKeyID (IoaState state msgs) = Some encKeyID"
+          using inv1_s[OF assms(7) nB_nodes old] by (simp add: kme_s)
+        have "kme_has_decryptionKeyID (IoaState state' (msgs \<union> newMsgs)) = Some encKeyID"
+          using kept dk_s old nB_nodes by blast
+        then show ?thesis
+          by (simp add: True kme_t)
+      qed
+    qed
+  qed
+qed
+
 lemma inv5_induct_inv6lllllllll:
   assumes "s = (apps, kmes, bridges, qkd, net)"
     and "t = (apps, kmes', bridges, qkd, net')"
@@ -682,7 +763,8 @@ next
   next
     case (Kme_GetKeyWithID_IDNotFound_Reserved apps kmes bridges qkd net kmes' net' n nextKme masterSae slaveSae keyID keyID2 store route saeToKme bridgeIDs kmeIDs msgs)
     have "inv1 nodes kmeID t"
-      using inv1_induct[OF Kme_GetKeyWithID_IDNotFound_Reserved(2,3,7-10)] Kme_GetKeyWithID_IDNotFound_Reserved 2(2) sorry
+      using inv1_induct_one_kme[OF Kme_GetKeyWithID_IDNotFound_Reserved(2,3,7,8,9,10,4)] Kme_GetKeyWithID_IDNotFound_Reserved(3,10) 2(2)
+      by auto
     moreover have "inv2 nodes kmeID t"
       using inv2_induct[OF Kme_GetKeyWithID_IDNotFound_Reserved(2,3,7-10)] Kme_GetKeyWithID_IDNotFound_Reserved 2(2) sorry
     moreover have "inv3 nodes kmeID t"
@@ -730,7 +812,7 @@ next
   next
     case (Kme_KMGetKeyWithID_IDNotFound_Reserved apps kmes bridges qkd net kmes' net' n nextKme prevKme masterSae keyID keyID2 slaveSae store route keyID3 saeToKme bridgeIDs kmeIDs msgs)
     have "inv1 nodes kmeID t"
-      using inv1_induct[OF Kme_KMGetKeyWithID_IDNotFound_Reserved(2,3,7,8,9,10)] Kme_KMGetKeyWithID_IDNotFound_Reserved(2,3,9,10) 2(2) sorry
+      using inv1_induct_one_kme[OF Kme_KMGetKeyWithID_IDNotFound_Reserved(2,3,7,8,9,10,4)] Kme_KMGetKeyWithID_IDNotFound_Reserved(2,3,9,10) 2(2) by simp
     moreover have "inv2 nodes kmeID t"
       using inv2_induct[OF Kme_KMGetKeyWithID_IDNotFound_Reserved(2,3,7,8,9,10)] Kme_KMGetKeyWithID_IDNotFound_Reserved(2,3,9,10) 2(2) sorry
     moreover have "inv3 nodes kmeID t"
@@ -746,7 +828,7 @@ next
   next
     case (Kme_KMGetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme prevKme keyID keyVal' store keyID2 val2 keyID3 val3 masterSae route saeToKme bridgeIDs kmeIDs msgs slaveSae)
     have "inv1 nodes kmeID t"
-      using inv1_induct[OF Kme_KMGetKeyWithID_IDNotFound_Return(2,3,7,8,11,12)] Kme_KMGetKeyWithID_IDNotFound_Return(2,3,11,12) 2(2) sorry
+      using inv1_induct_one_kme[OF Kme_KMGetKeyWithID_IDNotFound_Return(2,3,7,8,11,12,4)] Kme_KMGetKeyWithID_IDNotFound_Return(2,3,11,12) 2(2) sorry
     moreover have "inv2 nodes kmeID t"
       using inv2_induct[OF Kme_KMGetKeyWithID_IDNotFound_Return(2,3,7,8,11,12)] Kme_KMGetKeyWithID_IDNotFound_Return(2,3,11,12) 2(2) sorry
     moreover have "inv3 nodes kmeID t"
@@ -762,7 +844,7 @@ next
   next
     case (Kme_GetKeyWithID_IDNotFound_Return apps kmes bridges qkd net kmes' net' n nextKme keyID keyVal' store keyID2 val2 masterSae sender route saeToKme bridgeIDs kmeIDs msgs)
     have "inv1 nodes kmeID t"
-      using inv1_induct[OF Kme_GetKeyWithID_IDNotFound_Return(2,3,7,8,10,11)] Kme_GetKeyWithID_IDNotFound_Return(2,3,10,11) 2(2) sorry
+      using inv1_induct_one_kme[OF Kme_GetKeyWithID_IDNotFound_Return(2,3,7,8,10,11,4)] Kme_GetKeyWithID_IDNotFound_Return(2,3,10,11) 2(2) sorry
     moreover have "inv2 nodes kmeID t"
     proof -
       have "sender \<notin> kmeID ` nodes"
