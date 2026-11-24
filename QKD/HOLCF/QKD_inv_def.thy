@@ -133,19 +133,19 @@ section Right
 
 definition inv1 where
   \<open>inv1 nodes kmeID s \<longleftrightarrow>
-    (\<forall>nA nB slaveSae keyID encKeyID masterSae.
+    (\<forall>nA nB masterSae keyID encKeyID slaveSae.
       nA \<in> nodes \<and>
       nB \<in> nodes \<and>
-      kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae)
+      kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae)
       \<longrightarrow> kme_has_decryptionKeyID (kme s nA) = Some encKeyID)\<close>
 
 definition inv2 where
   \<open>inv2 nodes kmeID s \<longleftrightarrow>
-    (\<forall>nA nB slaveSae keyID' keyVal' keyID encKeyID masterSae.
+    (\<forall>nA nB masterSae keyID' keyVal' keyID encKeyID slaveSae.
       nA \<in> nodes \<and>
       nB \<in> nodes \<and>
       kme_network_has_msg kmeID s nB nA (KeyResponse keyID' keyVal')
-      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae))\<close>
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
 
 definition inv3 where
   \<open>inv3 nodes kmeID s \<longleftrightarrow>
@@ -157,27 +157,27 @@ definition inv3 where
 
 definition inv4 where
   \<open>inv4 nodes kmeID s \<longleftrightarrow>
-    (\<forall>nA nB slaveSae keyID encKeyID masterSae.
+    (\<forall>nA nB masterSae keyID encKeyID slaveSae.
       nA \<in> nodes \<and>
       nB \<in> nodes \<and>
       kme_network_has_msg kmeID s nB nA OK
-      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae))\<close>
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
 
 definition inv5 where
   \<open>inv5 nodes kmeID s \<longleftrightarrow>
-    (\<forall>nA nB kmID keyID' reserveOption slaveSae keyID encKeyID masterSae.
+    (\<forall>nA nB kmID keyID' reserveOption masterSae keyID encKeyID slaveSae.
       nA \<in> nodes \<and>
       nB \<in> nodes \<and>
       kme_network_has_msg kmeID s nA nB (KMPut kmID keyID' reserveOption)
-      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae))\<close>
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
 
 definition inv6 where
   \<open>inv6 nodes kmeID s \<longleftrightarrow>
-    (\<forall>nA nB slaveSae keyID encKeyID masterSae.
+    (\<forall>nA nB masterSae keyID encKeyID slaveSae.
       nA \<in> nodes \<and>
       nB \<in> nodes \<and>
       kme_has_decryptionKeyID (kme s nA) = None
-      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet slaveSae keyID encKeyID masterSae))\<close>
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
 
 abbreviation right where
   \<open>right nodes kmeID s \<equiv>
