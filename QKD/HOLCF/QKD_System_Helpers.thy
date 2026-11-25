@@ -164,7 +164,7 @@ assumes "reachable System.ioa s"
           sender \<in> kmeIDs;
           kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs kmeIDs)
-          (msgs \<union> {(kmeID n, sender, OK)}))\<rbrakk> \<Longrightarrow> P t"
+          (msgs))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>apps kmes bridges qkd net kmes' net' n sender host slaveSae store route saeToKme bridgeIDs kmeIDs msgs keyID val.
          \<lbrakk>s \<midarrow>a\<midarrow>System.ioa\<rightarrow> t;
           s = (apps, kmes, bridges, qkd, net); t = (apps, kmes', bridges, qkd, net');

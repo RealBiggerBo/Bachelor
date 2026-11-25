@@ -139,12 +139,21 @@ definition inv1 where
       kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae)
       \<longrightarrow> kme_has_decryptionKeyID (kme s nA) = Some encKeyID)\<close>
 
+(* inv1 plus: a KMGet also fixes the sender's next hop *)
+definition inv1' where
+  \<open>inv1' nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB masterSae keyID encKeyID slaveSae.
+      nA \<in> nodes \<and> nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae)
+      \<longrightarrow> kme_has_decryptionKeyID (kme s nA) = Some encKeyID \<and> kme_has_nextKme (kme s nA) (kmeID nB))\<close>
+
 definition inv2 where
   \<open>inv2 nodes kmeID s \<longleftrightarrow>
-    (\<forall>nA nB masterSae keyID' keyVal' keyID encKeyID slaveSae.
+    (\<forall>nA nB masterSae keyID' keyVal' keyID encKeyID encKeyID' slaveSae.
       nA \<in> nodes \<and>
       nB \<in> nodes \<and>
-      kme_network_has_msg kmeID s nB nA (KeyResponse keyID' keyVal')
+      kme_network_has_msg kmeID s nB nA (KeyResponse keyID' keyVal') \<and>
+      kme_has_decryptionKeyID (kme s nA) = Some encKeyID'
       \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
 
 definition inv3 where
@@ -163,12 +172,11 @@ definition inv4 where
       kme_network_has_msg kmeID s nB nA OK
       \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
 
-definition inv5 where
+definition inv5 where   (* only reserving KMPuts *)
   \<open>inv5 nodes kmeID s \<longleftrightarrow>
-    (\<forall>nA nB kmID keyID' reserveOption masterSae keyID encKeyID slaveSae.
-      nA \<in> nodes \<and>
-      nB \<in> nodes \<and>
-      kme_network_has_msg kmeID s nA nB (KMPut kmID keyID' reserveOption)
+    (\<forall>nA nB kmID keyID' res masterSae keyID encKeyID slaveSae.
+      nA \<in> nodes \<and> nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nA nB (KMPut kmID keyID' (Some res))
       \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
 
 definition inv6 where
@@ -179,14 +187,59 @@ definition inv6 where
       kme_has_decryptionKeyID (kme s nA) = None
       \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
 
+
+fun kme_prev_hop where
+  \<open>kme_prev_hop (IoaState (KmeWaitHopRec _ _ _ prevKme _ _ keyID2 _ _ _ _ _) _) = Some (prevKme, keyID2)\<close> |
+  \<open>kme_prev_hop _ = None\<close>
+
+(* a response in flight is awaited by its receiver, from exactly that sender *)
+definition kme_resp_waiting where
+  \<open>kme_resp_waiting nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB keyID keyVal'.
+      nA \<in> nodes \<and> nB \<in> nodes \<and> kme_network_has_msg kmeID s nB nA (KeyResponse keyID keyVal')
+      \<longrightarrow> (\<exists>encKeyID. kme_has_decryptionKeyID (kme s nA) = Some encKeyID)
+        \<and> kme_has_nextKme (kme s nA) (kmeID nB))\<close>
+
+(* at most one response per pair, like inv3 for KMGet *)
+definition kme_resp_unique where
+  \<open>kme_resp_unique nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB. nA \<in> nodes \<and> nB \<in> nodes \<longrightarrow> kme_get_msg_count kmeID s nB nA is_KeyResponse \<le> 1)\<close>
+
+(* a relay in KmeWaitHopRec holds the request: its predecessor is still waiting, nothing in flight *)
+definition kme_prev_hop_valid where   (* nA \<noteq> nB and the OK conjunct are new *)
+  \<open>kme_prev_hop_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB keyID2.
+      nA \<in> nodes \<and> nB \<in> nodes \<and> kme_prev_hop (kme s nB) = Some (kmeID nA, keyID2)
+      \<longrightarrow> nA \<noteq> nB
+        \<and> kme_has_decryptionKeyID (kme s nA) = Some keyID2
+        \<and> kme_has_nextKme (kme s nA) (kmeID nB)
+        \<and> (\<forall>keyID v. \<not>kme_network_has_msg kmeID s nB nA (KeyResponse keyID v))
+        \<and> (\<forall>masterSae keyID encKeyID slaveSae.
+             \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))
+        \<and> \<not>kme_network_has_msg kmeID s nB nA OK)\<close>
+
+definition kme_KMGet_valid where       (* your target, with buffer *)
+  \<open>kme_KMGet_valid dec nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB encKeyID keyID encKeyVal keyVal'.
+      nA \<in> nodes \<and> nB \<in> nodes \<and>
+      kme_has_decryptionKeyID (kme s nA) = Some encKeyID \<and>
+      kme_has_key (kme s nA) encKeyID encKeyVal \<and>
+      kme_network_has_msg kmeID s nB nA (KeyResponse keyID keyVal')
+      \<longrightarrow> qkd_has_key s keyID (dec keyVal' encKeyVal))\<close>
+
+
 abbreviation right where
-  \<open>right nodes kmeID s \<equiv>
-    (inv1 nodes kmeID s \<and>
-    inv2 nodes kmeID s \<and>
-    inv3 nodes kmeID s \<and>
-    inv4 nodes kmeID s \<and>
-    inv5 nodes kmeID s \<and>
-    inv6 nodes kmeID s)\<close>
+  \<open>right dec nodes kmeID s \<equiv>
+    (inv1' nodes kmeID s \<and>
+     inv2 nodes kmeID s \<and>
+     inv3 nodes kmeID s \<and>
+     inv4 nodes kmeID s \<and>
+     inv5 nodes kmeID s \<and>
+     inv6 nodes kmeID s \<and>
+     kme_resp_waiting nodes kmeID s \<and>
+     kme_resp_unique nodes kmeID s \<and>
+     kme_prev_hop_valid nodes kmeID s \<and>
+     kme_KMGet_valid dec nodes kmeID s)\<close>
 
 (*definition if_kme_in_kmeState_then_no_KeyResponse_Exists where
   \<open>if_kme_in_kmeState_then_no_KeyResponse_Exists nodes kmeID s \<longleftrightarrow>

@@ -83,7 +83,7 @@ lemma kme_invariant_step[consumes 6, case_names
           sender \<in> kmeIDs;
           kmes n = IoaState (Kme store route saeToKme bridgeIDs kmeIDs) msgs;
           kmes' = kmes(n := IoaState (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs kmeIDs)
-          (msgs \<union> {(kmeID n, sender, OK)}))\<rbrakk> \<Longrightarrow> P t"
+          (msgs))\<rbrakk> \<Longrightarrow> P t"
     and "\<And>sender host slaveSae store route saeToKme bridgeIDs kmeIDs msgs keyID val.
          \<lbrakk>a = Receive sender (kmeID n) (GetKey host slaveSae); net' = rmv_msg net sender (kmeID n) (GetKey host slaveSae);
           can_send net sender (kmeID n) (GetKey host slaveSae);
@@ -245,7 +245,7 @@ proof
             proof (cases "sender \<in> kmeIDs")
               case True
               then have "kmes' n = IoaState (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs kmeIDs)
-                                        (msgs \<union> {(kmeID n, sender, OK)})"
+                                        (msgs)"
                 using a_split assms(4) kme_node_trans IoaState Kme msg_split unfolding trans_of_def apply simp
                 unfolding actions_def asig_projections asig_of_def apply simp
                 apply (auto elim: kme_step_KMPutE)

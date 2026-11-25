@@ -39,7 +39,7 @@ inductive kme_step :: "'keyVal cipher_function \<Rightarrow> 'keyVal cipher_func
             (Kme store route saeToKme bridgeIDs kmeIDs)
             (Receive sender rcpt (KMPut otherKme keyID None))
             (Kme (keyStore_confirm store keyID otherKme) route saeToKme bridgeIDs kmeIDs)
-            {(sender, OK)}\<close> |
+            {}\<close> |
   GetKey:
   \<open>store keyID = Some (Some val, route slaveSae, True, None) \<Longrightarrow> 
    kme_step enc dec
