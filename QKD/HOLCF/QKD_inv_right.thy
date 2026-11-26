@@ -59,7 +59,6 @@ proof -
       using assms assm unfolding inv3_def by simp
     ultimately show "kme_get_msg_count kmeID t nA nB QKD_inv_def.is_KMGet \<le> 1 \<and> finite msgs"
       by linarith
-try0
   qed
   moreover have "inv4 nodes kmeID t"
     unfolding inv4_def
