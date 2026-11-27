@@ -12,6 +12,7 @@ datatype ('keyID, 'keyVal, 'proc) msg =
   KMPost (KMPost_kmePartner: 'proc) (KMPost_keyID: 'keyID) (KMPost_keyVal: 'keyVal) |
   KMPut (KMPut_ownKmeID: 'proc) (KMPut_keyID: 'keyID) (KMPut_reservedOption: "'proc option") |
   KMGet (KMGet_masterSaeID: 'proc) (KMGet_keyID: 'keyID) (KMGet_encryptionKeyID: 'keyID) (KMGet_slaveSaeID: 'proc)|
+  KMKeyResponse (KMKeyResponse_encKeyID: 'keyID) (KMKeyResponse_keyID: 'keyID) (KMKey_Response_keyVal: 'keyVal) |
   AppIDRelay (AppIDRelay_keyID: 'keyID) |
   OK
 

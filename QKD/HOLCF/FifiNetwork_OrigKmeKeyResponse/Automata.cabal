@@ -1,0 +1,29 @@
+cabal-version: 3.0
+name: automata
+version: 0.1.0.0
+
+executable server
+    main-is: Server.hs
+    hs-source-dirs: ServerAutomaton
+    other-modules:
+        ServerAutomaton
+    build-depends:
+        containers,
+        aeson,
+        base,
+        network,
+        bytestring
+    default-language: Haskell2010
+
+executable client
+    main-is: Client.hs
+    hs-source-dirs: ClientAutomaton
+    other-modules:
+        ClientAutomaton
+    build-depends:
+        containers,
+        aeson,
+        base,
+        network,
+        bytestring
+    default-language: Haskell2010

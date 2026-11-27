@@ -1,0 +1,393 @@
+theory QKD_inv_def
+  imports QKD_Datatypes
+begin
+
+abbreviation app where
+  \<open>app s n \<equiv> (fst s) n\<close>
+
+abbreviation kme where
+  \<open>kme s n \<equiv> (fst (snd s)) n\<close>
+
+abbreviation bridge where
+  \<open>bridge s n bridgeID \<equiv> (fst (snd (snd s))) (n, bridgeID)\<close>
+
+abbreviation qkd_layer where
+  \<open>qkd_layer s \<equiv> fst (snd (snd (snd s)))\<close>
+
+abbreviation network where
+  \<open>network s \<equiv> (snd (snd (snd (snd s))))\<close>
+
+fun kme_has_key where
+  \<open>kme_has_key (IoaState (Kme store _ _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitReserve _ _ store _ _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitHop _ _ _ _ _ store _ _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close> |
+  \<open>kme_has_key (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ store _ _ _ _) _) keyID keyVal = (\<exists>a b c. store(keyID) = Some (Some keyVal, a, b, c))\<close>
+
+fun kme_get_store where
+  \<open>kme_get_store (IoaState (Kme store _ _ _ _) _) = store\<close> |
+  \<open>kme_get_store (IoaState (KmeWaitReserve _ _ store _ _ _ _) _) = store\<close> |
+  \<open>kme_get_store (IoaState (KmeWaitHop _ _ _ _ _ store _ _ _ _) _) = store\<close> |
+  \<open>kme_get_store (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ store _ _ _ _) _) = store\<close>
+
+fun kme_get_bridgeIDs_field where
+  \<open>kme_get_bridgeIDs_field (IoaState (Kme _ _ _ bridgeIDs _) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitReserve _ _ _ _ _ bridgeIDs _) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitHop _ _ _ _ _ _ _ _ bridgeIDs _) _) = bridgeIDs\<close> |
+  \<open>kme_get_bridgeIDs_field (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ _ _ _ bridgeIDs _) _) = bridgeIDs\<close>
+
+fun kme_get_kmeIDs_field where
+  \<open>kme_get_kmeIDs_field (IoaState (Kme _ _ _ _ kmeIDs) _) = kmeIDs\<close> |
+  \<open>kme_get_kmeIDs_field (IoaState (KmeWaitReserve _ _ _ _ _ _ kmeIDs) _) = kmeIDs\<close> |
+  \<open>kme_get_kmeIDs_field (IoaState (KmeWaitHop _ _ _ _ _ _ _ _ _ kmeIDs) _) = kmeIDs\<close> |
+  \<open>kme_get_kmeIDs_field (IoaState (KmeWaitHopRec _ _ _ _ _ _ _ _ _ _ _ kmeIDs) _) = kmeIDs\<close>
+
+fun kme_has_decryptionKeyID where
+  \<open>kme_has_decryptionKeyID (IoaState (KmeWaitHop _ _ _ _ keyID2 _ _ _ _ _) _) = Some keyID2\<close> |
+  \<open>kme_has_decryptionKeyID (IoaState (KmeWaitHopRec keyID3 _ _ _ _ _ _ _ _ _ _ _) _) = Some keyID3\<close> |
+  \<open>kme_has_decryptionKeyID _ = None\<close>
+
+abbreviation qkd_has_key where
+  \<open>qkd_has_key s keyID keyVal \<equiv> \<exists>gen sent. (qkd_layer s = QKD gen sent) \<and> (keyID, keyVal) \<in> (snd ` gen \<union> sent)\<close>
+
+abbreviation network_has_msg where
+  \<open>network_has_msg s sender rcpt msg \<equiv> msg \<in> (set ((network s) (sender, rcpt)))\<close>
+
+definition key_consistent where
+  \<open>key_consistent nodes s \<longleftrightarrow>
+    (\<forall>n1 n2 msgs1 msgs2 master1 master2 oSae1 oSae2 kme1 kme2 store1 store2 keyID keyVal1 keyVal2.
+      n1 \<in> nodes \<and> 
+      n2 \<in> nodes \<and> 
+      app s n1 = IoaState (App master1 oSae1 kme1 store1) msgs1 \<and>
+      app s n2 = IoaState (App master2 oSae2 kme2 store2) msgs2 \<and>
+      (keyID, keyVal1) \<in> store1 \<and>
+      (keyID, keyVal2) \<in> store2
+      \<longrightarrow> keyVal1 = keyVal2)\<close>
+
+definition app_key_sent where
+  \<open>app_key_sent nodes s \<longleftrightarrow>
+    (\<forall>n master oSae kme store msgs keyID keyVal.
+      n \<in> nodes \<and>
+      app s n = IoaState (App master oSae kme store) msgs \<and>
+      (keyID, keyVal) \<in> store
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition app_kme_field_valid where
+  \<open>app_kme_field_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>n master oSae kme store msgs.
+      n \<in> nodes \<and>
+      app s n = IoaState (App master oSae kme store) msgs
+      \<longrightarrow> kme \<in> kmeID ` nodes)\<close>
+
+definition kme_app_msg_sent where
+  \<open>kme_app_msg_sent nodes appID kmeID s \<longleftrightarrow>
+    (\<forall>s1 r1 keyID keyVal.
+      s1 \<in> kmeID ` nodes \<and>
+      r1 \<in> appID ` nodes \<and>
+      network_has_msg (network s) s1 r1 (KeyResponse keyID keyVal)
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition kme_app_buffer_sent where
+  \<open>kme_app_buffer_sent nodes appID kmeID s \<longleftrightarrow>
+    (\<forall>n state msgs keyID keyVal.
+      n \<in> nodes \<and>
+      kme s n = IoaState state msgs \<and>
+      (kmeID n, appID n, KeyResponse keyID keyVal) \<in> msgs
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+(*Wenn es eine KMGet Nachricht mit key als decipher schlüssel hat \<longrightarrow> dann hat ein kme eine decryptionKey key*)
+
+definition kme_KMGet_buffer_valid where
+  \<open>kme_KMGet_buffer_valid dec nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB encKeyID keyID encKeyVal keyVal'.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_has_decryptionKeyID (kme s nA) = Some encKeyID \<and>
+      kme_has_key (kme s nA) encKeyID encKeyVal \<and>
+      network_has_msg s (kmeID nB) (kmeID nA) (KeyResponse keyID keyVal')
+      \<longrightarrow> qkd_has_key s keyID (dec keyVal' encKeyVal))\<close>
+
+fun kme_has_nextKme where
+  \<open>kme_has_nextKme (IoaState (KmeWaitHop _ _ nextKme _ _ _ _ _ _ _) _) kmeID = (nextKme = kmeID)\<close> |
+  \<open>kme_has_nextKme (IoaState (KmeWaitHopRec _ _ _ _ nextKme _ _ _ _ _ _ _) _) kmeID = (nextKme = kmeID)\<close> |
+  \<open>kme_has_nextKme _ _ = False\<close>
+
+abbreviation is_KeyResponse where
+  "is_KeyResponse msg \<equiv> (case msg of KeyResponse _ _ \<Rightarrow> True | _ \<Rightarrow> False)"
+
+abbreviation is_KMGet where
+  "is_KMGet msg \<equiv> (case msg of KMGet _ _ _ _ \<Rightarrow> True | _ \<Rightarrow> False)"
+
+abbreviation kme_buffer_has_msg where
+  "kme_buffer_has_msg sender msg \<equiv> (case sender of IoaState _ msgs \<Rightarrow> msg \<in> msgs)"
+
+abbreviation kme_network_has_msg where
+  "kme_network_has_msg kmeID s n1 n2 msg \<equiv> (network_has_msg s (kmeID n1) (kmeID n2) msg) \<or> (kme_buffer_has_msg (kme s n1) (kmeID n1, kmeID n2, msg))"
+
+abbreviation kme_get_buffer_msg where
+  "kme_get_buffer_msg kmeID s n1 n2 p \<equiv> (case kme s n1 of IoaState _ msgs \<Rightarrow> {(kmeID n1, kmeID n2, msg) | msg. p msg \<and> (kmeID n1, kmeID n2, msg) \<in> msgs})"
+
+abbreviation kme_get_msg_count where
+  "kme_get_msg_count kmeID s n1 n2 p \<equiv> (length (filter p (network s (kmeID n1, kmeID n2)))) + (card (kme_get_buffer_msg kmeID s n1 n2 p))"
+
+section Right
+
+definition inv1 where
+  \<open>inv1 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB masterSae keyID encKeyID slaveSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae)
+      \<longrightarrow> kme_has_decryptionKeyID (kme s nA) = Some encKeyID)\<close>
+
+(* inv1 plus: a KMGet also fixes the sender's next hop *)
+definition inv1' where
+  \<open>inv1' nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB masterSae keyID encKeyID slaveSae.
+      nA \<in> nodes \<and> nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae)
+      \<longrightarrow> kme_has_decryptionKeyID (kme s nA) = Some encKeyID \<and> kme_has_nextKme (kme s nA) (kmeID nB))\<close>
+
+definition inv2 where
+  \<open>inv2 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB masterSae keyID' keyVal' keyID encKeyID encKeyID' slaveSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nB nA (KeyResponse keyID' keyVal') \<and>
+      kme_has_decryptionKeyID (kme s nA) = Some encKeyID'
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
+
+definition inv3 where
+  \<open>inv3 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB state msgs.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme s nA = IoaState state msgs
+      \<longrightarrow> kme_get_msg_count kmeID s nA nB is_KMGet \<le> 1 \<and> finite msgs)\<close>
+
+definition inv4 where
+  \<open>inv4 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB masterSae keyID encKeyID slaveSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nB nA OK
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
+
+definition inv5 where   (* only reserving KMPuts *)
+  \<open>inv5 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB kmID keyID' res masterSae keyID encKeyID slaveSae.
+      nA \<in> nodes \<and> nB \<in> nodes \<and>
+      kme_network_has_msg kmeID s nA nB (KMPut kmID keyID' (Some res))
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
+
+definition inv6 where
+  \<open>inv6 nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB masterSae keyID encKeyID slaveSae.
+      nA \<in> nodes \<and>
+      nB \<in> nodes \<and>
+      kme_has_decryptionKeyID (kme s nA) = None
+      \<longrightarrow> \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))\<close>
+
+
+fun kme_prev_hop where
+  \<open>kme_prev_hop (IoaState (KmeWaitHopRec _ _ _ prevKme _ _ keyID2 _ _ _ _ _) _) = Some (prevKme, keyID2)\<close> |
+  \<open>kme_prev_hop _ = None\<close>
+
+(* a response in flight is awaited by its receiver, from exactly that sender *)
+definition kme_resp_waiting where
+  \<open>kme_resp_waiting nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB keyID keyVal'.
+      nA \<in> nodes \<and> nB \<in> nodes \<and> kme_network_has_msg kmeID s nB nA (KeyResponse keyID keyVal')
+      \<longrightarrow> (\<exists>encKeyID. kme_has_decryptionKeyID (kme s nA) = Some encKeyID)
+        \<and> kme_has_nextKme (kme s nA) (kmeID nB))\<close>
+
+(* at most one response per pair, like inv3 for KMGet *)
+definition kme_resp_unique where
+  \<open>kme_resp_unique nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB. nA \<in> nodes \<and> nB \<in> nodes \<longrightarrow> kme_get_msg_count kmeID s nB nA is_KeyResponse \<le> 1)\<close>
+
+(* a relay in KmeWaitHopRec holds the request: its predecessor is still waiting, nothing in flight *)
+definition kme_prev_hop_valid where   (* nA \<noteq> nB and the OK conjunct are new *)
+  \<open>kme_prev_hop_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB keyID2.
+      nA \<in> nodes \<and> nB \<in> nodes \<and> kme_prev_hop (kme s nB) = Some (kmeID nA, keyID2)
+      \<longrightarrow> nA \<noteq> nB
+        \<and> kme_has_decryptionKeyID (kme s nA) = Some keyID2
+        \<and> kme_has_nextKme (kme s nA) (kmeID nB)
+        \<and> (\<forall>keyID v. \<not>kme_network_has_msg kmeID s nB nA (KeyResponse keyID v))
+        \<and> (\<forall>masterSae keyID encKeyID slaveSae.
+             \<not>kme_network_has_msg kmeID s nA nB (KMGet masterSae keyID encKeyID slaveSae))
+        \<and> \<not>kme_network_has_msg kmeID s nB nA OK)\<close>
+
+definition kme_KMGet_valid where       (* your target, with buffer *)
+  \<open>kme_KMGet_valid dec nodes kmeID s \<longleftrightarrow>
+    (\<forall>nA nB encKeyID keyID encKeyVal keyVal'.
+      nA \<in> nodes \<and> nB \<in> nodes \<and>
+      kme_has_decryptionKeyID (kme s nA) = Some encKeyID \<and>
+      kme_has_key (kme s nA) encKeyID encKeyVal \<and>
+      kme_network_has_msg kmeID s nB nA (KeyResponse keyID keyVal')
+      \<longrightarrow> qkd_has_key s keyID (dec keyVal' encKeyVal))\<close>
+
+
+abbreviation right where
+  \<open>right dec nodes kmeID s \<equiv>
+    (inv1' nodes kmeID s \<and>
+     inv2 nodes kmeID s \<and>
+     inv3 nodes kmeID s \<and>
+     inv4 nodes kmeID s \<and>
+     inv5 nodes kmeID s \<and>
+     inv6 nodes kmeID s \<and>
+     kme_resp_waiting nodes kmeID s \<and>
+     kme_resp_unique nodes kmeID s \<and>
+     kme_prev_hop_valid nodes kmeID s \<and>
+     kme_KMGet_valid dec nodes kmeID s)\<close>
+
+(*definition if_kme_in_kmeState_then_no_KeyResponse_Exists where
+  \<open>if_kme_in_kmeState_then_no_KeyResponse_Exists nodes kmeID s \<longleftrightarrow>
+    (\<forall>n sender store route saeToKme bridgeIDs kmeIDs keyID keyVal'.
+      n \<in> nodes \<and>
+      sender \<in> kmeID ` nodes \<and>
+      kme s n = Kme store route saeToKme bridgeIDs kmeIDs
+      \<longrightarrow> \<not>network_has_msg s sender (kme s n) (KeyResponse keyID keyVal'))\<close>
+
+definition only_one_single_KeyResponse_between_kmes where
+  \<open>only_one_single_KeyResponse_between_kmes nodes kmeID s \<longleftrightarrow>
+    (\<forall>sender rcpt keyID keyVal'.
+      sender \<in> kmeID ` nodes \<and>
+      rcpt \<in> kmeID ` nodes
+      \<longrightarrow> count_list (network s sender rcpt) (KeyResponse keyID keyVal') \<le> 1)\<close>
+
+definition if_keyResponse_exitst_then_no_KMGet_exists where
+  \<open>if_keyResponse_exitst_then_no_KMGet_exists nodes kmeID s \<longleftrightarrow>
+    (\<forall>sender rcpt keyID keyVal' slaveSae.
+      sender \<in> kmeID ` nodes \<and>
+      rcpt \<in> kmeID ` nodes \<and>
+      network_has_msg s sender rcpt (KeyResponse keyID keyVal')
+      \<longrightarrow> \<not>network_has_msg s rcpt sender (KMGet slaveSae keyID encKeyID masterSae))\<close>
+
+definition if_kme_sends_keyResponse_then_otherKme_has_valid_decKey where
+  \<open>if_kme_sends_keyResponse_then_otherKme_has_valid_decKey nodes kmeID s \<longleftrightarrow>
+    (\<forall>n sender slaveSae keyID encKeyID masterSae.
+      n \<in> nodes \<and>
+      sender \<in> kmeID ` nodes \<and>
+      network_has_msg s sender (kme s n) (KMGet slaveSae keyID encKeyID masterSae)
+      \<longrightarrow> (\<exists>n'. 
+            n' \<in> nodes \<and>
+            sender = kme s n' \<and>
+            kme_has_decryptionKeyID (kme s n') = Some encKeyID))\<close>*)
+
+
+
+
+
+
+
+
+(*Proofed till here*)
+definition kme_store_partnerField_valid where
+  \<open>kme_store_partnerField_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>n keyID keyVal partner conf res.
+      n \<in> nodes \<and>
+      kme_get_store (kme s n) keyID = Some (Some keyVal, partner, conf, res)
+      \<longrightarrow> partner \<in> kmeID ` nodes)\<close>
+
+definition kme_kmeIDs_field_valid where
+  \<open>kme_kmeIDs_field_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>n kmeIDs.
+      n \<in> nodes \<and>
+      kmeIDs = kme_get_kmeIDs_field (kme s n)
+      \<longrightarrow> kmeIDs = kmeID ` nodes)\<close>
+
+definition kme_msg_field_valid where
+  \<open>kme_msg_field_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>sender rcpt kme keyID res. 
+      sender \<in> kmeID ` nodes \<and>
+      network_has_msg s sender rcpt (KMPut kme keyID res)
+      \<longrightarrow> kme \<in> kmeID ` nodes)\<close>
+
+definition kme_buffer_msg_field_valid where
+  \<open>kme_buffer_msg_field_valid nodes kmeID s \<longleftrightarrow>
+    (\<forall>n state msgs rcpt kme' keyID res.
+      n \<in> nodes \<and>
+      kme s n = IoaState state msgs \<and>
+      (kmeID n, rcpt, KMPut kme' keyID res) \<in> msgs
+      \<longrightarrow> kme' \<in> kmeID ` nodes)\<close>
+
+definition bridge_kme_msgField_valid where
+  \<open>bridge_kme_msgField_valid nodes bridgeIDs kmeID s \<longleftrightarrow>
+    (\<forall>sender rcpt otherKme keyID keyVal. 
+      sender \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      network_has_msg s sender rcpt (KMPost otherKme keyID keyVal)
+      \<longrightarrow> otherKme \<in> kmeID ` nodes)\<close>
+
+definition bridge_buffer_msg_field_valid where
+  \<open>bridge_buffer_msg_field_valid nodes bridgeIDs kmeID s \<longleftrightarrow>
+    (\<forall>n b state msgs rcpt otherKme keyID keyVal.
+      n \<in> nodes \<and>
+      b \<in> bridgeIDs n \<and>
+      bridge s n b = IoaState state msgs \<and>
+      (b, rcpt, KMPost otherKme keyID keyVal) \<in> msgs
+      \<longrightarrow> otherKme \<in> kmeID ` nodes)\<close>
+
+definition bridge_otherKme_field_valid where
+  \<open>bridge_otherKme_field_valid nodes bridgeIDs kmeID s \<longleftrightarrow>
+    (\<forall>n b isMaster otherBridge otherKme qkd kme msgs.
+      n \<in> nodes \<and>
+      b \<in> bridgeIDs n \<and>
+      bridge s n b = IoaState (Bridge isMaster otherBridge otherKme qkd kme) msgs
+      \<longrightarrow> otherKme \<in> kmeID ` nodes)\<close>
+
+definition kme_store_key_sent where
+  \<open>kme_store_key_sent nodes kmeID s \<longleftrightarrow>
+    (\<forall>n keyID keyVal.
+      n \<in> nodes \<and>
+      kme_has_key (kme s n) keyID keyVal
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition kme_bridgeIDs_field_valid where
+  \<open>kme_bridgeIDs_field_valid nodes bridgeIDs s \<longleftrightarrow>
+    (\<forall>n bridgeIDs'.
+      n \<in> nodes \<and>
+      bridgeIDs' = kme_get_bridgeIDs_field (kme s n)
+      \<longrightarrow> bridgeIDs' = bridgeIDs n)\<close>
+
+definition bridge_kme_msg_sent where
+  \<open>bridge_kme_msg_sent nodes kmeID bridgeIDs s \<longleftrightarrow>
+    (\<forall>s1 r1 otherKme keyID keyVal.
+      s1 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      r1 \<in> kmeID ` nodes \<and>
+      network_has_msg s s1 r1 (KMPost otherKme keyID keyVal)
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition bridge_kme_buffer_sent where
+  \<open>bridge_kme_buffer_sent nodes bridgeIDs s \<longleftrightarrow>
+    (\<forall>n b state msgs otherKme rcpt keyID keyVal.
+      n \<in> nodes \<and>
+      b \<in> bridgeIDs n \<and>
+      bridge s n b = IoaState state msgs \<and>
+      (b, rcpt, KMPost otherKme keyID keyVal) \<in> msgs
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition bridge_qkd_field_valid where
+  \<open>bridge_qkd_field_valid nodes bridgeIDs qkdID s \<longleftrightarrow>
+    (\<forall>n b isMaster masterBridge otherKme qkd kme msgs.
+      n \<in> nodes \<and>
+      b \<in> bridgeIDs n \<and>
+      bridge s n b = IoaState (Bridge isMaster masterBridge otherKme qkd kme) msgs
+      \<longrightarrow> qkd \<in> qkdID ` \<Union> (bridgeIDs ` nodes))\<close>
+
+definition qkd_bridge_msg_sent where
+  \<open>qkd_bridge_msg_sent nodes bridgeIDs qkdID s \<longleftrightarrow>
+    (\<forall>s1 r1 keyID keyVal.
+      s1 \<in> qkdID ` \<Union>(bridgeIDs ` nodes) \<and>
+      r1 \<in> \<Union>(bridgeIDs ` nodes) \<and>
+      network_has_msg s s1 r1 (KeyResponse keyID keyVal)
+      \<longrightarrow> qkd_has_key s keyID keyVal)\<close>
+
+definition qkd_layer_consistent where
+  \<open>qkd_layer_consistent s \<longleftrightarrow>
+    (\<forall>keyID keyVal1 keyVal2.
+      qkd_has_key s keyID keyVal1 \<and>
+      qkd_has_key s keyID keyVal2
+      \<longrightarrow> keyVal1 = keyVal2)\<close>
+
+end
